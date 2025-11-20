@@ -81,13 +81,21 @@ gpos:
   short: GPOS
   long: General-Purpose Operating System
   description: >
-    TODO
+    Système d'exploitation généraliste offrant un large éventaille de
+    services.
 
 rtos:
   short: RTOS
   long: Real-time Operating System
   description: >
-    TODO
+    Système d'exploitation dédié pour le temps réel. Il offre des garanties
+    fortes en matière de déterminisme.
+
+hypervisor:
+  short: hyperviseur
+  description: >
+    Plate-forme de virtualisation permettant l'exécution de plusieurs
+    systèmes d'exploitations simultanément sur une même machine physique.
 
 hypercall:
   short: hypercall

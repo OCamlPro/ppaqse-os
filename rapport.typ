@@ -7,6 +7,7 @@
 #import fletcher.shapes: house, hexagon
 #set text(lang: "fr", size: 12pt)
 #set par(justify: true)
+#set par.line(numbering: "1", numbering-scope: "page")
 
 #show heading.where(level: 1, outlined: true): it => {
     pagebreak(weak: true)
@@ -307,8 +308,8 @@ Néanmoins, l'adoption d'un système d'exploitation procure des avantages consid
 principalement en facilitant la conception et la portabilité des applications.
 Le tableau @compare_os_baremetal livre quelques éléments de comparaison entre
 ces deux approches. Notez cependant que les bénéfices apportés par un OS varient
-considérablement d'un système. Comparer ces apports est l'un des enjeux de cette
-étude.
+considérablement d'un système à l'autre. Comparer ces apports est l'un des
+enjeux de cette étude.
 
 #figure(
   table(
@@ -381,38 +382,42 @@ dans les chapitres précédents et de comparer simplement les systèmes.]
 
 == Critères de comparaison <criteria>
 
-Au travers de cette étude, les systèmes d'exploitation ont été étudiés et comparés
-suivant les critères détaillés ci-dessous. Il est noté que certains critères
-n'étaient pas pertinent pour l'ensemble des systèmes, auquel cas la section
-corresponde justifie son élision.
+Au travers de cette étude, les systèmes d'exploitation ont été étudiés et
+comparés suivant les critères détaillés ci-dessous. Il est à noter que certains
+critères n'étaient pas pertinents pour l'ensemble des systèmes, auquel cas la
+section correspondante pour ce système justifie son élision.
 
 === Type de systèmes d'exploitation
-Dans ce document, nous classons les systèmes d'exploitation étudiés en quatre
-grandes catégories:
-- #box[Les #definition[systèmes d'exploitation généralistes]
-@gpos constituent la
-classe la plus connue du grand public. Ils sont le plus souvent directement
+Nous classons les systèmes d'exploitation étudiés en quatre grandes catégories:
+- #box[Les _systèmes d'exploitation généralistes_ @gpos constituent la
+classe la plus connue du grand public. Ils sont le plus souvent
 exécutés au-dessus de la couche matérielle et offrent un large éventail de
 services. Leur domaine d'application est particulièrement vaste puisqu'on les
 retrouve aussi bien sur les ordinateurs personnels, les smartphones que les
 serveurs et les systèmes embarqués. Parmi les systèmes les plus connus, on
-peut citer _Linux_, _Windows_ et _macOS_.]
-- #box[Les #definition[hyperviseurs]#footnote[On parle également de
-_Virtual Machine Monitor_ abrégé _VMM_.] sont des systèmes d'exploitation dédiés à
-la virtualisation, c'est-à-dire à l'exécution d'OS invités au-dessus d'une couche
-logicielle. On les retrouve fréquemment sur des serveurs exécutant simultanément
-plusieurs OS invités. Parmi les systèmes les plus utilisés, on peut citer
-_VMware vSphere_, _Hyper-V_, _KVM_, _VirtualBox_ ou encore QEMU.]
-- #box[Les #definition[systèmes d'exploitation temps-réels] (_RTOS_ pour
-_Real-Time Operating System_) sont des systèmes d'exploitation donnant des
-garanties sur le temps d'exécution.]
-- #box[Les #definition[bibliothèques d'OS] (_LibOS_ pour _Library Operating System_)
-ne sont pas à proprement parler des systèmes d'exploitation mais plutôt des collections de
-bibliothèques permettant d'exécuter des logiciels sans avoir recours à un _GPOS_.
-Le développeur lie les modules indispensables à son programme, afin de produire
-une image appelée un #definition[unikernel]. Celui-ci peut ensuite être exécuté
-sur un hyperviseur ou en _bare-metal_, c'est-à-dire
-directement sur la couche matérielle.]
+peut citer _Linux_, _FreeBSD_, _NetBSD_, _Windows_ et _macOS_.]
+- #box[Les @hypervisor:pl sont des systèmes de virtualisation qui permettent
+l'exécution de plusieurs systèmes exploitations sur une même machine. Dans
+cette étude, nous n'examinerons que des @hypervisor:pl de type 1#footnote[On parle
+également d'@hypervisor @baremetal.], c'est-à-dire des systèmes d'exploitation
+dédiés à la virtualisation. Parmi les @hypervisor:pl les plus connus, on peut
+citer _Xen_, _Oracle VM_, _Hyper-V_, _KVM_.]
+- #box[Les _systèmes d'exploitation temps-réels_ (en anglais @rtos) sont des
+systèmes dédiés au temps réel. Ils offrent de fortes garanties en matière de
+déterminisme grâce à des ordonnanceurs de tâches et des protocoles de
+synchronisation spécifiques.]
+- #box[Les _bibliothèques d'OS_ (_LibOS_ pour _Library Operating System_)
+ne sont pas à proprement parler des systèmes d'exploitation mais plutôt des
+collections de bibliothèques permettant d'exécuter des logiciels sans avoir
+recours à un @gpos. Le développeur lie les modules indispensables à son
+programme, afin de produire une image appelée un _unikernel_. Celui-ci peut
+ensuite être exécuté sur un @hypervisor ou en @baremetal.]
+
+Cette nomenclature n'exclut pas qu'un système d'exploitation soit dans
+plusieurs catégories simultanément. Nous verrons par exemple que de nombreux
+@hypervisor:pl dédiés à l'embarqué critique proposent nativement des
+fonctionnalités temps réel. De même beaucoup de @gpos intègrent un @hypervisor
+de type 1.
 
 === Architectures supportées <architectures>
 Pour chacun des systèmes d'exploitation étudiés, nous donnons une liste des
@@ -422,7 +427,7 @@ nous avons sélectionné les architectures avec les critères suivants:
 - #box[L'architecture doit être supportée nativement, c'est-à-dire que le
 système d'exploitation doit pourvoir s'exécuter sur une telle architecture
 sans avoir recours à un mécanisme d'émulation,]
-- #box[Certain système ont une longue histoire rendant une documentation
+- #box[Certains systèmes ont une longue histoire rendant une documentation
 exhaustive en pratique très difficile. Nous nous bornons à un sous-ensemble
 des architectures et renvoyons le lecteur à la documentation officielle pour les
 architectures plus exotiques,]
@@ -590,7 +595,7 @@ l'ensemble du système. Ce partage peut être opéré à plusieurs niveaux, nota
 Dans cette section, nous examinons ce partitionnement pour deux ressources:
 la mémoire principale et le processeur.
 
-=== Partitionnement spatial
+==== Partitionnement spatial <space_partiting>
 
 Le partitionnement en mémoire vise à partager la mémoire principale entre
 plusieurs tâches en cours d'exécution. Ce partage est crucial car il permet de
@@ -614,7 +619,7 @@ subdivisée en des pages de tailles fixes. Cela permet de n'avoir qu'une portion
 des données d'un processus en mémoire et de charger les pages manquantes à la
 demande.
 
-=== Partitionnement temporel
+==== Partitionnement temporel <time_partiting>
 
 Les systèmes d'exploitation moderne permettent l'exécution de programmes dans un
 contexte multi-tâches. Cette exécution peut être #definition[concurrentielle]
@@ -851,7 +856,7 @@ sous-critères:
   - *Usage principal* : Serveurs, embarqué, supercalculateurs, desktop
   - *Points forts* : Maturité, large écosystème, flexibilité, support matériel étendu, documentation précise
   - *Limitations* : Complexité élevée, surface d'attaque importante, déterminisme limité (sans PREEMPT_RT)
-  - *Licences* : GPL v2
+  - *Licences* : GPL v2 + exception _syscall_
 ]
 
 Le noyau _Linux_ est un @gpos libre de type _UNIX_. Son développement
@@ -948,9 +953,7 @@ propriétaires et non standardisées. Quant au système _RPMsg_
 (_Remote Processor Messaging_), il permet la intercommunication avec un
 processeur distant via un protocole asynchrone à la _virtio_.
 
-== Partitionnement
-
-=== Partitionnement <linux_partitioning>
+== Partitionnement <linux_partitioning>
 
 Dans cette section, nous décrivons les principaux mécanismes d'isolation de
 partitionnement des ressources disponibles sous _Linux_. Ces mécanismes sont
@@ -1157,6 +1160,28 @@ complexes et techniques pour en faire ici une révue détaillée. Toutefois, il
 est intéressant de comprendre certains de leurs aspects afin de cerner les
 forces et les limites du temps réel dans ce noyau. Plus d'informations sont
 disponibles dans la documentation officielle @preempt_rt_doc.
+
+==== _Timers_ hautes résolutions
+
+Historiquement, le noyau _Linux_ utilisait une interruption matérielle
+périodique pour exécuter l'ordonnanceur de tâches.
+Cette conception impliquait que la précision des _timers_ ne pouvaient
+excéder la durée d'un _tick_, qui était de l'ordre de 1 à 10ms. L'adoption
+d'une approche _tickless_ à partir de la branche 2.6 du noyau a permis
+d'implémenter des _timers_ haute résolution (appelés _hrtimer_ dans la
+terminologie linuxienne pour _High-Resolution Timers_)
+@gleixner2006hrtimers.
+
+Malgré cette amélioration, les _hrtimers_ soulèvent toujours des problèmes
+dans un contexte temps réel. De part la conception actuelle du noyau, les
+@isr appelés lors de l'expiration de ces _timers_ sont exécutés avec
+la plus haute priorité afin de minimiser leur latence. Cela implique qu'une
+tâche de faible priorité peut retarder l'exécution d'une tâche de plus haute
+priorité en produisant un grand nombre de _timers_.
+
+Un correctif baptisé _TimerShield_ a été proposé dans @patel2017timershield et
+implémenté dans un prototype mais n'est pas intégré dans la branche principale
+du noyau.
 
 ==== Mutex temps réels
 
