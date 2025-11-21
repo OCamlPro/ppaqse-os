@@ -4,6 +4,13 @@ mce:
   description: >
     Erreur émise par le matériel qui est généralement fatale.
 
+pic:
+  short: PIC
+  long: Programmable Interrupt Controller
+  description: >
+    Ensemble de microcontrôleurs dédiés à la programmation des interruptions
+    matérielles et en particulier à leur masquage.
+
 rte:
   short: RTE
   long: RunTime Environment
@@ -42,6 +49,12 @@ isr:
   description: >
     Gestionnaire d'interruption exécutée lorsqu'une interruption matérielle
     ou logicielle survient.
+
+irq:
+  short: IRQ
+  long: Interrupt ReQest
+  description: >
+    Requếte d'interruption envoyée à un PIC afin d'interrompre le processeur.
 
 bkl:
   short: BKL
@@ -243,8 +256,12 @@ initsystem:
 
 userspace:
   short: espace utilisateur
-  article: l'
-  description: |
+  description: >
+    todo
+
+kernelspace:
+  short: espace noyau
+  description: >
     todo
 
 safety:

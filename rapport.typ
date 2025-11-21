@@ -419,7 +419,7 @@ plusieurs catégories simultanément. Nous verrons par exemple que de nombreux
 fonctionnalités temps réel. De même beaucoup de @gpos intègrent un @hypervisor
 de type 1.
 
-=== Architectures supportées <architectures>
+=== Architectures supportées <criteria_architectures>
 Pour chacun des systèmes d'exploitation étudiés, nous donnons une liste des
 différentes architectures supportées. Afin que cet effort soit tenable,
 nous avons sélectionné les architectures avec les critères suivants:
@@ -734,55 +734,53 @@ programme pas à pas et explorer l'état de la mémoire et des registres.
 
 == Masquage des interruptions
 
-La gestion des interruptions est l'une des tâches primordiales d'un système
-d'exploitation.
-Une #definition[interruption] est un événement matériel qui altère le flot d'exécution normal
-d'un programme. Au niveau matériel, elles se manifestent par des signaux
-électriques pouvant être émis à tout moment par:
-- Un périphérique (clavier, disque, carte PCI, ...).
-- Le CPU lui-même.
-- #box[Dans une architecture multi-cœur, des signaux sont émis entre les cœurs.]
-Lorsqu'une interruption est déclenchée, l'exécution courante est suspendue. Dans ce cas,
-un gestionnaire d'interruption prend le relais. Il est important de noter qu'une
-interruption peut subvenir à n'importe quel moment, y compris pendant l'exécution
-d'un gestionnaire d'interruption. Cela pose plusieurs difficultés:
-- #box[Il n'est pas toujours possible d'interrompre l'exécution d'une routine, notamment
-dans une section critique. C'est un scénario courant dans un noyau.]
-- #box[Dans un programme temps réel et suivant le niveau d'exigence, la latence induite par
-ces interruptions doit ou non être prise en compte dans les contraintes temporelles.]
+Une _interruption_ est un événement matériel qui altère le flot d'exécution
+normal d'un programme. Au niveau matériel, elle se manifeste classiquement par
+un signal électrique émit par un périphérique ou le processeur lui-même et à
+destination du processeur. Lorsque le processeur reçoit l'interruption,
+l'exécution courante est suspendue et le contexte est sauvegardé puis une
+routine du noyau appelée @isr est lancée pour gérer l'interruption.
 
-=== Interruptions programmables
+La programmation en présence d'interruptions est rendue difficile par leur
+nature asynchrone. Par exemple, rien n'interdit qu'une interruption se
+déclenche pendant l'exécution de l'@isr d'une interruption précédente. C'est
+même le scénario le plus courant. La présence d'interruption asynchrone induit
+deux grandes difficultés:
+- #box[La correction du noyau repose sur la préservation d'invariants pour
+ses structures de données. Ainsi, certaines sections de code sont critiques car
+elles ne peuvent être interrompues sans briser ces invariants.]
+- #box[La possibilité d'avoir une cascade d'interruption rend difficile
+l'estimation du temps d'exécution en @kernelspace. Elle peut même être non
+bornée dans les pires cas. Cette latence doit être contrôlée pour les systèmes
+temps réel.]
 
-Les architectures modernes permettent généralement la programmation des interruptions
-grâce à des puces dédiées réparties entre la carte mère et le CPU:
-- #box[Sur les architectures Intel et AMD, cette tâche est répartie entre la puce
-_I/O APIC_#footnote[_APIC_ est un abréviation pour _Advanced Programmable Interrupt Controller_]
-qui gère les interruptions émises par les périphériques et des circuits intégrés dans chaque
-cœur appelés _Local APIC_ qui gèrent les interruptions entre les cœurs.]
-- #box[Sur les architectures ARM, cette tâche est dévolue au _GIC_
-(_Generic Interrupt Controller_).]
-L'émetteur de l'interruption envoie une requête d'interruption
-(_IRQ_ pour _Interrupt ReQuest_) à l'une de ces puces qui décide ensuite d'envoyer ou non
-l'interruption au destinataire (TODO: vérifier).
+Une solution consiste à masquer les interruptions lors de l'exécution de
+sections critiques. À cette fin, les architectures matérielles modernes sont
+équipées de microcontrôleurs dédiés à la programmation des interruptions.
+Ainsi les architectures _x86_ sont munies de puce _I/O APIC_
+(_Input/Output Advanced Programmable Interrupt Controller_) pour gérer les
+interruptions provenant des périphériques et
+pour les architectures multi-cœur, chaque cœur est muni d'un _Local APIC_ pour
+gérer les interruptions entre cœurs. De même, les architectures _ARM_ diposent
+d'un système dévolue à la programmation des interruptions appelé _GIC_
+(_Generic Interrupt Controller_). Des contrôleurs similaires existent pour
+les autres architectures considérées dans la sous-section
+@criteria_architectures. Pour simplifier, nous désignons ces puces sous
+l'appellation @pic.
 
-=== Masquage des interruptions
+Dans tous les cas, un périphérique ou un cœur qui souhaite envoyer une
+interruption matérielle commence par envoyer une @irq à un microcontrôleur
+@pic. Ce dernier décide ou non d'envoyer une interruption au cœur concerné.
+Cette décision est programmable, le plus souvent sous la forme d'un vecteur
+stocké dans un registre spécial du _CPU_.
 
-Une solution pour gérer les interruptions est de _masquer_, c'est-à-dire bloquer,
-temporairement certaines d'entre elles.
+Si masquer les interruptions résout la première difficulté de façon drastique,
+elle doit être fait à grain fin pour ne pas grever les performances de l'OS et en
+particulier la latence. De plus, la désactivation des interruptions rend
+les sections concernées non-préemptibles puisque la préemption est souvent
+gérée par une interruption matérielle déclenchée par une horloge matérielle.
 
-Les architecture moderne embarque généralement plusieurs puces dédiées à la gestion des
-requêtes d'interruption (_IRQ_ pour _Interrupt ReQuest_). Par exemple, sur les architectures
-Intel et AMD, cette tâche est accomplie par le sous-système _APIC_
-(_Advanced Programmable Interruption Controller_). Sur les architectures ARM,
-elle est dévolue au _GIC_ (_Generic Interrupt Controller_).
-
-Les processeurs multi-cœur disposent aussi de puce _APIC_ par cœur, permettant
-la gestion des interruptions entre cœurs (_Inter-Processor Interrupt_ IPI).
-
-Les contrôleurs d'interruption permettent également de mettre des niveaux de priorité
-sur les interruptions.
-
-== Support de _watchdog_
+== _Watchdog_
 
 Un #definition[watchdog] est un dispositif matériel ou logiciel conçu
 pour détecter le blocage d'un système informatique, et de réagir
@@ -1608,6 +1606,64 @@ Performance counter stats for './miss random':
 ```
 Le parcours est nettement plus lent et le nombre de `cache-misses` explose.
 
+== Masquage des interruptions <linux_masking>
+
+Le noyau _Linux_ propose une @api en langage C pour masquer les interruptions.
+
+Le noyau _Linux_ propose plusieurs interfaces pour masquer les interruptions,
+chacune adaptée à des besoins spécifiques :
+- #box[`local_irq_disable()` et `local_irq_save()` : désactivent toutes les
+interruptions au niveau de l'interface IRQ du CPU.]
+- #box[`disable_irq()` : désactive une interruption spécifique au niveau du
+contrôleur d'interruptions.]
+
+Ces primitives sont essentielles pour protéger les sections critiques du noyau,
+mais leur usage doit être parcimonieux. Par exemple, des mesures avec le traceur
+_irqsoff_ ont révélé que dans certains cas, la fonction `console_unlock()`
+pouvait désactiver les interruptions locales pendant environ 10ms, provoquant
+des dépassements d'échéance pour les _timers_ haute résolution (_hrtimer_).
+
+=== Approche _PREEMPT_RT_ <linux_preempt_rt>
+
+Pour les systèmes temps réel, le projet _PREEMPT_RT_ transforme radicalement
+la gestion des interruptions dans _Linux_. L'objectif principal est de réduire
+au minimum le code s'exécutant en contexte d'interruption matérielle, en
+déplaçant la majeure partie du traitement vers le contexte de threads.
+
+_PREEMPT_RT_ introduit le concept d'_interruptions threadées_ (_threaded interrupts_).
+Dans ce modèle, le gestionnaire d'interruption matérielle réel exécuté par le
+CPU se limite à quelques dizaines de lignes par architecture et se contente de :
+- #box[Masquer la ligne d'interruption.]
+- #box[Acquitter le contrôleur d'interruptions.]
+- #box[Réveiller le thread correspondant.]
+
+Le traitement réel de l'interruption s'effectue ensuite dans un thread noyau
+normal, qui peut être préempté comme n'importe quel autre thread. Cette approche
+résout le problème d'_inversion d'interruptions_ où une tâche temps réel haute
+priorité peut être retardée par une cascade d'interruptions.
+
+De plus, _PREEMPT_RT_ remplace de nombreux appels à `local_irq_disable()` par
+des versions "douces" qui n'impactent pas la latence temps réel de la même
+manière que le masquage matériel des interruptions.
+
+=== Stratégies d'atténuation de la latence
+
+Pour minimiser l'impact du masquage des interruptions sur la latence des
+systèmes temps réel, plusieurs stratégies sont employées :
+- #box[_Isolation de CPUs_ : dédier certains cœurs au traitement des
+interruptions et d'autres aux processus temps réel. Cette technique est
+particulièrement efficace sur les architectures multi-cœurs.]
+- #box[_Minimisation des sections critiques_ : réduire au strict minimum
+la durée pendant laquelle les interruptions sont masquées.]
+- #box[_Profilage avec irqsoff_ : utiliser le traceur _irqsoff_ du noyau
+pour identifier et mesurer les sections où les interruptions sont désactivées
+trop longtemps. Ce traceur enregistre la trace avec la latence maximale la plus
+longue.]
+
+Ces techniques sont documentées dans la documentation _Red Hat_ pour les
+systèmes temps réel et sont largement utilisées dans l'industrie pour garantir
+des latences déterministes.
+
 == Watchdog <linux_watchdog>
 
 Cette section décrit le support pour des _watchdogs_ matériels dans le noyau
@@ -1653,8 +1709,6 @@ pas ce dernier dans un délai de 30 secondes.
   snippet("./linux/foo.ini", lang:"ini"),
   caption: [Exemple de service _systemd_ avec _watchdog_.]
 ) <linux_systemd_watchdog_example>
-
-== Masquage des interruptions <linux_masking>
 
 == Licences <linux_licenses>
 
@@ -2145,6 +2199,8 @@ Cette commande lance un serveur web écoutant sur l'adresse `localhost:8080`.
   ultérieure du compilateur OCaml.
 ]
 
+== Masquage des interruptions <mirageos_interrupt_masking>
+
 == Watchdog <mirageos_watchdog>
 
 _MirageOS_ ne semble pas offrir d'@api en OCaml pour interagir avec un _watchdog_.
@@ -2619,7 +2675,7 @@ Le nom de l'interface _TTY_ peut varier suivant l'adaptateur utilisé.
 
 Du fait de sa longue histoire, _RTEMS_ a supporté et supporte encore aujourd'hui
 un grand nombre d'architectures. Nous nous concentrons ici sur les architectures
-énumérées dans la sous-section @architectures. D'après @rtems_architectures_website,
+énumérées dans la sous-section @criteria_architectures. D'après @rtems_architectures_website,
 _RTEMS_ supporte les familles d'architectures suivantes dans leur version 32bits
 et 64bits: _x86_, _ARM_, _PowerPC_, _MIPS_, _RISC-V_, _SPARC_.
 Le support se fait via des @bsp. En particulier, le projet distribue un @bsp pour
@@ -3657,8 +3713,8 @@ pour les partitions _PVH_ sur _ARM_.
 
 _Xen_ est réputé pour avoir un @tcb plus important que d'autres hyperviseurs,
 notamment dû à la taille importante de ces sources. Il est toutefois important
-de souligner que le volume de code varie d'un facteur 10 entre les des architectures
-les mieux supportées, à savoir _x86_ et _ARM_.
+de souligner que le volume de code varie d'un facteur 10 entre les des
+architectures les mieux supportées, à savoir _x86_ et _ARM_.
 
 Un autre facteur important qui augmente la @tcb est l'usage d'un noyau _Linux_
 dans le _dom0_. La compromission de ce système compromettant tout le système,
@@ -3869,6 +3925,7 @@ _ARM Cortex-R4/R5_ et _A9_. L'entreprise _fentISS_ continue de travailler sur la
 qualification de nouvelles versions, notamment _XtratuM Next Generation_ pour
 lequel un processus de qualification ECSS niveau B est en cours.
 
+== Masquage des interruptions <xtratum_interrupt_masking>
 
 == Licences <xtratum_licences>
 
