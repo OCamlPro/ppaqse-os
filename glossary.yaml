@@ -1,3 +1,22 @@
+mpu:
+  short: MPU
+  long: Memory Protection Unit
+  description: >
+    Microcontrôleur chargé de vérifier les accès en mémoire.
+
+mmu:
+  short: MMU
+  long: Memory Management Unit
+  description: >
+    Microcontrôleur dédié à la traduction des adresses virtuelles en adresses
+    physiques.
+
+upcall:
+  short: upcall
+  description: >
+    Un upcall est l'opposé d'un appel système. Il permet à un noyau d'appeler
+    une fonction dans l'espace utilisateur.
+
 mce:
   short: MCE
   long: Machine Check Exception

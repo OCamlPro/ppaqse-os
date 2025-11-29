@@ -10,9 +10,6 @@
 ## Recherche
 - Masquage des interruptions pour MirageOS.
 
-## Rédaction
-- Finir la section sur les domaines en OCaml 5?
-
 # PikeOS
 ## Recherche
 - Support watchdog pour PikeOS?
