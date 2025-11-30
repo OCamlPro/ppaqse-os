@@ -387,12 +387,14 @@ comparés suivant les critères suivants:
 - Type de système d'exploitation
 - Architectures supportées
 - Support multi-processeur
-- Partitionnement spatial et temporel
+- Partitionnement spatial
+- Partitionnement temporel
+- Déterminisme
 - Corruption de la mémoire
 - Perte du flux d'exécution
 - Écosystème
 - Gestion des interruptions
-- Watchdog
+- Support _watchdog_
 - Programmation @baremetal
 - Temps de démarrage
 - Maintenabilité
@@ -667,11 +669,11 @@ des tranches de temps de calcul qui reflètent bien la priorité des tâches,]
 - #box[Être aussi prédictible que possible. C'est un aspect crucial pour le
 déterminisme du système d'exploitation.]
 
-Par exemple, utiliser un algorithme de décision astucieux aura tendance à augmenter
-la latence mais peut augmenter le débit. De même, tirer parti du parallélisme
-d'une architecture @smp diminue la latence mais augmente l'indéterminisme du
-système. Il existe donc une multitude d'ordonnanceurs qui font des
-compromis différentes entre ces aspects et beaucoup d'autres.
+Par exemple, utiliser un algorithme de décision astucieux aura tendance à
+augmenter la latence mais peut augmenter le débit. De même, tirer parti du
+parallélisme d'une architecture @smp diminue la latence mais augmente
+l'indéterminisme du système. Il existe donc une multitude d'ordonnanceurs qui
+font des compromis différentes entre ces aspects et beaucoup d'autres.
 
 De façon générale un ordonnanceur de @gpos cherche à maximiser le débit et être
 équitable, tandis qu'un ordonnanceur temps réel cherche plutôt à être
@@ -691,8 +693,8 @@ applications multimédia.].
 Ce n'est plus le cas dans un système temps réel où répondre après
 un délai trop long conduit à un résultat erroné. On souhaite donc que les calculs
 soient fait suffisamment vite en toute circonstance, tandis qu'en informatique
-usuelle on cherche généralement à ce que les calculs soient fait le plus vite possible
-en moyenne.
+usuelle on cherche généralement à ce que les calculs soient fait le plus vite
+possible en moyenne.
 
 Afin d'offrir ces garanties temps réel, le système d'exploitation doit être
 aussi déterministe que possible. Ce déterminisme permet en pratique d'estimer
@@ -738,16 +740,34 @@ d'exécution normal d'un programme pour exécuter du code malveillant. Cette
 attaque exploite généralement des dépassements de tampon ou d'autres corruptions
 mémoire pour modifier les adresses de retour ou les pointeurs de fonction.
 
-Les mécanismes de _Control-Flow Integrity_ (CFI) constituent une famille de
-défenses contre ces attaques @cfi_survey_embedded. Le CFI vise à garantir que le
-flux d'exécution d'un programme suit uniquement les chemins d'exécution légitimes
-définis par le graphe de flot de contrôle du programme.
-
-Dans les systèmes embarqués et temps-réel, l'application du CFI présente des
-défis particuliers liés aux contraintes de ressources
-(taille, poids, puissance, coût) et aux exigences temporelles strictes. Les
-mécanismes de CFI doivent minimiser leur surcoût en temps d'exécution tout en
-offrant des garanties de sécurité robustes.
+Les techniques d'attaques sont nombreuses et plusieurs contremesures peuvent
+être mises en place pour atténuer le risque, notamment:
+- #box[
+  Des mécanismes de _Control-Flow Integrity_ (_CFI_) @cfi_survey_embedded. Les
+  _CFI_ visent à garantir que le flux d'exécution d'un programme suit uniquement
+  les chemins d'exécution légitimes définis par le graphe de flot de contrôle
+  du programme. Dans les systèmes embarqués et temps-réel, l'application du
+  _CFI_ présente des défis particuliers liés aux contraintes de ressources
+  (taille, poids, puissance, coût) et aux exigences temporelles strictes. Les
+  mécanismes de _CFI_ doivent minimiser leur surcoût en temps d'exécution tout
+  en offrant des garanties de sécurité robustes.]
+- #box[La randomisation de l'espace d'adressage (_Adress Space Layout
+  Randomization_ (_ASLR_)). Elle consiste à introduire de l'aléa dans les
+  adresses des segments code afin de rendre difficile leur localisation
+  par un attaquant. _ASLR_ offre une excellente protection sur les plateforme
+  64 bits.]
+- #box[Les _canaris_ de pile. Il s'agit d'une protection ajouté à la
+  compilation du programme et prévient les attaques par écrasement de piles
+  en insérant des valeurs aléatoires. Si un attaquant tente de modifier la
+  pile pour modifier une adresse de retour, il écrase un canari et l'attaque
+  peut ainsi être détectée.]
+- #box[L'utilisation de méthodes comme le _bound checking_ pour prévenir
+  les dépassements de tampon.]
+- #box[Des analyses statiques ou dynamiques pour détecter la présence
+  de vulnérabilités induites par des erreurs de programmation. Certaines de ces
+  analyses peuvent être intégrées directement dans le langage de programmation,
+  par exemple sous la forme d'un _typechecker_. D'autres utilisent des outils
+  externes, voire des assistants à la démonstration.]
 
 Nous avons donc examiné la présence de telles contremesures pour chacun des
 systèmes étudiés.
@@ -2606,9 +2626,10 @@ supporte _PikeOS_ depuis plus de 15 ans.
 == Programmation @baremetal <pikeos_baremetal>
 
 Il est possible d'exécuter des applications @baremetal dans les partitions
-de _PikeOS_ à condition d'adapter un @rte du langage
-de programmation pour l'@api _PikeOS native_.
-
+de _PikeOS_ à condition d'adapter un @rte du langage de programmation pour
+l'@api _PikeOS native_. Cette @api n'étant pas librement accessible, de
+tels @rte n'existent que via des projets internes à _SYSGO_ ou des partenariats
+avec d'autres entreprises. Nous avons pu recenser les @rte suivants:
 - #box[Les langages _C_ et _C++_ sont supportés via respectivement les @rte
 _CENV_ et _CPPENV_. Ces environnements sont livrés avec _CODEO_.]
 - #box[Le langage _Ada_ est supporté via des @rte développés en partenariat
@@ -2620,7 +2641,8 @@ des analyses plus fines @pikeos_adacore.]
 - #box[Le langage _SCADE_ est supporté via un partenariat avec l'entreprise
 _Ansys_ @pikeos_scade.]
 
-Nous n'avons pas trouvé d'information concernant _OCaml_ sur _PikeOS_.
+Nous n'avons pas trouvé d'information concernant _OCaml_ sur _PikeOS_ et ce
+support n'existe probablement pas.
 
 == Temps de démarrage <pikeos_boot_time>
 
@@ -2880,55 +2902,28 @@ nous le verrons dans la sous-section @rtems_certifications.
 Il est possible d'utiliser _RTEMS_ sur des @mpsoc. Par exemple, il existe un
 @bsp pour le @mpsoc _Xilinx Zynq UltraScale+_ @rtems_xilinx_bsp.
 
-== Partitionnement <rtems_partitioning>
+== Partitionnement spatial <rtems_space_partitioning>
 
-Cette section contient les informations sur le partitionnement des tâches
-dans _RTEMS_.
+Contrairement à un @gpos ou un hyperviseur, _RTEMS_ n'offre pas de séparation
+traditionnelle entre @userspace et @kernelspace. Cette absence de séparation
+permet de meilleures performances et un meilleur déterminisme au prix
+d'une isolation spatiale faible.
 
-=== Partitionnement spatial <rtems_space_partitioning>
+Les versions récentes de _RTEMS_ prennent en charge aussi bien des processeurs
+munis de @mmu, de @mpu ou d'aucun contrôleur pour la gestion mémoire. Le
+support est relatif à chaque @bsp. Pour la majorité des @bsp, il est possible
+de ne pas activer le @mmu et de disposer d'un modèle mémoire plat
+(_flat memory model_) afin de bénéficier des avantages précités. En présence
+d'un microcontrôleur de gestion de la mémoire, son initialisation est à la
+charge du @bsp @rtems_system_initialization @rtems_memory_model.
 
-_RTEMS_ est capable de prendre en charge aussi bien des processeurs dépourvus
-de @mmu, équipés d'un @mpu ou avec @mmu complet. Le support est relatif à chaque
-@bsp et est configurable pour la majorité d'entre eux. En présence d'un
-microcontrôleur de gestion de la mémoire, son initialisation est à la charge du
-@bsp @rtems_system_initialization @rtems_memory_model.
+Lorsqu'une isolation spatiale est requise, l'usage est d'exécuter _RTEMS_ dans
+une partition d'un noyau de séparation, typiquement dans l'hyperviseur de
+_XtratuM_.
 
-Son modèle mémoire est qualifié de plat (_flat memory model_).
+== Partitionnement temporel <rtems_time_partitioning>
 
-DRAFT
-
-If the CPU model has support for virtual memory or segmentation, it is the responsibility of the Board Support Package (BSP) to initialize the MMU hardware to perform address translations which correspond to flat memory model.
-
-_RTEMS_ utilise un modèle mémoire plat (_flat memory model_) et n'offre pas de
-séparation traditionnelle entre espace noyau et espace utilisateur comme on peut
-la trouver dans _Linux_ ou _Windows_ @rtems_cpu_supplement. Toutes les tâches et
-le noyau partagent le même espace d'adressage et s'exécutent au même niveau de
-privilège (généralement le niveau superviseur).
-
-Ce choix de conception présente plusieurs implications:
-- #box[*Performances:* L'absence de changement de contexte entre espace
-utilisateur et espace noyau réduit la latence des appels système.]
-- #box[*Déterminisme:* Le comportement temporel est plus prévisible, ce qui est
-critique pour les applications temps réel.]
-- #box[*Pas d'isolation native:* Une tâche peut potentiellement corrompre la
-mémoire d'une autre tâche ou du noyau.]
-
-L'_Interrupt Manager_ de _RTEMS_ illustre ce modèle: les routines de service
-d'interruption (ISR) sont directement accessibles par toutes les tâches sans
-barrière de privilège @rtems_interrupt_background. Les ISR s'exécutant au niveau
-des interruptions non masquables (NMI) ne doivent jamais émettre d'appels
-système _RTEMS_.
-
-Pour les architectures disposant d'une _MPU_ (_Memory Protection Unit_), _RTEMS_
-propose un support optionnel permettant de définir des régions mémoire protégées
-@rtems_mpu_gedare. Contrairement à une _MMU_, une _MPU_ ne supporte pas la
-mémoire virtuelle mais permet de restreindre l'accès à certaines régions sur une
-base par tâche, offrant ainsi une protection basique contre les corruptions
-mémoire accidentelles.
-
-=== Partitionnement temporel <rtems_time_partitioning>
-
-Il est distribué avec quatre ordonnanceurs différents:
+_RTEMS_ est distribué avec quatre ordonnanceurs différents:
 - #box[_Deterministic Priority Scheduler_ est un ordonnanceur préemptif basé
 sur des niveaux de priorités (jusqu'à 256 niveaux). Il offre de très bonnes
 performances mais il peut requérir trop de mémoire pour les configurations
@@ -2980,34 +2975,24 @@ il dispose de plusieurs ordonnanceurs préemptifs couvrant différents cas d'usa
 _RTEMS_ offrent des ordonnanceurs pour monoprocesseur et pour multiprocesseur
 de type @smp. En @smp, tous les ordonnanceurs sont basées sur des priorités.
 
-=== Draft
-
-(TODO: vérifier)
-
-_RTEMS_ est un _RTOS_ ce qui signifie qu'il a été conçu pour avoir un
-comportement déterministe. Il dispose d'un ordonnanceur préemptif basé
-sur des priorités. Une tâche préempte immédiatement
-une éventuelle autre tâche de plus faible priorité. Son ordonnanceur
-propose deux modes de fonctionnement. Le mode _RMS_ (_Rate Monotonic Scheduling_)
-avec des priorités statiques basée sur des périodes. La tâche avec la période
-la plus courte est la plus prioritaire. L'autre mode est _EDF_ (_Earliest Deadline
-First_). Cette fois c'est la tâche avec l'échéance la plus proche qui reçoit la plus
-haute priorité. Les temps de latence sont courts et connus.
-
-Le premier scheduler est plutôt appelé un _Deterministic Priority Scheduler_. D'après
-la documentation il est plutôt approprié pour les architectures monoprocesseur.
-
 == Corruption de la mémoire <rtems_memory_corruption>
 
 _RTEMS_ ne semble pas fournir d'@api unifié pour gérer le _scrubbing_. Le
-support est relatif au @bsp. Il existe une @api pour gérer le _scrubbing_ dans
-le fichier `bsps/include/grlib/memscrub.h`. Ce dernier
+support est donc relatif au @bsp utilisé. Par exemple, il existe une @api pour
+gérer le _scrubbing_ dans le fichier `bsps/include/grlib/memscrub.h`. Ce dernier
 fait parti du @bsp pour les microprocesseurs _LEON_. L'usage du _scrubbing_
 étant rendu nécessaire par le rayonnement inhérent aux missions spatiales,
 il y a fort à parier qu'un tel support est développé dans un @bsp chaque
 fois que celui-ci est utilisé dans une telle mission.
 
-== Perte du flux d'exécution
+== Perte du flux d'exécution <rtems_hijacking_flow>
+
+_RTEMS_ étant principalement écrit en langage _C_, il est exposés aux
+vulnérabilités classiques liées à la corruption de la mémoire afin de
+détourner le flux d'exécution. Nous n'avons pas trouvé de mécanisme de
+protection face à ce type d'attaques dans _RTEMS_. Cette absence s'explique
+par le fait que le noyau n'offre pas d'isolation spatiale forte. Les
+applications s'exécutant dans _RTEMS_ doivent donc être de confiance.
 
 == Écosystème <rtems_ecosystem>
 
@@ -3329,6 +3314,13 @@ proposer d'@api ou de logiciel de journalisation pour les erreurs mémoires.
 Ce support doit être implémenté par pilote en espace utilisateur.
 
 == Perte du flux d'exécution
+
+Bien que le noyau _seL4_ soit écrit en _C_, il est moins exposé aux attaques
+par corruption de mémoire qu'un programme _C_ usuel. En effet, sa vérification
+formelle a permis de prouver l'absence d'un certains nombres d'erreurs de
+programmation @klein2009sel4. Certaines de ces erreurs, comme par exemple
+le dépassement de tampon, sont des vecteurs d'attaques très commun et notamment
+de détournement du flux d'exécution.
 
 == Écosystème <sel4_ecosystem>
 
@@ -3674,40 +3666,6 @@ La plupart des _stub domains_ sont basés sur le système d'exploitation minimal
 _Mini-OS_ @xen_minios, bien que des travaux aient été menés sur des _stub domains_
 basés sur _Linux_.
 
-=== Dom0less <xen_dom0less>
-
-#aside[Qu'est-ce que dom0less?][
-  Le mode #definition[dom0less] est une fonctionnalité Xen permettant de démarrer
-  des machines virtuelles invitées directement depuis l'hyperviseur, sans attendre
-  que le dom0 (domaine de contrôle) soit complètement initialisé. Cela réduit
-  drastiquement le temps de démarrage (de plusieurs secondes à moins d'une seconde)
-  pour les systèmes embarqués et temps-réel où chaque milliseconde compte.
-]
-
-Le mode _dom0less_ est une fonctionnalité de _Xen_ permettant d'accélérer
-significativement le démarrage des domaines @xen_dom0less_doc
-@xen_dom0less_partitioning. Cette optimisation répond à un besoin critique dans
-les systèmes embarqués et temps-réel où le temps de démarrage est déterminant.
-
-Traditionnellement, le démarrage d'un domaine depuis l'initialisation du système
-nécessite plusieurs étapes séquentielles prenant plusieurs secondes:
-1. Démarrage de l'hyperviseur _Xen_
-2. Démarrage du noyau _dom0_
-3. Initialisation de l'espace utilisateur du _dom0_
-4. Disponibilité de l'outil `xl` pour créer les domaines
-
-Avec _dom0less_, _Xen_ démarre les domaines sélectionnés directement depuis
-l'hyperviseur au moment du boot, en parallèle sur différents cœurs physiques.
-Cette approche permet d'obtenir des temps de démarrage sous-secondes pour les
-systèmes temps-réel. Le temps de démarrage total devient approximativement égal
-à: temps_xen + temps_domU, éliminant ainsi le surcoût du démarrage du _dom0_ et
-de son espace utilisateur.
-
-Cette fonctionnalité est particulièrement adaptée aux systèmes à partitionnement
-statique où plusieurs domaines doivent démarrer rapidement lors de l'initialisation
-de l'hôte. Elle s'intègre désormais dans le projet _Hyperlaunch_ qui généralise
-cette approche.
-
 === Partitionnement spatial <xen_partitioning_space>
 
 === Partitionnement temporel <xen_partitioning_time>
@@ -3864,7 +3822,10 @@ les performances des domaines.]
 - #box[_Netdata_ peut être utilisé avec _Xen_.]
 - #box[_Xenoprof_]
 
-== Support de langages de programmation en @baremetal <xen_baremetal>
+== Programmation @baremetal <xen_baremetal>
+
+Il est possible d'exécuter des applications @baremetal dans les domaines
+de _Xen_ pour les langages _C_, _Rust_ et _OCaml_.
 
 Le projet _MirageOS_ a développé un environnement d'exécution complet pour
 le langage de programmation _OCaml_ sur des partitions de type _pvh_.
@@ -3942,8 +3903,9 @@ de souligner que le volume de code varie d'un facteur 10 entre les des
 architectures les mieux supportées, à savoir _x86_ et _ARM_.
 
 Un autre facteur important qui augmente la @tcb est l'usage d'un noyau _Linux_
-dans le _dom0_. La compromission de ce système compromettant tout le système,
-il ne peut en être exclu.
+dans le _dom0_. La compromission de ce noyau compromettant tout le système,
+il ne peut en être exclu. Il est possible de réduire l'influence du _dom0_
+sur la @tcb en utilisant des noyaux personnalisés.
 
 == Licences <xen_licenses>
 
@@ -3955,6 +3917,38 @@ des fichiers concernés. Plus d'informations sont disponibles dans le
 fichier `COPYING` du dépôt git @xen_licensing.
 
 == Temps de démarrage <xen_booting>
+
+#aside[Qu'est-ce que dom0less?][
+  Le mode _dom0less_ est une fonctionnalité _Xen_ permettant de démarrer
+  des machines virtuelles invitées directement depuis l'hyperviseur, sans attendre
+  que le _dom0_ soit complètement initialisé. Cela réduit drastiquement le
+  temps de démarrage (de plusieurs secondes à moins d'une seconde)
+  pour les systèmes embarqués et temps-réel où chaque milliseconde compte.
+]
+
+Le mode _dom0less_ est une fonctionnalité de _Xen_ permettant d'accélérer
+significativement le démarrage des domaines @xen_dom0less_doc
+@xen_dom0less_partitioning. Cette optimisation répond à un besoin critique dans
+les systèmes embarqués et temps-réel où le temps de démarrage est déterminant.
+
+Traditionnellement, le démarrage d'un domaine depuis l'initialisation du système
+nécessite plusieurs étapes séquentielles prenant plusieurs secondes:
+1. Démarrage de l'hyperviseur _Xen_
+2. Démarrage du noyau _dom0_
+3. Initialisation de l'espace utilisateur du _dom0_
+4. Disponibilité de l'outil `xl` pour créer les domaines
+
+Avec _dom0less_, _Xen_ démarre les domaines sélectionnés directement depuis
+l'hyperviseur au moment du boot, en parallèle sur différents cœurs physiques.
+Cette approche permet d'obtenir des temps de démarrage sous-secondes pour les
+systèmes temps-réel. Le temps de démarrage total devient approximativement égal
+à: temps_xen + temps_domU, éliminant ainsi le surcoût du démarrage du _dom0_ et
+de son espace utilisateur.
+
+Cette fonctionnalité est particulièrement adaptée aux systèmes à partitionnement
+statique où plusieurs domaines doivent démarrer rapidement lors de l'initialisation
+de l'hôte. Elle s'intègre désormais dans le projet _Hyperlaunch_ qui généralise
+cette approche.
 
 = XtratuM <xtratum>
 
@@ -4089,7 +4083,7 @@ L'hyperviseur de _XtratuM_ offre un support pour les _OS_ suivants:
 Il a été porté sur _XtratuM_ en 2011 @esquinas2011ork. Il permet le
 développement d'applications en _Ada_ avec le profile _Ravenscar_.]
 
-=== Support de langages de programmation en baremetal <xtratum_baremetal>
+=== Programmation @baremetal <xtratum_baremetal>
 
 Il est possible d'exécuter des applications @baremetal dans les partitions
 de _Xtratum_ à condition d'adapter un @rte du langage
