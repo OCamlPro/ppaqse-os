@@ -2532,7 +2532,7 @@ de _MPU_ et offre en particulier un support pour des architecture @amp. Il suppo
 architectures _ARMv7-R_, _ARMv8-R_ et dispose de @bsp les @mpsoc _NG-Ultra_ et
 _AMD Zynq Ultrascale+_.
 
-== Partitionnement <pikeos_partitioning>
+== Partitionnement en espace <pikeos_space_partitioning>
 
 _PikeOS_ a été conçu pour offrir de solide garantie quant au partitionnement
 en temps et en espace. Sa conception est inspirée de l'_ARINC 653_, une norme
@@ -2544,9 +2544,38 @@ de assistée par le matériel.
 - _HwVirt_ désigne la virtualisation assistée par le matériel.
 - _Pv-virt_ désigne la paravirtualisation.
 
-=== Partitionnement en espace <pikeos_space_partitioning>
 
-=== Partitionnement en temps <pikeos_time_partitioning>
+Le partitionnement spatial est au cœur de l'architecture de _PikeOS_. Son noyau
+de séparation (_separation kernel_) a été conçu pour garantir une isolation
+stricte de la mémoire entre les partitions @pikeos_security_target_v5. Chaque
+partition peut être vue comme un conteneur avec des privilèges pré-alloués pour
+accéder à la mémoire, au temps _CPU_, aux périphériques d'_I/O_ et à une liste
+de services du système d'exploitation.
+
+_PikeOS_ utilise les mécanismes matériels de protection mémoire pour contrôler
+l'accès aux ressources. Le noyau s'appuie sur le @mmu lorsque disponible pour
+créer des espaces d'adressage virtuels isolés. Chaque tâche utilisateur
+s'exécute dans son propre espace d'adressage virtuel, mappé vers les zones de
+mémoire physique disponibles. Cette approche garantit qu'une partition ne peut
+ni lire ni écrire dans la mémoire d'une autre partition @pikeos_wikipedia.
+
+Pour les systèmes embarqués sans @mmu, l'entreprise _SYSGO_ propose
+_PikeOS for MPU_, une édition dédiée aux architectures équipées uniquement d'un
+@mpu. Cette version supporte en particulier les architectures _ARMv7-R_
+(_Cortex-R5_) et _ARMv8-R_ (_Cortex-R52_) avec des @bsp pour différentes
+plateformes dont _NG-Ultra_, _AMD Zynq UltraScale+_ et _QEMU_. Le @mpu permet
+une protection mémoire sans virtualisation d'adresses, ce qui convient aux
+applications temps réel critiques nécessitant un déterminisme maximal.
+
+L'isolation mémoire de _PikeOS_ a fait l'objet d'une vérification formelle au
+niveau du code source @pikeos_memory_separation. La séparation mémoire a été
+prouvée formellement en décomposant les exigences de haut niveau en propriétés
+fonctionnelles du gestionnaire de mémoire, représentées sous forme d'assertions
+vérifiables. Le noyau de séparation _PikeOS 5.1.3_ est certifié _Common Criteria_
+(_ISO/IEC 15408_) _EAL 5+_ pour la cybersécurité, attestant de son niveau élevé
+de sûreté et de sécurité.
+
+== Partitionnement en temps <pikeos_time_partitioning>
 
 _PikeOS_ utilise un ordonnanceur hybride breveté baptisé
 _Adaptive Time-Partitioning Scheduler_ @pikeos_safe_real_time_scheduling. Ce
@@ -2576,10 +2605,14 @@ sur _x86_ @pikeos_windows.]
 
 == Écosystème <pikeos_ecosystem>
 
-Le noyau _PikeOS_ étant propriétaire, son écosystème est centré autour
-de logiciels développés par _SYSGO_ ou certains de ses partenaires
-@pikeos_partenariat. Nous avons pu identifier trois logiciels
-_CODEO_, _RVS_ et _TRACE32_.
+_PikeOS_ est livré avec un ensemble d'outils de développement, incluant
+un @ide, des outils de débogage et de simulation. _SYSGO_ a également
+noué un certain nombre de partenariats avec d'autres entreprises
+pour développer des outils pour _PikeOS_ @pikeos_partenariat. Nous
+avons ainsi pu identifier les outils suivants: _CODEO_, _RVS_ et _TRACE32_.
+
+_PikeOS_ étant propriétare, son écosystème est limité à cette offre
+logicielle.
 
 === _CODEO_
 La société _SYSGO_ propose un @ide baptisé _CODEO_ @pikeos_codeo
@@ -2619,7 +2652,15 @@ supporte _PikeOS_ depuis plus de 15 ans.
 
 == Perte du flux d'exécution <pikeos_flow_hijacking>
 
-
+_PikeOS_ n'utilise pas les contremesures classiques (_ASLR_, _DEP_, _stack
+canaries_, _CFI_) car il adopte une approche de sécurité par isolation
+architecturale via un noyau de séparation certifié _Common Criteria EAL 5+_
+@pikeos_security_target_v5 @pikeos_wikipedia. La protection repose sur:
+- #box[La séparation spatiale et temporelle stricte via des partitions
+  logicielles @pikeos_security_target,]
+- #box[L'utilisation de _MMU_/_MPU_ pour l'isolation matérielle,]
+- #box[Une politique de liste blanche pour la communication inter-partition,]
+- #box[La prévention de propagation d'erreurs entre partitions.]
 
 == _Watchdog_ <pikeos_watchdog>
 
@@ -3278,34 +3319,338 @@ Il y a également un support pour _OpenAMP_.
 
 Quelques projets qui utilisent _seL4_ sur des architectures @amp: @solox_amp_rust.
 
-== Partitionnement
+== Partitionnement spatial <sel4_space_partitioning>
 
-=== Partitionnement spatial
+_seL4_ se distingue par une approche radicale du partitionnement spatial fondée
+sur un modèle de contrôle d'accès à base de capacités (_capabilities_). Toute
+la gestion des ressources mémoire est déléguée au niveau utilisateur, ce qui
+représente une séparation stricte entre mécanisme et politique. Le micronoyau
+fournit uniquement les primitives nécessaires à la manipulation des structures
+de pagination matérielles, laissant aux applications la responsabilité de gérer
+leurs propres espaces d'adressage @sel4_whitepaper @sel4_capabilities.
 
-=== Partitionnement temporel
+==== Modèle à base de capacités
 
-=== Déterminisme <sel4_determinism>
+Dans _seL4_, toute opération sur un objet noyau nécessite l'invocation d'une
+capacité disposant de droits d'accès suffisants. Le système de capacités de
+_seL4_ est une instance d'un système de capacités ségrégé (ou partitionné), où
+les capacités sont gérées par le noyau @sel4_capabilities. Pour protéger les
+objets noyau, _seL4_ combine les capacités pour le contrôle d'accès interne au
+noyau et le @mmu du système pour la protection et l'isolation matérielles. Le
+noyau marque la région mémoire de chaque objet comme protégée dans le @mmu
+@sel4_microkernel_architecture.
+
+Toute la mémoire — qu'elle soit utilisée directement par une application (par
+exemple, les trames mémoire) ou indirectement dans le noyau (par exemple, les
+tables de pages) — est entièrement comptabilisée par des capacités. Il existe
+une correspondance directe entre les capacités possédées par un sous-système et
+la mémoire physique consommée par celui-ci. Toute politique de sécurité imposée
+via une distribution spécifique de capacités dans le système est également
+appliquée en interne dans le noyau pour son allocation de mémoire physique
+@sel4_whitepaper.
+
+==== Mémoire non typée et allocation d'objets noyau
+
+À la différence des systèmes traditionnels, le micronoyau _seL4_ n'alloue pas
+dynamiquement de mémoire pour les objets noyau. Il ne possède pas de tas et
+n'effectue aucune allocation dynamique. Les objets doivent être explicitement
+créés à partir de régions mémoire contrôlées par l'application via des capacités
+de _mémoire non typée_ (_Untyped Memory_) @sel4_untyped @sel4_docs_untyped.
+
+La mémoire non typée représente des blocs contigus de mémoire physique
+actuellement inutilisée. Lors du démarrage, presque toute la mémoire physique
+disponible est transmise à la tâche racine sous forme de capacités de mémoire
+non typée. Ces capacités peuvent être retypées en objets noyau (tels que des
+_threads_, des tables de pages, ou des points d'extrémité de notification)
+accompagnés de capacités vers ces objets, ou subdivisées en capacités de mémoire
+non typée plus petites @sel4_untyped.
+
+Pour chaque capacité de mémoire non typée, le noyau maintient un marqueur
+(_watermark_) enregistrant la quantité de la région qui a été précédemment
+allouée. Lorsqu'un utilisateur demande au noyau de créer de nouveaux objets
+dans une région de mémoire non typée, le noyau alloue les nouveaux objets au
+niveau actuel du marqueur et l'incrémente. Cette approche garantit qu'un
+sous-système ne peut créer des objets noyau qu'à partir de la quantité de
+mémoire non typée qui lui a été attribuée. Les sous-systèmes ne peuvent obtenir
+accès à aucune mémoire physique supplémentaire à l'avenir et sont donc fortement
+séparés spatialement du reste du système @sel4_whitepaper @sel4_docs_untyped.
+
+==== Espaces d'adressage virtuels
+
+Dans le cadre du processus de démarrage, _seL4_ initialise la tâche racine avec
+un objet matériel de mémoire virtuelle de niveau supérieur, appelé _VSpace_.
+Un _VSpace_ décrit l'espace mémoire d'un processus comme une abstraction légère
+au-dessus des tables de pages @sel4_vspace @sel4_docs_mapping.
+
+_seL4_ ne fournit pas de gestion de la mémoire virtuelle au-delà des primitives
+du noyau pour manipuler les structures de pagination matérielles. Les
+applications doivent donc gérer elles-mêmes la création de structures de
+pagination intermédiaires, le mappage et le démappage de pages. Cela implique
+que les _threads_ doivent allouer une trame de mémoire physique, puis la mapper
+dans le répertoire de pages de leur _thread_, et même allouer manuellement des
+tables de pages lorsque nécessaire @sel4_vspace @sel4_docs_mapping. En plus de
+la structure de pagination de niveau supérieur, des objets matériels de mémoire
+virtuelle intermédiaires sont requis pour mapper les pages, créant ainsi une
+hiérarchie de structures de pagination que les applications doivent gérer au
+niveau utilisateur.
+
+==== Support du @mmu
+
+_seL4_ est un noyau généraliste avec contrôle d'accès fin qui supporte le
+matériel équipé d'une @mmu. Le partitionnement des ressources mémoire au niveau
+utilisateur s'étend jusque dans le noyau, ce qui facilite le raisonnement sur
+l'isolation dans un système basé sur _seL4_ @sel4_comparison.
+
+==== Garanties d'isolation et vérification formelle
+
+_seL4_ peut imposer la confidentialité, l'intégrité et la disponibilité en
+utilisant le contrôle d'accès basé sur les capacités, bien que la notion de
+confidentialité ne couvre pas les canaux temporels. Le noyau a prouvé une
+isolation obligatoire entre les sous-systèmes par vérification formelle
+@sel4_verified_protection. Une preuve formelle de correction fonctionnelle a été
+achevée en 2009, garantissant que l'implémentation du noyau est correcte par
+rapport à sa spécification et qu'elle est exempte de bogues d'implémentation tels
+que les interblocages, les blocages actifs, les dépassements de tampon, les
+exceptions arithmétiques ou l'utilisation de variables non initialisées
+@sel4_whitepaper.
+
+== Partitionnement temporel <sel4_time_partitioning>
+
+_seL4_ implémente une approche à deux niveaux pour le partitionnement temporel,
+combinant un ordonnanceur hiérarchique basé sur les domaines avec un ordonnanceur
+de threads à priorités @sel4_whitepaper. Cette architecture permet d'obtenir à la
+fois un partitionnement temporel strict au niveau supérieur et de la flexibilité
+au niveau des threads.
+
+=== Ordonnanceur standard
+
+L'ordonnanceur de base de _seL4_ est un ordonnanceur préemptif basé sur les
+priorités avec une politique _round-robin_ pour les threads de même priorité.
+Le noyau supporte 256 niveaux de priorités, allant de 0 à 255, où 255 représente
+la priorité maximale. À chaque tick d'horloge, le noyau sélectionne le _thread_
+de plus haute priorité parmi ceux qui sont prêts à s'exécuter. Lorsque plusieurs
+_threads_ de même priorité sont prêts, ils sont ordonnancés selon une politique
+_round-robin_ avec des tranches de temps (_timeslices_) configurables
+@sel4_whitepaper @sel4_threads_tutorial.
+
+Le noyau alloue le temps _CPU_ en quanta de temps fixes appelés _ticks_. Chaque
+_thread_ possède un champ _timeslice_ qui représente le nombre de _ticks_ durant
+lesquels le _thread_ peut s'exécuter avant d'être préempté. Le pilote de timer
+du noyau est configuré pour générer des interruptions périodiques qui marquent
+chaque _tick_.
+
+=== Ordonnancement hiérarchique par domaines
+
+_seL4_ fournit un ordonnanceur hiérarchique de haut niveau qui permet
+l'ordonnancement statique et cyclique de partitions d'ordonnancement appelées
+_domaines_. Les domaines sont configurés statiquement lors de la compilation
+avec un ordonnancement cyclique et sont non préemptibles, ce qui garantit un
+ordonnancement entièrement déterministe des domaines @sel4_whitepaper.
+
+Cette approche à deux niveaux fonctionne de la façon suivante:
+- #box[Au niveau supérieur, les domaines sont ordonnancés de manière cyclique
+selon un planning déterministe et fixe. Chaque domaine reçoit une tranche de
+temps allouée durant laquelle tous ses _threads_ peuvent s'exécuter.]
+- #box[Au sein d'un domaine, les _threads_ sont ordonnancés selon le mécanisme
+de priorités décrit précédemment.]
+
+Les _threads_ ne peuvent être ordonnancés que lorsque leur domaine est actif.
+Les communications @ipc entre domaines sont différées jusqu'au prochain
+basculement de domaine, et l'appel système `seL4_Yield` n'est pas possible
+entre domaines différents.
+
+=== Extensions mcs (_Mixed-Criticality System_) <sel4_mcs>
+
+Les extensions mcs (_Mixed-Criticality System_) de _seL4_ introduisent le
+concept de contexte d'ordonnancement (_scheduling context_) qui offre une
+isolation temporelle renforcée et des garanties temps réel plus strictes
+@lyons2018scheduling. Ces extensions sont actuellement en cours de vérification
+formelle @sel4_mcs_release.
+
+==== Contextes d'ordonnancement
+
+Un contexte d'ordonnancement est un nouvel objet noyau qui contient les
+paramètres d'ordonnancement, notamment un budget et une période. Ces paramètres
+représentent une borne supérieure sur le temps d'exécution alloué: le noyau
+garantit qu'un _thread_ ne peut pas s'exécuter plus de _budget_ microsecondes
+sur une période de _period_ microsecondes @sel4_mcs_tutorial.
+
+Il existe deux types de contextes d'ordonnancement:
+- #box[_Contextes complets_ (_Full scheduling contexts_): lorsque le budget
+est égal à la période, le contexte accorde un accès à 100% du temps _CPU_.
+Le contexte agit alors comme une simple tranche de temps et le _thread_ auquel
+il est lié est traité en _round-robin_.]
+- #box[_Contextes partiels_ (_Partial scheduling contexts_): lorsque le budget
+est inférieur à la période, le contexte limite l'accès au _CPU_
+proportionnellement au ratio budget/période. Par exemple, un contexte avec un
+budget de 900 000 microsecondes et une période de 1 000 000 microsecondes accorde
+environ 90% du temps processeur.]
+
+==== Isolation temporelle par serveur sporadique
+
+L'isolation temporelle est assurée par une implémentation de l'algorithme de
+serveur sporadique (_sporadic server_) @lyons2018scheduling. Pour les contextes
+partiels, _seL4_ impose la borne supérieure d'exécution en garantissant la
+contrainte de fenêtre glissante: durant toute période, le budget ne peut pas
+être dépassé.
+
+Le suivi du budget est réalisé en suivant le budget éligible en morceaux appelés
+_replenishments_ (ou _refills_ dans l'@api). Un _replenishment_ est simplement
+une quantité de temps accompagnée d'un horodatage à partir duquel ce temps peut
+être consommé @sel4_mcs_tutorial. Lorsqu'un _thread_ se bloque ou cède
+volontairement le processeur, le noyau programme de nouveaux _replenishments_
+pour les périodes futures tout en déduisant le temps consommé des allocations
+actuelles.
+
+==== Comportement de l'ordonnanceur
+
+L'ordonnanceur mcs sélectionne le _thread_ de plus haute priorité, non bloqué,
+avec un contexte d'ordonnancement configuré disposant d'un budget disponible.
+Le comportement de base de l'ordonnanceur reste similaire à la version standard:
+l'ordonnancement basé sur les priorités est conservé tout en imposant des
+contraintes temporelles strictes.
+
+==== Serveurs passifs et donation de contexte
+
+Les extensions mcs permettent également le partage de ressources à la manière
+des rpc. Les serveurs peuvent devenir "passifs" en se déliant de leur contexte
+d'ordonnancement, ce qui permet aux _threads_ clients de donner (_donate_) leur
+contexte d'ordonnancement durant les appels de procédure à distance.
+
+== Déterminisme <sel4_determinism>
+
+Le noyau _seL4_ se distingue par une approche originale pour garantir un bon niveau de
+déterminisme. Alors que la majorité des @rtos privilégient un noyau entièrement
+préémptible afin de minimiser la latence, _seL4_ adopte une approche
+événementielle largement non préemptible.
+
+Un autre aspect intéressant est que _seL4_ a fait l'objet d'une analyse
+approfondie du @wcet @blackham2011timing @sewell2016complete. Cette analyse
+fournit une estimation
+formellement vérifiée du temps d'exécution de l'ensemble des routines du
+micronoyau. Il semble que _seL4_ soit à ce jour le seul noyau en mode protégé
+disposant d'une analyse @wcet complète et vérifiée formellement.
+
+Nous approfondissons ces deux aspects dans les sous-sections suivantes.
+
+=== Approche événementielle
+
+Le noyau _seL4_ s'exécute avec les interruptions matérielles désactivées. C'est
+une approche héritée de la famille des noyaux _L4_ qui simplifie à la fois la
+conception en éliminant la concurrence au sein du noyau et simplifie
+sa vérification formelle. La désactivation des interruptions implique que le
+noyau n'est pas préemptible puisque l'ordonnanceur de tâche ne peut être
+invoqué via une interruption matérielle programmée.
+
+Pour qu'un tel noyau fournisse de bonnes garanties temps réel, il est impératif
+que les appels systèmes aient un temps d'exécution borné. Pour que la latence
+soit faible, il faut que ces appels soient aussi court que possible. Le noyau
+_seL4_ fournit de telles garanties en évitant les boucles infinies et
+l'allocation dynamique. Lorsqu'il n'est pas possible de borner un appel système,
+des point d'interruption sont introduits manuellement afin de permettre au
+noyau de suspendre la tâche.
+
+=== Analyse du @wcet
+
+DRAFT
+
+=== Analyse @wcet formellement vérifiée
 
 En plus de disposer d'un ordonnanceur déterministe, _seL4_ a fait l'objet
-d'une analyse de son @wcet approfondi @blackham2011timing @sewell2016complete.
+d'une analyse de son @wcet approfondie @blackham2011timing @sewell2016complete.
 Autrement dit, pour un certain nombre de configurations, on dispose d'une
 estimation vérifiée du temps d'exécution de toutes les routines du micronoyau.
+_seL4_ est à ce jour le seul noyau en mode protégé disposant d'une analyse
+@wcet complète et rigoureuse.
+
+Cette analyse a été réalisée sur l'architecture _ARM11_ et a produit des bornes
+supérieures certifiées pour tous les appels système. Les résultats montrent que
+la borne supérieure sûre est environ quatre fois le pire temps observé
+expérimentalement. Cette estimation conservative s'explique principalement par
+la modélisation des caches: le processeur _ARM11_ dispose d'un cache L1 à 4
+voies avec remplacement aléatoire, et une analyse sûre de la résidence en cache
+nécessite de le modéliser comme un cache à correspondance directe d'un quart de
+capacité.
+
+L'approche la plus aboutie exploite le cadre de validation de traduction de
+_seL4_ pour lier formellement le binaire (sujet de l'analyse @wcet) à
+l'environnement _C_ riche en sémantique et à tous les théorèmes et invariants
+prouvés sur le code _C_ dans le contexte de la preuve de correction
+fonctionnelle.
+
 Toutefois cette analyse a été faite sur ARMv6 et ARM ne fournit pas les
 informations nécessaires pour réitérer cette analyse sur les nouvelles
-architectures. Il semble qu'il y ait un projet pour une telle analyse sur
-_RISC-V_.
+architectures. Cette limitation est problématique car _ARM_ reste l'architecture
+de référence pour _seL4_ du fait de son omniprésence dans l'embarqué. Il semble
+qu'il y ait un projet pour une telle analyse sur _RISC-V_, dont les
+spécifications ouvertes facilitent ce type d'analyse.
+
+=== Approche événementielle non préemptible
 
 Le noyau tourne avec les interruptions matérielles désactivées. Ce choix
-simplifie grandement la conception et la vérification formelle.
+simplifie grandement la conception et la vérification formelle. Cette décision
+de conception, héritée des premiers micronoyaux de la famille _L4_, offre
+plusieurs avantages significatifs:
+- #box[Simplification de l'implémentation du noyau en éliminant la nécessité de
+gérer la concurrence interne,]
+- #box[Facilitation de la vérification formelle en réduisant l'espace des états
+possibles,]
+- #box[Amélioration des performances en cas moyen en évitant les coûts liés à la
+sauvegarde et restauration de contexte lors d'interruptions imbriquées.]
+
+Le modèle événementiel évite également la complexité de la suspension d'exécution
+(_yielding_), qui rendrait le raisonnement formel sur la correction beaucoup
+plus difficile. C'est précisément pour cette raison que _seL4_ a adopté cette
+approche: simplifier le raisonnement sur la correction du système.
+
+=== Conception pour borner le temps d'exécution
 
 Les appels systèmes sont généralement courts. Ceux qui sont trop longs sont
-préemptible à des points clés ajoutés par les développeurs.
+préemptibles à des points clés ajoutés par les développeurs. Pour qu'un noyau
+non préemptible puisse offrir de bonnes garanties temps réel, il est essentiel
+que tous les appels système aient un temps d'exécution borné. _seL4_ respecte
+ce principe de conception en:
+- #box[Évitant les boucles non bornées dans le noyau,]
+- #box[Éliminant toute allocation dynamique de mémoire,]
+- #box[Gardant la plupart des appels système courts par conception,]
+- #box[Introduisant des points de préemption explicites dans les rares appels
+système longs, permettant au noyau de suspendre l'opération et de traiter les
+interruptions en attente avant de reprendre.]
+
+Cette architecture garantit que même si les interruptions sont désactivées
+pendant l'exécution dans le noyau, le temps maximal pendant lequel une
+interruption peut être masquée reste borné et raisonnablement court.
+
+=== Garanties temps réel
+
+Les analyses @wcet de _seL4_ permettent d'obtenir des bornes supérieures
+déterministes pour les appels système et les latences d'interruption. Plus
+précisément, _seL4_ fournit un temps de réponse aux interruptions garanti
+d'environ 500 microsecondes sur une plateforme _BeagleBoard-xM_ équipée d'un
+processeur _ARM Cortex-A8_.
+
+Il semblerait qu'être préemptible ne soit pas un prérequis pour offrir de
+faibles latences. Des travaux de recherche ont démontré qu'un noyau largement
+non préemptible peut atteindre des latences d'interruption dans un facteur deux
+de celles d'un noyau entièrement préemptible, tout en offrant des garanties
+formellement vérifiées et une meilleure simplicité conceptuelle.
+
+Les extensions mcs (_Mixed-Criticality System_) décrites dans la sous-section
+@sel4_mcs renforcent encore les capacités temps réel de _seL4_ en introduisant
+des contextes d'ordonnancement avec budgets et périodes. Ces extensions permettent
+une isolation temporelle stricte par l'algorithme de serveur sporadique, offrant
+ainsi des garanties de type temps réel strict (_hard real-time_).
+
+=== Temps réel avec isolation spatiale
 
 Il permet de faire du temps réel tout en ayant l'isolation spatiale, ce qui
-n'est pas le cas de nombreux _RTOS_ (vérifier pour _RTEMS_).
-
-Il semblerait qu'être préemptible ne soit pas un prérequis pour offrir de faible
-latences!
+n'est pas le cas de nombreux @rtos comme _RTEMS_ (voir la sous-section
+@rtems_space_partitioning). Le système de capacités et le partitionnement spatial
+rigoureux de _seL4_ n'affectent pas ses capacités temps réel, permettant ainsi
+de concevoir des systèmes à criticité mixte avec de fortes garanties de sécurité
+et de sûreté. Cette combinaison unique de déterminisme temporel et d'isolation
+spatiale fait de _seL4_ un choix particulièrement adapté pour les systèmes
+critiques à criticité mixte.
 
 == Corruption de la mémoire <sel4_memory_corruption>
 
@@ -3339,6 +3684,97 @@ embarqué via une interface série _UART_,]
 registres @pmu.]
 
 == Gestion des interruptions <sel4_interrupt_managing>
+
+=== Masquage des interruptions <sel4_interrupt_masking>
+
+Comme évoqué dans la sous-section @sel4_determinism, le noyau _seL4_
+adopte une approche radicalement différente de la plupart des systèmes
+d'exploitation : il s'exécute avec les interruptions matérielles désactivées
+@sel4_interrupts. Cette décision de conception, héritée de la famille des
+micronoyaux _L4_, simplifie drastiquement la vérification formelle du noyau
+en éliminant la concurrence au sein de l'espace noyau.
+
+Pour qu'un noyau non préemptible offre de bonnes garanties temps réel, tous
+les appels système doivent avoir un temps d'exécution borné. _seL4_ respecte
+cette contrainte en évitant les boucles non bornées et toute allocation
+dynamique de mémoire. Pour les rares appels système longs, des points de
+préemption explicites permettent au noyau de suspendre temporairement
+l'opération afin de traiter les interruptions en attente.
+
+Cette approche garantit que le temps maximal pendant lequel une interruption
+peut être masquée reste borné. Les analyses du @wcet de _seL4_ @blackham2011timing
+@sewell2016complete montrent qu'un temps de réponse aux interruptions d'environ
+500 microsecondes peut être atteint sur une plateforme _BeagleBoard-xM_
+équipée d'un processeur _ARM Cortex-A8_.
+
+=== Gestion des interruptions en espace utilisateur
+
+_seL4_ gère les interruptions via son système de _capabilities_ @sel4_interrupts.
+La tâche racine reçoit au démarrage la _capability_ `seL4_CapIRQControl`,
+une capacité unique et non duplicable permettant de dériver des _capabilities_
+pour tous les numéros d'@irq du système. Cette capacité peut toutefois être
+transférée entre espaces de capacités (_CSpace_).
+
+À partir de `seL4_CapIRQControl`, il est possible de créer des _capabilities_
+`IRQHandler` pour des numéros d'@irq spécifiques. Contrairement à
+`IRQControl`, les `IRQHandler` peuvent être dupliqués et déplacés selon
+la politique du système. Les invocations pour obtenir ces _capabilities_
+dépendent de l'architecture : _x86_ supporte `GetIOAPIC` et `GetMSI`,
+tandis qu'_ARM_ supporte `GetTrigger`.
+
+Les interruptions sont reçues par les applications en associant un objet de
+notification (_notification_) à un `IRQHandler` via l'invocation
+`seL4_IRQHandler_SetNotification`. Lors d'une interruption matérielle, _seL4_
+délivre un signal à l'objet notification associé. Pour différencier plusieurs
+sources d'interruptions, le système utilise le _badging_ : le badge de la
+_capability_ notification liée à chaque `IRQHandler` est combiné en OU logique
+avec le mot de données de la notification.
+
+_seL4_ implémente un mécanisme de masquage implicite : le micronoyau ne
+livrera aucune interruption supplémentaire après qu'une @irq soit levée
+jusqu'à ce que l'`IRQHandler` correspondant ait été acquitté via l'invocation
+`seL4_IRQHandler_Ack`. Ce mécanisme garantit qu'une même interruption ne peut
+être délivrée plusieurs fois avant d'avoir été traitée.
+
+Les applications peuvent attendre ou sonder les interruptions respectivement
+avec `seL4_Wait` ou `seL4_Poll`, qui délivrent le mot de données de l'objet
+notification comme badge du message.
+
+=== Virtualisation des interruptions
+
+Pour les scénarios de virtualisation, _seL4_ exploite les extensions matérielles
+de virtualisation des interruptions lorsqu'elles sont disponibles. Sur les
+architectures _ARM_ équipées de _KernelArmHypervisorSupport_, le micronoyau
+tire parti du _VGIC_ (_Virtual Generic Interrupt Controller_), qui permet
+l'injection d'interruptions virtuelles dans les machines virtuelles sans
+piégeage systématique vers l'hyperviseur.
+
+Actuellement, _seL4_ supporte le _GICv2_ virtuel. Le support du _GICv3_ virtuel
+est en cours de développement @sel4_interrupts. Le _VGIC_ matériel permet aux
+machines virtuelles d'acquitter et de compléter des interruptions virtuelles
+directement, sans intervention de l'hyperviseur, améliorant ainsi les
+performances.
+
+Pour les interruptions _PPI_ (_Private Peripheral Interrupts_) virtuelles,
+notamment les interruptions de timer virtuel, _seL4_ utilise un mécanisme
+de _fault_. Ces interruptions sont délivrées aux _VCPU_ via des faults de
+type `seL4_Fault_VPPIEvent` et doivent être acquittées par l'invocation
+`seL4_ARM_VCPU_AckVPPI` sur l'objet _VCPU_ concerné. Le noyau peut suivre
+l'état des @irq pour chaque _VCPU_ et délivrer les événements d'interruption
+comme des faults du _VCPU_.
+
+La bibliothèque `libsel4vm` fournit une interface de plus haut niveau pour
+la virtualisation des interruptions. Elle offre notamment les fonctions
+`vm_inject_irq` pour injecter une interruption dans le contrôleur d'une
+machine virtuelle, `vm_set_irq_level` pour ajuster le niveau du signal
+d'interruption, et `vm_register_irq` pour associer des callbacks
+d'acquittement à des interruptions spécifiques.
+
+Sur _x86_, les mécanismes diffèrent : les interruptions _MSI_ (_Message Signaled
+Interrupts_) peuvent être obtenues via `seL4_IRQControl_GetMSI`. Toutefois,
+contrairement à _ARM_, il n'est généralement pas possible d'obtenir deux
+gestionnaires _IOAPIC_ pour la même @irq, ce qui peut compliquer le partage
+d'interruptions entre machines virtuelles.
 
 == Watchdog <sel4_watchdog>
 
@@ -4468,8 +4904,51 @@ Pour les OS open-sources, nous avons utilisé l'outil `SLOCCount`@sloccount_webs
 //   caption: [Interfaces de pilotage pour le _scrubbing_],
 // ) <scrubbing_interfaces>
 
+== OS invités supportés par hyperviseur <guest_os_support>
 
+Le tableau @guest_os_by_hypervisor récapitule les systèmes d'exploitation
+invités supportés par les différents hyperviseurs étudiés dans ce document.
 
+#figure(
+  table(
+    columns: (auto, auto),
+    align: (left, left),
+    [*Hyperviseur*], [*OS invités supportés*],
+    [KVM],
+    [
+      - GNU/Linux (toutes distributions majeures)
+      - Windows
+      - BSD (FreeBSD, OpenBSD, NetBSD)
+      - Solaris
+    ],
+    [PikeOS],
+    [
+      - ELinOS (distribution Linux embarqué temps réel de SYSGO)
+      - RTEMS
+      - Systèmes conformes POSIX (Linux, Android)
+      - Windows (dans partitions HVM sur x86)
+    ],
+    [ProvenVisor],
+    [
+      - Information non disponible dans la documentation consultée
+    ],
+    [Xen],
+    [
+      - GNU/Linux (nombreuses distributions)
+      - Noyaux de type UNIX
+      - Windows (via HVM)
+      - BSD
+    ],
+    [XtratuM],
+    [
+      - LithOS (RTOS conforme ARINC-653, développé par fentISS)
+      - RTEMS
+      - Linux
+      - ORK+ (Open Ravenscar Kernel, micronoyau temps réel pour Ada)
+    ],
+  ),
+  caption: [OS invités supportés par hyperviseur]
+) <guest_os_by_hypervisor>
 
 #glossary(
   title: "Glossaire",
