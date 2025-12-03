@@ -32,7 +32,7 @@ watch:
 # Open the PDF
 .PHONY: open
 open: $(OUTPUT)
-	$(PDF_VIEWER) $(OUTPUT)
+	$(PDF_VIEWER) $(OUTPUT) &
 
 # Build and open
 .PHONY: view

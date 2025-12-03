@@ -3319,100 +3319,55 @@ Il y a également un support pour _OpenAMP_.
 
 Quelques projets qui utilisent _seL4_ sur des architectures @amp: @solox_amp_rust.
 
-== Partitionnement spatial <sel4_space_partitioning>
+== Les capacités <sel4_capabilities_sec>
 
-_seL4_ se distingue par une approche radicale du partitionnement spatial fondée
-sur un modèle de contrôle d'accès à base de capacités (_capabilities_). Toute
-la gestion des ressources mémoire est déléguée au niveau utilisateur, ce qui
-représente une séparation stricte entre mécanisme et politique. Le micronoyau
-fournit uniquement les primitives nécessaires à la manipulation des structures
-de pagination matérielles, laissant aux applications la responsabilité de gérer
-leurs propres espaces d'adressage @sel4_whitepaper @sel4_capabilities.
+Une particularité importante de la conception de _seL4_ au sein de la famille
+des noyaux _L4_ est l'utilisation de capacités (_capabilities_) pour rendre
+compte des droits d'accès.
 
-==== Modèle à base de capacités
+Les capacités sont des jetons donnant à leur possesseur des droits d'accès à
+des ressources du systèmes @sel4_capabilities. De façon plus concrète, une
+capacité se présente sous la forme d'un pointeur immutable qui
+combine un objet du noyau et des informations de contrôle d'accès. La possession
+d'une capacité constitue en elle-même l'autorisation d'accès à la ressource
+associée. Ainsi, une capacité adéquate doit être passée à chaque appel système
+afin que le micronoyau accepte de l'exécuter.
 
-Dans _seL4_, toute opération sur un objet noyau nécessite l'invocation d'une
-capacité disposant de droits d'accès suffisants. Le système de capacités de
-_seL4_ est une instance d'un système de capacités ségrégé (ou partitionné), où
-les capacités sont gérées par le noyau @sel4_capabilities. Pour protéger les
-objets noyau, _seL4_ combine les capacités pour le contrôle d'accès interne au
-noyau et le @mmu du système pour la protection et l'isolation matérielles. Le
-noyau marque la région mémoire de chaque objet comme protégée dans le @mmu
-@sel4_microkernel_architecture.
+À chaque tâche (_thread_) est associée un ensemble de capacités (_CSpace_ pour
+_Capability-Space_) qui représente les ressources accessibles de la tâche.
 
-Toute la mémoire — qu'elle soit utilisée directement par une application (par
-exemple, les trames mémoire) ou indirectement dans le noyau (par exemple, les
-tables de pages) — est entièrement comptabilisée par des capacités. Il existe
-une correspondance directe entre les capacités possédées par un sous-système et
-la mémoire physique consommée par celui-ci. Toute politique de sécurité imposée
-via une distribution spécifique de capacités dans le système est également
-appliquée en interne dans le noyau pour son allocation de mémoire physique
-@sel4_whitepaper.
+Il existe plusieurs types de capacités. Certaines représentes des structures
+de données du noyau ou encore des ressources abstraites. D'autres représentent
+des zones mémoires contiguës inutilisées @sel4_tutorial_capabilities.
 
-==== Mémoire non typée et allocation d'objets noyau
+== Partitionnement spatial <sel4_spatial_partitioning>
 
-À la différence des systèmes traditionnels, le micronoyau _seL4_ n'alloue pas
-dynamiquement de mémoire pour les objets noyau. Il ne possède pas de tas et
-n'effectue aucune allocation dynamique. Les objets doivent être explicitement
-créés à partir de régions mémoire contrôlées par l'application via des capacités
-de _mémoire non typée_ (_Untyped Memory_) @sel4_untyped @sel4_docs_untyped.
+Le micronoyau _seL4_ se distingue par une approche radicalement différente pour
+le partitionnement spatial. Habituellement, la gestion de la mémoire est
+effectuée en @kernelspace. Une tâche en @userspace n'a pas accès à la mémoire
+physique et effectue des allocations dynamiques via des appels systèmes sans
+pouvoir décider de l'agencement des zones allouées dans son propre espace
+d'adressage virtuel. À l'inverse l'@api de _seL4_ n'expose que quelques
+primitives pour manipuler les structures de pagination du @mmu, laissant le
+soin aux applications de gérer leur propre espace d'adressage @sel4_whitepaper
+@sel4_capabilities.
 
-La mémoire non typée représente des blocs contigus de mémoire physique
-actuellement inutilisée. Lors du démarrage, presque toute la mémoire physique
-disponible est transmise à la tâche racine sous forme de capacités de mémoire
-non typée. Ces capacités peuvent être retypées en objets noyau (tels que des
-_threads_, des tables de pages, ou des points d'extrémité de notification)
-accompagnés de capacités vers ces objets, ou subdivisées en capacités de mémoire
-non typée plus petites @sel4_untyped.
+Le mécanisme des capacités assure l'isolation mémoire entre les tâches. Il y
+a une correspondance biunivoque entre la mémoire utilisée par une tâche A et
+les capacités qu'elle possède pour manipuler cette mémoire. Une autre tâche B
+ne peut accéder à une certaine plage mémoire de A sans posséder également cette
+capacité. Ainsi chaque tâche peut implémenter sa propre politique de gestion de
+la mémoire. Cette propriété a été formellement vérifiée
+@sel4_verified_protection.
 
-Pour chaque capacité de mémoire non typée, le noyau maintient un marqueur
-(_watermark_) enregistrant la quantité de la région qui a été précédemment
-allouée. Lorsqu'un utilisateur demande au noyau de créer de nouveaux objets
-dans une région de mémoire non typée, le noyau alloue les nouveaux objets au
-niveau actuel du marqueur et l'incrémente. Cette approche garantit qu'un
-sous-système ne peut créer des objets noyau qu'à partir de la quantité de
-mémoire non typée qui lui a été attribuée. Les sous-systèmes ne peuvent obtenir
-accès à aucune mémoire physique supplémentaire à l'avenir et sont donc fortement
-séparés spatialement du reste du système @sel4_whitepaper @sel4_docs_untyped.
+Au démarrage la majorité des capacités sont confiées à une tâche spéciale _root_.
+Cette tâche peut en créer des nouvelles et leur céder une partie de ses
+capacités. Ce système est rendu possible par l'absence d'allocation dynamique et
+facilite également la vérification formelle.
 
-==== Espaces d'adressage virtuels
-
-Dans le cadre du processus de démarrage, _seL4_ initialise la tâche racine avec
-un objet matériel de mémoire virtuelle de niveau supérieur, appelé _VSpace_.
-Un _VSpace_ décrit l'espace mémoire d'un processus comme une abstraction légère
-au-dessus des tables de pages @sel4_vspace @sel4_docs_mapping.
-
-_seL4_ ne fournit pas de gestion de la mémoire virtuelle au-delà des primitives
-du noyau pour manipuler les structures de pagination matérielles. Les
-applications doivent donc gérer elles-mêmes la création de structures de
-pagination intermédiaires, le mappage et le démappage de pages. Cela implique
-que les _threads_ doivent allouer une trame de mémoire physique, puis la mapper
-dans le répertoire de pages de leur _thread_, et même allouer manuellement des
-tables de pages lorsque nécessaire @sel4_vspace @sel4_docs_mapping. En plus de
-la structure de pagination de niveau supérieur, des objets matériels de mémoire
-virtuelle intermédiaires sont requis pour mapper les pages, créant ainsi une
-hiérarchie de structures de pagination que les applications doivent gérer au
-niveau utilisateur.
-
-==== Support du @mmu
-
-_seL4_ est un noyau généraliste avec contrôle d'accès fin qui supporte le
-matériel équipé d'une @mmu. Le partitionnement des ressources mémoire au niveau
-utilisateur s'étend jusque dans le noyau, ce qui facilite le raisonnement sur
-l'isolation dans un système basé sur _seL4_ @sel4_comparison.
-
-==== Garanties d'isolation et vérification formelle
-
-_seL4_ peut imposer la confidentialité, l'intégrité et la disponibilité en
-utilisant le contrôle d'accès basé sur les capacités, bien que la notion de
-confidentialité ne couvre pas les canaux temporels. Le noyau a prouvé une
-isolation obligatoire entre les sous-systèmes par vérification formelle
-@sel4_verified_protection. Une preuve formelle de correction fonctionnelle a été
-achevée en 2009, garantissant que l'implémentation du noyau est correcte par
-rapport à sa spécification et qu'elle est exempte de bogues d'implémentation tels
-que les interblocages, les blocages actifs, les dépassements de tampon, les
-exceptions arithmétiques ou l'utilisation de variables non initialisées
-@sel4_whitepaper.
+À notre connaissance, _seL4_ nécessite la présence d'un @mmu complet pour
+fonctionner car son modèle mémoire repose entièrement sur la possibilité de
+virtualiser la mémoire physique.
 
 == Partitionnement temporel <sel4_time_partitioning>
 
@@ -3818,22 +3773,6 @@ Le _seL4 Microkit_ offre également une @api pour les langages _C_ et _Rust_
 
 Lorsqu'il est utilisé en tant qu'hyperviseur, _seL4_ s'exécute dans le mode
 d'exécution _hyperviseur_.
-
-=== Capabilities
-
-Les #definition[capabilities] de _seL4_ sont des jetons donnant à leur
-possesseur des droits d'accès à une ressource spécifique. Il existe trois types
-de _capabilities_:
-- #box[Les _capabilities_ donnant accès à des objets du noyau comme le
-_thread control block_. Ces _capabilities_ sont donnés à la tâche _root_ durant
-l'initialisation du système.]
-- #box[Les _capabilities_ donnant accès à des ressources abstraitres comme _IRQControl_.]
-- #box[Les _capabilities untyped_.]
-
-De façon plus concrète, les _capabilities_ se présentent sous la forme de
-pointeurs constants contenant des informations supplémentaires pour encoder les
-droits d'accès. Disposer d'un tel pointeur est la seule façon d'accéder à la
-ressource qu'il pointe.
 
 == Vérifications formelles <sel4_formal_verification>
 
