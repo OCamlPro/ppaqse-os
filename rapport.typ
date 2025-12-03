@@ -679,8 +679,14 @@ De façon générale un ordonnanceur de @gpos cherche à maximiser le débit et 
 équitable, tandis qu'un ordonnanceur temps réel cherche plutôt à être
 déterministe et à minimiser la latence.
 
-Pour chacun des systèmes étudiés, nous avons donc descrit les ordonnanceurs
-disponibles.
+Pour chacun des systèmes étudiés, nous avons donc décrit les ordonnanceurs
+disponibles. On examinera en particulier la présence de politiques
+d'ordonnancement temps réel parmi la liste suivante:
+- _Fixed-priority_
+- _Rate Monotonic_
+- _Deadline Monotonic_
+- _Earliest Deadline First_
+- _Round Robin_
 
 ==== Déterminisme <determinism_criteria>
 
@@ -1074,7 +1080,7 @@ statique allant de 0 à 99. Les _threads_ d'un même processus possèdent la mê
 priorité au lancement d'un processus. La politique et la priorité d'une tâche
 peuvent être changée via une @api ou une ligne de commande _POSIX_.
 
-À l'heure actuel _Linux_ implémente six politiques d'ordonnancement, trois
+À l'heure actuelle _Linux_ implémente six politiques d'ordonnancement, trois
 temps réel _SCHED_FIFO_, _SCHED_RR_, _SCHED_DEADLINE_ et trois normales
 _SCHED_OTHER_, _SCHED_BATCH_ et _SCHED_IDLE_. Les trois politiques
 _SCHED_OTHER_, _SCHED_FIFO_ et _SCHED_RR_ font en fait
@@ -3337,8 +3343,9 @@ afin que le micronoyau accepte de l'exécuter.
 _Capability-Space_) qui représente les ressources accessibles de la tâche.
 
 Il existe plusieurs types de capacités. Certaines représentes des structures
-de données du noyau ou encore des ressources abstraites. D'autres représentent
-des zones mémoires contiguës inutilisées @sel4_tutorial_capabilities.
+de données du noyau ou encore des ressources abstraites, tandis que d'autres
+représentent des zones mémoires contiguës inutilisées
+@sel4_tutorial_capabilities.
 
 == Partitionnement spatial <sel4_spatial_partitioning>
 
@@ -4043,6 +4050,79 @@ basés sur _Linux_.
 
 === Partitionnement spatial <xen_partitioning_space>
 
+L'hyperviseur _Xen_ assure l'isolation mémoire entre les domaines en s'appuyant
+sur plusieurs techniques de gestion de la mémoire qui varient selon le type de
+virtualisation utilisé et les capacités matérielles disponibles. L'objectif
+principal est de garantir qu'aucun domaine ne puisse accéder à la mémoire d'un
+autre domaine sans autorisation explicite, tout en maintenant des performances
+acceptables.
+
+Pour les domaines paravirtualisés, _Xen_ a introduit une technique innovante
+baptisée _direct paging_ @xen_paravirt_memory. Dans ce modèle, le système
+d'exploitation invité est conscient de la distinction entre les adresses
+physiques (_machine addresses_) réelles et les adresses pseudo-physiques qu'il
+manipule. Les tables de pages du système invité mappent directement les adresses
+virtuelles vers les adresses machines physiques. Cependant, pour maintenir les
+invariants de sécurité, _Xen_ impose que toutes les mises à jour des tables de
+pages passent par des hypercalls tels que `HYPERVISOR_update_va_mapping` et
+`HYPERVISOR_mmuext_op`. Ces hypercalls permettent à _Xen_ de vérifier que chaque
+domaine ne modifie que les pages qui lui appartiennent et ne crée pas de
+mappages de pages de tables inscriptibles. Le système d'exploitation invité
+dispose d'un accès en lecture seule aux véritables tables de pages mais doit
+obligatoirement utiliser ces hypercalls pour toute modification.
+
+Pour les domaines HVM (_Hardware Virtual Machine_) qui exécutent des systèmes
+d'exploitation non modifiés, _Xen_ peut utiliser deux approches selon les
+capacités du processeur. Sur les processeurs plus anciens sans support matériel
+de virtualisation mémoire, _Xen_ utilise des _shadow page tables_. Cette
+technique consiste à maintenir dans l'hyperviseur des copies des tables de pages
+des invités qui traduisent directement les adresses virtuelles invitées vers les
+adresses machines physiques. Chaque modification des tables de pages par
+l'invité provoque une interception par l'hyperviseur qui met à jour les tables
+fantômes correspondantes. Cette approche impose un coût de performance
+significatif en raison du nombre élevé de sorties _VM_ (_VM exits_) générées.
+
+Sur les processeurs récents équipés de support matériel pour la virtualisation
+mémoire, _Xen_ exploite les fonctionnalités _EPT_ (_Extended Page Tables_) sur
+_Intel_ ou _NPT_ (_Nested Page Tables_) sur _AMD_. Ces technologies implémentent
+une traduction d'adresses en deux étapes : le système invité maintient ses
+propres tables de pages qui traduisent les adresses virtuelles vers les adresses
+pseudo-physiques, puis le matériel utilise une seconde table gérée par
+l'hyperviseur pour traduire les adresses pseudo-physiques vers les adresses
+machines réelles. Cette approche élimine le besoin de maintenir des tables
+fantômes et réduit drastiquement le nombre d'interventions de l'hyperviseur,
+améliorant les performances jusqu'à 48% pour les charges de travail intensives
+en gestion mémoire selon certaines études.
+
+Sur l'architecture _ARM_, _Xen_ s'appuie sur la traduction d'adresses en deux
+étapes (_2-stage translation_) fournie par le matériel depuis _ARMv7_ avec les
+extensions de virtualisation @xen_arm_mmu. Cette fonctionnalité permet à
+l'hyperviseur de contrôler la vue mémoire de chaque invité tout en laissant le
+système d'exploitation invité gérer librement son propre espace d'adressage
+virtuel.
+
+Pour les systèmes critiques nécessitant un partitionnement spatial strict, _Xen_
+propose depuis sa version _4.12_ un mode _dom0less_ qui permet de démarrer
+plusieurs domaines en parallèle directement depuis l'hyperviseur au moment du
+boot, sans intervention du domaine privilégié _dom0_ @xen_dom0less_doc. Cette
+approche facilite la mise en œuvre d'un partitionnement statique où l'ensemble
+du système (invités et communications) est défini statiquement, garantissant un
+comportement déterministe et une cohérence après redémarrage. Chaque domaine
+dispose d'un accès direct au matériel protégé par l'iommu et bénéficie d'une
+isolation stricte vis-à-vis des autres domaines. Des fonctionnalités avancées
+comme le _cache coloring_ peuvent être activées pour assurer un partitionnement
+complet du cache, où chaque machine virtuelle se voit allouer ses propres
+entrées de cache sans partage, permettant ainsi aux applications temps réel
+d'atteindre une latence d'interruption déterministe.
+
+L'isolation mémoire de _Xen_ a été conçue avec une architecture en micronoyau où
+l'hyperviseur lui-même reste minimal et délègue la gestion des pilotes et l'accès
+matériel au domaine privilégié _dom0_. Cette séparation des préoccupations
+renforce la surface d'attaque réduite de l'hyperviseur. Le projet _Xen_ a
+également entrepris un effort de conformité avec les règles _MISRA C_ pour
+faciliter la certification dans les environnements critiques où la sûreté et la
+sécurité sont primordiales @xen_project_4_17_safety.
+
 === Partitionnement temporel <xen_partitioning_time>
 
 _Xen_ offre une abstraction des processeurs physiques appelée _vCPU_ (_Virtual
@@ -4651,6 +4731,109 @@ Pour les OS open-sources, nous avons utilisé l'outil `SLOCCount`@sloccount_webs
   [seL4],        [68 175],        [1 086],          [C (87%)],
   [Xen],         [581 193],       [45 220],         [C (93%)],
   [XtratuM],     [?],             [?],              [C (?)],
+)
+
+== Ordonnanceurs de tâches
+
+Le tableau suivant présente les types d'ordonnanceurs disponibles pour chaque système d'exploitation étudié.
+Les ordonnanceurs temps réel permettent de garantir des contraintes temporelles strictes, tandis que les
+ordonnanceurs équitables cherchent à répartir équitablement le temps CPU entre les tâches.
+
+#table(
+  columns: 10,
+  align: (center, center, center, center, center, center, center, center, center, center),
+  table.header(
+    [OS],
+    [Équitable\ (Fair)],
+    [FIFO],
+    [Round-\ Robin],
+    [Priorité\ fixe],
+    [Deadline/\ EDF],
+    [Budget\ (CBS)],
+    [Hiérarchique/\ Partition\ temporelle],
+    [Cyclique\ statique],
+    [Coopératif]
+  ),
+  [Linux],
+        [Oui#footnote[_CFS_ (_Completely Fair Scheduler_)]],
+        [Oui#footnote[_SCHED\_FIFO_]],
+        [Oui#footnote[_SCHED\_RR_]],
+        [Oui],
+        [Oui#footnote[_SCHED\_DEADLINE_]],
+        [Non],
+        [Non],
+        [Non],
+        [Non],
+  [MirageOS],
+        [Non],
+        [Non],
+        [Non],
+        [Non],
+        [Non],
+        [Non],
+        [Non],
+        [Non],
+        [Oui#footnote[Bibliothèque _Lwt_ pour threads coopératifs]],
+  [PikeOS],
+        [Non],
+        [Non],
+        [Non],
+        [Oui],
+        [Non],
+        [Non],
+        [Oui#footnote[_Adaptive Time-Partitioning Scheduler_ (breveté)]],
+        [Non],
+        [Non],
+  [ProvenVisor],
+        [?],
+        [?],
+        [?],
+        [?],
+        [?],
+        [?],
+        [?],
+        [?],
+        [?],
+  [RTEMS],
+        [Non],
+        [Non],
+        [Non],
+        [Oui#footnote[_Deterministic Priority_ et _Simple Priority_]],
+        [Oui#footnote[_EDF_ (_Earliest Deadline First_)]],
+        [Oui#footnote[_CBS_ (_Constant Bandwidth Server_)]],
+        [Oui#footnote[Ordonnancement en _cluster_]],
+        [Non],
+        [Non],
+  [seL4],
+        [Non],
+        [Non],
+        [Oui#footnote[Pour tâches de même priorité]],
+        [Oui#footnote[256 niveaux de priorité]],
+        [Non],
+        [Non],
+        [Oui#footnote[Ordonnancement par domaines + extensions _MCS_]],
+        [Oui#footnote[Au niveau des domaines]],
+        [Non],
+  [Xen],
+        [Oui#footnote[_Credit Scheduler_ et _Credit2 Scheduler_]],
+        [Non],
+        [Non],
+        [Non],
+        [Oui#footnote[_RTDS_ (_Real-Time Deferrable Server_)]],
+        [Non],
+        [Non],
+        [Non],
+        [Non],
+  [XtratuM],
+        [Non],
+        [Non],
+        [Non],
+        [Non],
+        [Non],
+        [Non],
+        [Oui#footnote[Chaque partition a son propre ordonnanceur]],
+        [Oui#footnote[Ordonnancement cyclique statique _ARINC-653_]],
+        [Non],
 )
 
 // = Conceptions générales
