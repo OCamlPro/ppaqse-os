@@ -9,6 +9,18 @@
   show-progress: true,
 )
 
+#let frame(stroke) = (x, y) => (
+  left: if x > 0 { 0pt } else { stroke },
+  right: stroke,
+  top: if y < 2 { stroke } else { 0pt },
+  bottom: stroke,
+)
+
+#set table(
+  fill: (_, y) => if calc.odd(y) { rgb("EAF2F5") },
+  stroke: frame(1pt + rgb("21222C")),
+)
+
 #front-slide(
   title: "PPAQSE-OS",
   subtitle: "Étude comparative d'OS pour les systèmes critiques temps-réel",
@@ -78,6 +90,60 @@
     - Maintenabilité
   ]
 )
+]
+
+#let scell(color: white, txt) = table.cell(fill: color.lighten(40%), [#txt])
+
+#let supported(txt) = scell(color:green, txt)
+#let notsupported(txt) = scell(color:red, txt)
+#let partiallysupported(txt) = scell(color:yellow, txt)
+#let deprecated(txt) = scell(color:black, txt)
+
+#slide(title: "Critère - Type de système d'exploitation")[
+
+#table(
+  columns: (2fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+  table.header[OS][Temps réel][Hyperviseur][LibOS][GPOS][RTOS],
+  [Linux],
+  supported([]), supported([]), notsupported([]), supported([]), notsupported([]),
+
+  [MirageOS],
+  notsupported([]), notsupported([]), supported([]), notsupported([]), notsupported([]),
+
+  [PikeOS],
+  supported([]), supported([]), notsupported([]), notsupported([]), notsupported([]),
+
+  [ProvenVisor],
+  supported([]), supported([]), notsupported([]), notsupported([]), notsupported([]),
+
+  [RTEMS],
+  supported([]), notsupported([]), partiallysupported([]), notsupported([]), supported([]),
+
+  [seL4],
+  supported([]), supported([]), notsupported([]), notsupported([]), notsupported([]),
+
+  [Xen],
+  partiallysupported([]), supported([]), notsupported([]), notsupported([]), notsupported([]),
+
+  [XtratuM],
+  supported([]), supported([]), notsupported([]), notsupported([]), notsupported([]),
+)
+
+
+]
+
+#slide(title: "Architecture supportée")[
+#table(
+    columns: 4,
+    align: (left, left, left, left),
+    [Architecture], [PV], [HVM], [PVH],
+    [_x86-32_],  partiallysupported([$gt.eq$ P6]), notsupported([]), [],
+    [_x86-64_],  supported([]), supported([$+$ _Intel VT-X_]), [],
+    [_ARMv7_],   deprecated([]), notsupported([]), supported([$+$ _Virtualization Extensions_]),
+    [_ARMv8_],   deprecated([]), notsupported([]), supported([$+$ _Virtualization Extensions_]),
+    [_PowerPC_], partiallysupported[_Xen_ $gt.eq$ 4.20], [], [],
+    [_RISC-V_],  partiallysupported[_Xen_ $gt.eq$ 4.20], [], []
+  )
 ]
 
 #slide(title: "Support watchdog")[

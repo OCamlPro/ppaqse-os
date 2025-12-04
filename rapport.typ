@@ -658,16 +658,15 @@ est souvent géré par une couche logicielle: l'ordonnanceur de tâches
 (_scheduler_). Il a pour rôle de décider quelle tâche doit s'exécuter sur quel
 processeur et pendant combien de temps.
 
-Un ordonnanceur suit souvent des objectifs différents et parfois incompatibles.
-Il peut entre autres:
-- #box[Chercher à maximiser le débit (_troughput_), c'est-à-dire la quantité
-  de travail accomplie par unité de temps,]
-- #box[Chercher à minimiser la latence (_latency_), c'est-à-dire le délai qui
-  s'écoule entre le réveil d'une tâche et son exécution sur un processeur,]
-- #box[Être aussi équitable que possible (_fairness_), c'est-à-dire donner
-des tranches de temps de calcul qui reflètent bien la priorité des tâches,]
-- #box[Être aussi prédictible que possible. C'est un aspect crucial pour le
-déterminisme du système d'exploitation.]
+Un ordonnanceur poursuit des objectifs variés et parfois incompatibles. Parmi
+les principaux critères, on peut citer:
+- #box[_Throughput_: maximiser la quantité de travail accomplie par unité de
+  temps,]
+- #box[_Latency_: minimiser le délai qui s'écoule entre le réveil d'une tâche
+  et son exécution sur un cœur,]
+- #box[_Fairness_: répartir équitablement le temps de calcul en tenant compte
+  des priorités des tâches,]
+- #box[_Déterminisme_: avoir un comportement aussi déterministe que possible.]
 
 Par exemple, utiliser un algorithme de décision astucieux aura tendance à
 augmenter la latence mais peut augmenter le débit. De même, tirer parti du
@@ -2824,11 +2823,413 @@ pour le _MMU_ sur cette architecture.
 
 _ProvenCore_ est conçu pour fonctionner avec le @tee _TrustZone_ de l'architecture _ARM_.
 
-== Certifications <provenvisor_foo>
+== Certifications <provenvisor_certifications>
 
-- Permet la certification critères communs EAL5
+_ProvenVisor_ a été conçu dès le départ avec les certifications de haut niveau en
+tête. L'hyperviseur bénéficie d'une vérification formelle, ce qui facilite grandement
+le processus de certification pour les niveaux les plus exigeants des _Critères Communs_.
 
-== Licences <provenvisor_leicuenses>
+_ProvenVisor_ permet d'atteindre le niveau _EAL5_ (_Evaluation Assurance Level 5_) des
+_Critères Communs_ @provenrun_homepage. Ce niveau nécessite une conception semi-formelle et
+une analyse rigoureuse de la sécurité. Le fait que _ProvenVisor_ soit vérifié
+formellement le place dans une position favorable pour les certifications de haut niveau.
+
+Il est important de noter que _ProvenCore_, le micronoyau prouvé qui accompagne
+_ProvenVisor_, a obtenu la certification _Common Criteria EAL7_ @provencore_eal7, le
+niveau d'assurance le plus élevé. Cette certification démontre la maturité des
+méthodes de vérification formelle employées par _ProvenRun_ et renforce la confiance
+dans l'ensemble de leur écosystème de sécurité
+
+== Licences <provenvisor_licenses>
+
+_ProvenVisor_ est un produit propriétaire développé et commercialisé par l'entreprise
+française _ProvenRun_. Le code source n'est pas disponible publiquement et l'utilisation
+de l'hyperviseur nécessite une licence commerciale. Cette approche propriétaire permet
+à _ProvenRun_ de maintenir un contrôle strict sur la qualité et la sécurité du code,
+tout en finançant les efforts de vérification formelle et de certification.
+
+Les conditions exactes de licence et les modèles de tarification ne sont pas
+publiquement documentés et doivent être négociés directement avec _ProvenRun_.
+
+== Support multi-processeur <provenvisor_multiprocessor>
+
+_ProvenVisor_ est conçu pour fonctionner sur des architectures _ARM_ modernes qui
+incluent généralement plusieurs cœurs de processeur. L'hyperviseur tire parti des
+extensions de virtualisation de l'architecture _ARMv8-A_ qui sont présentes sur les
+processeurs multi-cœurs.
+
+Bien que les détails techniques spécifiques du support multi-processeur ne soient pas
+largement documentés publiquement, l'architecture _ARM Cortex-A_ ciblée par
+_ProvenVisor_ supporte nativement les configurations @smp. L'hyperviseur utilise les
+capacités du _GICv2_ ou _GICv3_ (_Generic Interrupt Controller_) avec extensions de
+virtualisation @provenrun_homepage, qui sont essentielles pour la gestion des
+interruptions dans un environnement multi-cœur.
+
+Le support du _PSCI_ (_Power State Coordination Interface_) version 1 indique également
+que _ProvenVisor_ peut gérer l'allumage et l'extinction des cœurs individuels, une
+fonctionnalité importante pour les systèmes multi-processeurs @provenrun_homepage.
+
+== Partitionnement <provenvisor_partitioning>
+
+Le partitionnement est au cœur de la conception de _ProvenVisor_. En tant qu'hyperviseur
+de type 1, son rôle principal est de fournir une isolation forte entre les différentes
+machines virtuelles qu'il héberge.
+
+=== Partitionnement spatial <provenvisor_spatial_partitioning>
+
+_ProvenVisor_ assure un partitionnement spatial strict entre les machines virtuelles
+grâce à plusieurs mécanismes:
+
+Le _SMMU_ (_System Memory Management Unit_) d'_ARM_ est supporté par _ProvenVisor_
+@provenrun_homepage. Le _SMMU_ fournit une traduction d'adresses en deux étapes et des
+protections système supplémentaires. La traduction en deux étapes permet aux systèmes
+d'exploitation invités d'utiliser la mémoire virtuelle avec traduction accélérée
+matériellement (étape 1), tandis que l'hyperviseur conserve un contrôle complet sur la
+façon dont l'espace d'adressage de chaque invité est mappé vers le périphérique
+physique (étape 2). Cela simplifie l'isolation des espaces d'adressage des différents
+invités par l'hyperviseur.
+
+Le _MMU_ standard est également supporté, offrant les mécanismes de base pour la
+virtualisation de la mémoire. Les extensions de virtualisation matérielle de
+l'architecture _ARMv8-A_ permettent à _ProvenVisor_ d'isoler efficacement les machines
+virtuelles sans surcoût de performance significatif.
+
+L'architecture illustrée dans la @architecture_provenvisor montre clairement la
+séparation entre le _Normal world_ (où s'exécutent les VMs sous _ProvenVisor_) et le
+_Secure world_ (où s'exécutent les processus sous _ProvenCore_). Cette séparation
+s'appuie sur _TrustZone_, la technologie de sécurité matérielle d'_ARM_, qui fournit un
+environnement d'exécution de confiance complètement isolé.
+
+Une caractéristique importante de _ProvenVisor_ est que les communications
+inter-invités ne sont autorisées qu'après autorisation explicite @provenrun_homepage.
+Cette politique garantit qu'aucune fuite d'information ne peut se produire entre les
+VMs sans que cela soit intentionnellement configuré.
+
+Le @tcb minimal de _ProvenVisor_ contribue également à la robustesse du partitionnement
+spatial. Plus le @tcb est petit, moins il y a de code susceptible de contenir des bugs
+qui pourraient compromettre l'isolation.
+
+=== Partitionnement temporel <provenvisor_temporal_partitioning>
+
+Les informations publiquement disponibles sur le partitionnement temporel de
+_ProvenVisor_ sont limitées. Cependant, en tant qu'hyperviseur conçu pour les systèmes
+embarqués critiques, il est raisonnable de supposer qu'il offre des mécanismes de
+contrôle du temps CPU alloué à chaque machine virtuelle.
+
+L'ordonnancement des machines virtuelles est typiquement géré au niveau de
+l'hyperviseur, qui décide quand chaque VM peut s'exécuter. Les détails spécifiques de
+l'algorithme d'ordonnancement utilisé par _ProvenVisor_ ne sont pas publiquement
+documentés. Il est probable que l'hyperviseur offre des options de configuration pour
+garantir que les VMs critiques reçoivent le temps CPU nécessaire à leur bon
+fonctionnement, mais les spécificités de ces mécanismes relèvent de la documentation
+propriétaire.
+
+== Déterminisme <provenvisor_determinism>
+
+Le déterminisme dans _ProvenVisor_ découle de sa conception minimale et de sa
+vérification formelle. Un @tcb réduit signifie moins de chemins d'exécution possibles
+dans le code de l'hyperviseur, ce qui facilite l'analyse du comportement temporel.
+
+La vérification formelle de _ProvenVisor_ contribue également au déterminisme. En
+prouvant mathématiquement les propriétés du système, on s'assure que le comportement de
+l'hyperviseur est prévisible et conforme à sa spécification. Cela est particulièrement
+important pour les systèmes critiques où un comportement non déterministe pourrait
+conduire à des défaillances catastrophiques.
+
+L'utilisation des extensions de virtualisation matérielle d'_ARM_ aide également à
+maintenir un comportement déterministe. Ces extensions permettent aux VMs de s'exécuter
+avec un minimum d'interventions de l'hyperviseur, réduisant ainsi les sources de
+variabilité temporelle.
+
+Cependant, il convient de noter que les informations publiques sur les analyses @wcet
+ou les garanties temps réel spécifiques de _ProvenVisor_ sont limitées. Pour des
+applications nécessitant des garanties temps réel strictes, il serait nécessaire de
+consulter la documentation technique détaillée de _ProvenRun_.
+
+== Corruption de la mémoire <provenvisor_memory_corruption>
+
+_ProvenVisor_ intègre plusieurs mécanismes pour prévenir la corruption de la mémoire:
+
+La vérification formelle de _ProvenVisor_ est le premier rempart contre la corruption
+de la mémoire. En prouvant mathématiquement l'absence de certaines classes de bugs, on
+élimine les erreurs de programmation qui pourraient conduire à des corruptions
+mémoire, telles que les dépassements de tampon, les utilisations après libération
+(_use-after-free_), ou les double libérations.
+
+Le @tcb minimal réduit la surface d'attaque. Moins il y a de code, moins il y a
+d'opportunités pour des bugs de corruption mémoire. Cette approche minimaliste est un
+principe fondamental de la conception de _ProvenVisor_.
+
+Les mécanismes matériels de protection mémoire de l'architecture _ARM_ sont pleinement
+exploités. Le support du _MMU_ et du _SMMU_ permet de configurer des permissions
+d'accès granulaires pour chaque région mémoire. Les tentatives d'accès non autorisées
+déclenchent des exceptions qui peuvent être interceptées par l'hyperviseur.
+
+L'isolation fournie par _TrustZone_ ajoute une couche supplémentaire de protection. Le
+_Secure world_ et le _Normal world_ ont des espaces d'adressage physiques séparés, et
+le code s'exécutant dans le _Normal world_ ne peut pas accéder à la mémoire du _Secure
+world_. Cela protège les composants critiques exécutés sous _ProvenCore_ contre les
+corruptions provenant des VMs moins fiables.
+
+Le langage de développement utilisé pour _ProvenVisor_ est le _C_. Bien que ce langage
+soit sujet aux erreurs de gestion mémoire, la vérification formelle compense cette
+faiblesse en prouvant que le code implémenté ne contient pas ces erreurs.
+
+== Perte du flux d'exécution <provenvisor_flow_hijacking>
+
+La protection contre la perte du flux d'exécution dans _ProvenVisor_ repose sur
+plusieurs piliers:
+
+La vérification formelle garantit que le code de l'hyperviseur ne contient pas de
+vulnérabilités permettant de détourner le flux d'exécution. Cela inclut les bugs
+classiques comme les dépassements de tampon qui pourraient être exploités pour
+écraser l'adresse de retour sur la pile.
+
+Les extensions de sécurité de l'architecture _ARMv8-A_ offrent plusieurs protections
+matérielles contre le détournement du flux d'exécution. Le bit _NX_ (_No-eXecute_),
+également connu sous le nom de bit _XN_ (_eXecute Never_) sur _ARM_, permet de marquer
+des pages mémoire comme non exécutables. Cela empêche l'exécution de code injecté dans
+des zones de données.
+
+Le _PAN_ (_Privileged Access Never_) sur _ARMv8.1-A_ empêche le code privilégié
+d'accéder accidentellement ou malicieusement à la mémoire de l'utilisateur. Bien que
+cette fonctionnalité soit principalement destinée aux noyaux de systèmes d'exploitation,
+elle peut également être pertinente pour un hyperviseur.
+
+Le _Pointer Authentication_ introduit dans _ARMv8.3-A_ fournit une protection
+cryptographique contre la falsification des pointeurs. Chaque pointeur est signé
+cryptographiquement lorsqu'il est stocké et vérifié lorsqu'il est utilisé. Toute
+tentative de modifier un pointeur sans connaître la clé cryptographique sera détectée.
+
+Le @tcb minimal réduit également le risque de vulnérabilités exploitables. Moins il y a
+de code, moins il y a de surface d'attaque pour un adversaire cherchant à détourner le
+flux d'exécution.
+
+L'isolation stricte entre les VMs signifie qu'un compromis dans une VM ne permet pas
+directement d'attaquer l'hyperviseur ou les autres VMs. Un attaquant devrait d'abord
+s'échapper de la VM compromise, ce qui nécessiterait d'exploiter une vulnérabilité
+dans _ProvenVisor_ lui-même – une tâche rendue extrêmement difficile par la vérification
+formelle.
+
+== Écosystème <provenvisor_ecosystem>
+
+L'écosystème de _ProvenVisor_ est intrinsèquement lié à celui de _ProvenCore_. Les deux
+produits sont conçus pour fonctionner ensemble et forment un système de sécurité complet
+pour les applications embarquées critiques.
+
+=== Intégration avec _ProvenCore_
+
+_ProvenCore_ est un micronoyau formellement vérifié qui s'exécute dans le _Secure world_
+de _TrustZone_ @lescuyer2015provencore. Il fournit des conteneurs sécurisés avec la
+possibilité de communiquer de façon sécurisée entre eux. _ProvenVisor_ et _ProvenCore_
+collaborent pour offrir une solution complète de sécurité et d'isolation.
+
+L'architecture illustrée dans la @architecture_provenvisor montre comment _ProvenVisor_
+gère les VMs dans le _Normal world_ tandis que _ProvenCore_ gère les processus
+sécurisés dans le _Secure world_. Un moniteur de sécurité coordonne les interactions
+entre ces deux mondes.
+
+=== Compatibilité avec les systèmes d'exploitation invités
+
+_ProvenVisor_ est conçu pour s'intégrer de manière transparente avec les systèmes
+d'exploitation généralistes courants @provenrun_homepage. Il supporte notamment:
+
+- _Linux_: le système d'exploitation le plus répandu dans l'embarqué peut s'exécuter
+comme VM sous _ProvenVisor_.
+- _Android_: important pour les applications IoT et les dispositifs connectés.
+- D'autres systèmes d'exploitation compatibles _ARM_ peuvent également être hébergés.
+
+Cette compatibilité permet de réutiliser des logiciels existants tout en bénéficiant de
+l'isolation et de la sécurité fournies par _ProvenVisor_.
+
+=== Partenariats et support matériel
+
+_ProvenRun_ collabore avec plusieurs acteurs de l'industrie des semi-conducteurs. Leur
+partenariat avec _STMicroelectronics_ démontre l'intégration de leurs solutions dans
+des plateformes matérielles concrètes @provenrun_st. Des démonstrations sur des modules
+_Toradex_ ont également été réalisées @toradex_provenvisor, montrant la portabilité de
+la solution sur différentes plateformes _ARM_.
+
+=== Documentation et support
+
+Étant un produit commercial propriétaire, la documentation détaillée et le support
+technique de _ProvenVisor_ sont réservés aux clients de _ProvenRun_. Les informations
+publiquement disponibles se limitent principalement aux documents marketing et aux
+présentations techniques de haut niveau.
+
+== Gestion des interruptions <provenvisor_interrupt_management>
+
+La gestion des interruptions dans _ProvenVisor_ s'appuie sur les capacités de
+virtualisation des contrôleurs d'interruptions _ARM_.
+
+_ProvenVisor_ requiert un _GICv2_ ou _GICv3_ (_Generic Interrupt Controller_) avec
+extensions de virtualisation @provenrun_homepage. Ces extensions permettent à
+l'hyperviseur de présenter des interruptions virtuelles aux VMs invitées sans
+intervention logicielle pour chaque interruption, ce qui améliore considérablement les
+performances.
+
+Le _GIC_ avec extensions de virtualisation fournit:
+- Des interruptions virtuelles qui peuvent être injectées directement dans les VMs par le
+matériel, réduisant la latence.
+- La capacité de router les interruptions physiques vers les VMs appropriées.
+- L'isolation des interruptions entre les VMs, garantissant qu'une VM ne peut pas
+voir ou manipuler les interruptions d'une autre VM.
+
+L'hyperviseur peut configurer quelles interruptions physiques sont routées vers quelles
+VMs. Certaines interruptions peuvent être réservées à l'hyperviseur lui-même, tandis
+que d'autres sont déléguées aux VMs invitées.
+
+Le support du _PSCI_ (_Power State Coordination Interface_) permet également de gérer
+les événements liés à l'alimentation et à la gestion des cœurs, qui sont souvent
+déclenchés par des interruptions ou des événements similaires.
+
+== Support _watchdog_ <provenvisor_watchdog>
+
+Les informations spécifiques sur le support _watchdog_ intégré dans _ProvenVisor_ ne
+sont pas largement documentées publiquement. Cependant, plusieurs aspects de
+l'architecture suggèrent comment les mécanismes _watchdog_ peuvent être utilisés avec
+cet hyperviseur.
+
+Dans un environnement virtualisé, le support _watchdog_ peut s'organiser à plusieurs
+niveaux:
+
+=== _Watchdog_ matériel
+
+Les plateformes _ARM_ modernes intègrent généralement des _watchdogs_ matériels. Ces
+dispositifs peuvent être configurés pour réinitialiser le système si le logiciel ne
+les actualise pas régulièrement. Dans le contexte de _ProvenVisor_, l'hyperviseur
+lui-même pourrait être responsable de la gestion du _watchdog_ matériel principal,
+assurant que le système reste opérationnel même si une VM invitée se bloque.
+
+=== _Watchdog_ virtualisé
+
+_ProvenVisor_ pourrait potentiellement présenter des _watchdogs_ virtualisés aux VMs
+invitées, permettant à chaque VM de surveiller ses propres applications critiques. La
+virtualisation des _watchdogs_ est une fonctionnalité commune dans les hyperviseurs
+modernes, bien que les détails d'implémentation spécifiques de _ProvenVisor_ ne soient
+pas publiquement documentés.
+
+=== Surveillance par l'hyperviseur
+
+L'hyperviseur lui-même peut agir comme un _watchdog_ pour les VMs qu'il héberge. En
+surveillant l'activité de chaque VM, _ProvenVisor_ pourrait détecter les VMs qui ne
+répondent plus et prendre des mesures appropriées, comme les redémarrer ou notifier le
+système de supervision.
+
+=== Intégration avec _ProvenCore_
+
+Dans l'architecture combinée _ProvenVisor_/_ProvenCore_, des mécanismes de surveillance
+sophistiqués peuvent être mis en place. _ProvenCore_, s'exécutant dans le _Secure
+world_, pourrait surveiller l'hyperviseur et les VMs depuis un environnement de
+confiance isolé, offrant une couche supplémentaire de résilience.
+
+Pour des informations détaillées sur les capacités _watchdog_ spécifiques de
+_ProvenVisor_ et sur la façon de les configurer pour des applications critiques, il
+serait nécessaire de consulter la documentation technique propriétaire de _ProvenRun_.
+
+== Programmation @baremetal <provenvisor_baremetal>
+
+_ProvenVisor_ étant un hyperviseur de type 1, il s'exécute directement sur le matériel
+nu (@baremetal) sans nécessiter un système d'exploitation hôte. Cependant, il n'est pas
+conçu pour héberger directement des applications @baremetal. Son rôle est plutôt de
+fournir un environnement virtualisé dans lequel des systèmes d'exploitation invités
+peuvent s'exécuter.
+
+Pour des applications nécessitant un accès @baremetal au matériel, plusieurs approches
+sont possibles:
+
+- _Passthrough_ de périphériques: _ProvenVisor_ peut potentiellement permettre à une VM
+d'accéder directement à certains périphériques matériels sans intervention de
+l'hyperviseur. Cela donnerait à cette VM un accès quasi-@baremetal à ces périphériques
+spécifiques.
+- Utilisation de _ProvenCore_: pour des applications critiques nécessitant un accès
+direct et contrôlé au matériel, _ProvenCore_ dans le _Secure world_ pourrait être une
+solution plus appropriée.
+- VM dédiée: une VM peut être configurée avec un accès privilégié à certaines
+ressources matérielles, s'approchant d'un fonctionnement @baremetal pour les parties
+critiques.
+
+Il est important de noter que l'ajout d'un hyperviseur comme _ProvenVisor_ introduit
+nécessairement une certaine latence et complexité par rapport à une exécution purement
+@baremetal. Cependant, les bénéfices en termes d'isolation et de sécurité compensent
+généralement ce surcoût dans les applications pour lesquelles _ProvenVisor_ est conçu.
+
+== Temps de démarrage <provenvisor_boot_time>
+
+Les informations publiquement disponibles sur les temps de démarrage spécifiques de
+_ProvenVisor_ sont limitées. Cependant, plusieurs facteurs suggèrent que l'hyperviseur
+devrait avoir un temps de démarrage relativement rapide:
+
+Le @tcb minimal implique moins de code à initialiser au démarrage. Un hyperviseur de
+petite taille peut généralement démarrer plus rapidement qu'un système d'exploitation
+complet ou qu'un hyperviseur aux fonctionnalités étendues.
+
+La documentation indique que _ProvenVisor_ nécessite moins de 1 Mo de mémoire flash et
+RAM pour une configuration simple @provenrun_homepage. Cette empreinte mémoire réduite
+suggère un système épuré qui devrait démarrer rapidement.
+
+Le temps de démarrage total du système dépendra également du temps nécessaire pour
+démarrer les VMs invitées. _ProvenVisor_ lui-même pourrait démarrer rapidement, mais si
+une VM _Linux_ doit ensuite être lancée, le temps de démarrage perçu par l'utilisateur
+inclurait le temps de démarrage de _Linux_.
+
+Pour des applications critiques nécessitant des temps de démarrage garantis, il serait
+nécessaire de consulter la documentation technique détaillée de _ProvenRun_ pour obtenir
+des chiffres précis et des garanties formelles.
+
+== Maintenabilité <provenvisor_maintainability>
+
+La maintenabilité de _ProvenVisor_ présente des caractéristiques distinctives liées à
+sa nature propriétaire et à son approche basée sur la vérification formelle.
+
+=== Maintenance par _ProvenRun_
+
+En tant que produit propriétaire, la maintenance de _ProvenVisor_ est assurée
+exclusivement par _ProvenRun_. Les clients n'ont pas accès au code source et dépendent
+donc de l'éditeur pour les corrections de bugs, les mises à jour de sécurité et les
+nouvelles fonctionnalités.
+
+Cette approche présente des avantages et des inconvénients:
+- _Avantages_: _ProvenRun_ maintient un contrôle strict sur la qualité du code, ce qui
+est crucial pour un composant aussi critique qu'un hyperviseur sécurisé. La vérification
+formelle est maintenue à travers les versions successives.
+- _Inconvénients_: les clients sont dépendants d'un seul fournisseur et ne peuvent pas
+effectuer leurs propres modifications ou corrections urgentes. La pérennité du produit
+est liée à la santé de l'entreprise _ProvenRun_.
+
+=== Impact de la vérification formelle
+
+La vérification formelle a un impact significatif sur la maintenabilité de _ProvenVisor_:
+
+D'une part, elle garantit une qualité de code exceptionnelle. Les bugs qui passent
+généralement à travers les tests traditionnels sont détectés et éliminés grâce aux
+preuves mathématiques. Cela devrait réduire le nombre de bugs découverts en production
+et donc le besoin de correctifs urgents.
+
+D'autre part, la vérification formelle complique les modifications du code. Toute
+modification nécessite de re-prouver les propriétés du système, ce qui peut être un
+processus long et coûteux. Cela peut ralentir l'ajout de nouvelles fonctionnalités ou
+l'adaptation à de nouvelles plateformes matérielles.
+
+=== Support à long terme
+
+Pour les systèmes embarqués critiques, le support à long terme est essentiel. Les
+produits peuvent rester en service pendant des décennies. Les modalités de support à
+long terme de _ProvenVisor_ doivent être négociées avec _ProvenRun_ et dépendent du
+contrat de licence.
+
+La stabilité du noyau est un atout pour le support à long terme. Un système formellement
+vérifié devrait nécessiter moins de mises à jour correctives, ce qui peut réduire les
+risques et les coûts associés au maintien de systèmes en production sur de longues
+périodes.
+
+=== Documentation
+
+La documentation technique détaillée de _ProvenVisor_ n'est pas publiquement disponible.
+Les clients de _ProvenRun_ ont accès à la documentation nécessaire pour intégrer et
+utiliser l'hyperviseur dans leurs produits. La qualité et la complétude de cette
+documentation sont des facteurs importants pour la maintenabilité des systèmes basés
+sur _ProvenVisor_.
 
 = RTEMS <rtems>
 
@@ -4733,37 +5134,36 @@ Pour les OS open-sources, nous avons utilisé l'outil `SLOCCount`@sloccount_webs
   [XtratuM],     [?],             [?],              [C (?)],
 )
 
-== Ordonnanceurs de tâches
+== Politiques d'ordonnancement
 
-Le tableau suivant présente les types d'ordonnanceurs disponibles pour chaque système d'exploitation étudié.
-Les ordonnanceurs temps réel permettent de garantir des contraintes temporelles strictes, tandis que les
-ordonnanceurs équitables cherchent à répartir équitablement le temps CPU entre les tâches.
+Le tableau suivant présente les politiques d'ordonnancement disponibles pour chaque système d'exploitation étudié,
+en se basant sur les six politiques d'ordonnancement implémentées par Linux (_SCHED_FIFO_, _SCHED_RR_,
+_SCHED_DEADLINE_, _SCHED_OTHER_, _SCHED_BATCH_, _SCHED_IDLE_). Le tableau indique également le support
+du mode tick-less et la capacité à exécuter simultanément des tâches temps réel et normales.
 
 #table(
-  columns: 10,
-  align: (center, center, center, center, center, center, center, center, center, center),
+  columns: 9,
+  align: (center, center, center, center, center, center, center, center, center),
   table.header(
     [OS],
-    [Équitable\ (Fair)],
     [FIFO],
     [Round-\ Robin],
-    [Priorité\ fixe],
-    [Deadline/\ EDF],
-    [Budget\ (CBS)],
-    [Hiérarchique/\ Partition\ temporelle],
-    [Cyclique\ statique],
-    [Coopératif]
+    [Dead-\ line],
+    [CFS/\ Équitable],
+    [Batch],
+    [Idle],
+    [Tick-\ less],
+    [Mixte\ TR/\ Normal]
   ),
   [Linux],
-        [Oui#footnote[_CFS_ (_Completely Fair Scheduler_)]],
         [Oui#footnote[_SCHED\_FIFO_]],
         [Oui#footnote[_SCHED\_RR_]],
-        [Oui],
         [Oui#footnote[_SCHED\_DEADLINE_]],
-        [Non],
-        [Non],
-        [Non],
-        [Non],
+        [Oui#footnote[_SCHED\_OTHER_ via _CFS_]],
+        [Oui#footnote[_SCHED\_BATCH_]],
+        [Oui#footnote[_SCHED\_IDLE_]],
+        [Oui#footnote[Support via `CONFIG_NO_HZ`]],
+        [Oui],
   [MirageOS],
         [Non],
         [Non],
@@ -4771,21 +5171,18 @@ ordonnanceurs équitables cherchent à répartir équitablement le temps CPU ent
         [Non],
         [Non],
         [Non],
+        [N/A#footnote[Pas d'ordonnancement préemptif, uniquement coopératif via _Lwt_]],
         [Non],
-        [Non],
-        [Oui#footnote[Bibliothèque _Lwt_ pour threads coopératifs]],
   [PikeOS],
         [Non],
         [Non],
         [Non],
-        [Oui],
         [Non],
         [Non],
-        [Oui#footnote[_Adaptive Time-Partitioning Scheduler_ (breveté)]],
         [Non],
-        [Non],
-  [ProvenVisor],
         [?],
+        [Oui#footnote[Partitionnement temporel adaptatif breveté]],
+  [ProvenVisor],
         [?],
         [?],
         [?],
@@ -4797,33 +5194,30 @@ ordonnanceurs équitables cherchent à répartir équitablement le temps CPU ent
   [RTEMS],
         [Non],
         [Non],
-        [Non],
-        [Oui#footnote[_Deterministic Priority_ et _Simple Priority_]],
         [Oui#footnote[_EDF_ (_Earliest Deadline First_)]],
-        [Oui#footnote[_CBS_ (_Constant Bandwidth Server_)]],
-        [Oui#footnote[Ordonnancement en _cluster_]],
         [Non],
         [Non],
+        [Non],
+        [Non],
+        [Oui#footnote[Priorité fixe + _EDF_ + _CBS_]],
   [seL4],
         [Non],
-        [Non],
         [Oui#footnote[Pour tâches de même priorité]],
-        [Oui#footnote[256 niveaux de priorité]],
         [Non],
         [Non],
-        [Oui#footnote[Ordonnancement par domaines + extensions _MCS_]],
-        [Oui#footnote[Au niveau des domaines]],
         [Non],
+        [Non],
+        [Non#footnote[Utilise des ticks périodiques]],
+        [Limité#footnote[Domaines temporels isolés]],
   [Xen],
-        [Oui#footnote[_Credit Scheduler_ et _Credit2 Scheduler_]],
-        [Non],
         [Non],
         [Non],
         [Oui#footnote[_RTDS_ (_Real-Time Deferrable Server_)]],
+        [Oui#footnote[_Credit_ et _Credit2_]],
         [Non],
         [Non],
-        [Non],
-        [Non],
+        [Oui#footnote[Support pour VMs invitées]],
+        [Oui#footnote[Peut mixer VMs temps réel et best-effort]],
   [XtratuM],
         [Non],
         [Non],
@@ -4831,9 +5225,8 @@ ordonnanceurs équitables cherchent à répartir équitablement le temps CPU ent
         [Non],
         [Non],
         [Non],
-        [Oui#footnote[Chaque partition a son propre ordonnanceur]],
-        [Oui#footnote[Ordonnancement cyclique statique _ARINC-653_]],
-        [Non],
+        [Non#footnote[Ordonnancement cyclique statique _ARINC-653_]],
+        [Limité#footnote[Possible au sein de chaque partition]],
 )
 
 // = Conceptions générales
