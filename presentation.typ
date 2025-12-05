@@ -132,19 +132,84 @@
 
 ]
 
-#slide(title: "Architecture supportée")[
+#slide(title: "Critère - Architectures supportées")[
+#set text(size: 14pt)
 #table(
-    columns: 4,
-    align: (left, left, left, left),
-    [Architecture], [PV], [HVM], [PVH],
-    [_x86-32_],  partiallysupported([$gt.eq$ P6]), notsupported([]), [],
-    [_x86-64_],  supported([]), supported([$+$ _Intel VT-X_]), [],
-    [_ARMv7_],   deprecated([]), notsupported([]), supported([$+$ _Virtualization Extensions_]),
-    [_ARMv8_],   deprecated([]), notsupported([]), supported([$+$ _Virtualization Extensions_]),
-    [_PowerPC_], partiallysupported[_Xen_ $gt.eq$ 4.20], [], [],
-    [_RISC-V_],  partiallysupported[_Xen_ $gt.eq$ 4.20], [], []
-  )
+  columns: (1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+  table.header(
+    [OS],
+    [x86-32],
+    [x86-64],
+    [ARMv7],
+    [ARMv8],
+    [PowerPC],
+    [MIPS],
+    [RISC-V],
+    [SPARC]
+  ),
+
+  [Linux],
+  supported([]), supported([]), supported([]), supported([]),
+  supported([]), supported([]), supported([]), supported([]),
+
+  [MirageOS],
+  notsupported([]), supported([]), notsupported([]), supported([]),
+  notsupported([]), notsupported([]), notsupported([]), notsupported([]),
+
+  [PikeOS],
+  supported([]), supported([]), supported([]), supported([]),
+  supported([]), notsupported([]), supported([]), supported([]),
+
+  [ProvenVisor],
+  notsupported([]), notsupported([]), notsupported([]), supported([]),
+  notsupported([]), notsupported([]), notsupported([]), notsupported([]),
+
+  [RTEMS],
+  supported([]), supported([]), supported([]), supported([]),
+  supported([]), supported([]), supported([]), supported([]),
+
+  [seL4],
+  supported([]), supported([]), supported([]), supported([]),
+  notsupported([]), notsupported([]), supported([]), notsupported([]),
+
+  [Xen],
+  notsupported([]), notsupported([]), supported([]), notsupported([]),
+  supported([]), notsupported([]), notsupported([]), notsupported([]),
+
+  [XtratuM],
+  notsupported([]), notsupported([]), supported([]), notsupported([]),
+  supported([]), notsupported([]), notsupported([]), notsupported([]),
+)
 ]
 
-#slide(title: "Support watchdog")[
+#slide(title: "Critère - Support watchdog")[
+#table(
+  columns: (1.5fr, 1fr, 1fr, 1fr),
+  table.header(
+    [OS],
+    [_Watchdog_ matériel],
+    [_Watchdog_ logiciel],
+    [_API unifiée_]
+  ),
+
+  [Linux], supported([]), supported([]), supported([]),
+
+  [MirageOS], partiallysupported([]), notsupported([]), partiallysupported([]),
+
+  [PikeOS], [?], [?], [?],
+
+  [ProvenVisor], [Probable], [Probable], [],
+
+  [RTEMS], supported([]), supported([]), notsupported([]),
+
+  [seL4], [Partiel], [Oui], [],
+
+  [Xen], supported([]), supported([]), supported([]),
+
+  [XtratuM], [?], [?], [?],
+)
+
+]
+
+#slide(title: "Programmation baremetal")[
 ]

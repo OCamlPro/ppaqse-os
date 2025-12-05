@@ -5229,6 +5229,56 @@ du mode tick-less et la capacité à exécuter simultanément des tâches temps 
         [Limité#footnote[Possible au sein de chaque partition]],
 )
 
+== Support _watchdog_
+
+Le tableau suivant résume le support des mécanismes _watchdog_ pour chaque système
+d'exploitation étudié. Les _watchdogs_ matériels désignent la capacité d'interagir
+avec des périphériques _watchdog_ physiques, tandis que les _watchdogs_ logiciels
+permettent de surveiller l'état des processus ou services sans matériel dédié.
+
+#table(
+  columns: 4,
+  align: (left, center, center, left),
+  table.header(
+    [OS],
+    [Watchdog\ matériel],
+    [Watchdog\ logiciel],
+    [Notes]
+  ),
+  [Linux],
+        [Oui],
+        [Oui],
+        [API unifiée via `/dev/watchdog`. Support logiciel via _systemd_.],
+  [MirageOS],
+        [Indirect],
+        [Non],
+        [Pas d'API native. Dépend de l'environnement (ex: _xencontrol_ pour Xen).],
+  [PikeOS],
+        [?],
+        [?],
+        [Information non disponible publiquement.],
+  [ProvenVisor],
+        [Probable],
+        [Probable],
+        [Support non documenté publiquement. Watchdog matériel ARM, virtualisation possible, surveillance par hyperviseur.],
+  [RTEMS],
+        [Oui],
+        [Oui],
+        [Support au niveau BSP. Watchdog logiciel via _Timer Manager_.],
+  [seL4],
+        [Partiel],
+        [Oui],
+        [Pas d'API unifiée. Support dans certains BSP. Watchdog logiciel via _Timer Manager_.],
+  [Xen],
+        [Oui],
+        [Oui],
+        [Support dans _dom0_ et domaines utilisateurs. Service _xenwatchdogd_ disponible. API compatible Linux via _xen\_wdt_.],
+  [XtratuM],
+        [?],
+        [?],
+        [Information non disponible publiquement.],
+)
+
 // = Conceptions générales
 //
 // Cette section regroupe davantage d'informations sur les designs généraux des
