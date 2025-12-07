@@ -2323,18 +2323,18 @@ Voyons comment exécuter cet exemple pas à pas. On commence par créer
 l'unikernel à l'aide de l'image docker, puis on lance cet unikernel dans un
 domaine de _Xen_:
 ```console
-make build-memtrace
-cd unikernels/memtrace
+make -C mirageos build-memtrace
+cd mirageos/unikernels/memtrace
 sudo xl create memtrace.xl -c
 ```
 On peut alors récupérer la trace produite par `memtrace` en établissant dans
 autre terminal une connexion sur `10.0.0.2:1234`:
 ```console
-nc 10.0.0.2 1234 > trace
+nc 10.0.0.2 1234 > mirageos/trace
 ```
 Finalement, on peut lancer une instance de `memtrace-view`:
 ```console
-make mentrace-view
+make -C mirageos memtrace-viewer
 ```
 Cette commande lance un serveur web écoutant sur l'adresse `localhost:8080`.
 
@@ -2347,9 +2347,12 @@ Cette commande lance un serveur web écoutant sur l'adresse `localhost:8080`.
 
 == Masquage des interruptions <mirageos_interrupt_masking>
 
-Le masquage des interruptions est une tâche dévolue à l'hyperviseur exécutant
-l'_unikernel_. En effet, cette action ne peut être exécutée que par un programme
-s'exécutant dans le @kernelspace.
+Il ne semble pas exister de bibliothèque MirageOS pour le masquage
+d'interruption. Cela n'est pas étonnant puisque le masquage des interruptions
+est plutôt utilisé dans un contexte multi-thread avec de la préemption. Or
+le modèle de concurrence de MirageOS est souvent mono-thread et sans préemption.
+La préemption est assurée au niveau de l'hyperviseur sur lequel l'_unikernel_
+s'exécute.
 
 == Watchdog <mirageos_watchdog>
 
@@ -2379,12 +2382,25 @@ d'_unikernels_ _MirageOS_ sur un hyperviseur _Xen_ avec une pile logicielle
 optimisée. Ils sont parvenus sur des temps de démarrage à froid inférieurs à
 350 ms sur _ARM_ et 30ms sur _x86_.
 
-Dans l'étude récente @kuenzer2021unikraft, les auteurs affirment qu'un
-_unikernel_ de _MirageOS_ peut démarrer en moins de 3ms en utilisant
-l'environnement d'exécution _solo5_.
-
 En conclusion, le temps de démarrage de _MirageOS_ peut être rendu très faible
-et négligeable face du démarrage de la partition elle-même.
+et négligeable face du démarrage de la partition elle-même. L'enjeu est donc
+d'optimiser le temps de démarrage de cette dernière.
+
+== Qualifications et certifications <mirageos_certifications>
+
+À notre connaissance, _MirageOS_ n'a pas fait l'objet de certifications.
+L'objectif premier de _MirageOS_ est davantage la sécurité que la sûreté de
+fonctionnement, il pourrait faire donc l'objet de certifications comme celles
+décrites dans les Critères Communs (niveau _EAL_) mais rien de tel semble avoir
+été entrepris jusqu'à présent.
+
+== Licences <mirageos_licenses>
+
+Le code de _MirageOS_ est publié sous la licence _ISC_ avec certaines parties
+sous licence _LGPLv2_. L'utilisation d'une licence open-source permissive comme
+_ISC_ est nécessaire car l'_unikernel_ produit par _MirageOS_ est lié statiquement
+avec les bibliothèques. Grâce à cette licence, vous n'avez pas les contraintes
+des licences _GPL_ lorsque vous distribuez le binaire de votre _unikernel_.
 
 == Maintenabilité <mirageos_maintenability>
 
@@ -2395,65 +2411,41 @@ OCaml pour un total de 9075 _SLOC_.
 
 Toutefois la totalité de l'unikernel ne provient pas de la compilation de
 codes _OCaml_. Il subsiste plusieurs parties en langage C et notamment:
-- #box[L'environnement d'exécution du langage OCaml est écrit en C. Cela inclut en
-particulier son ramasse-miette,]
-- #box[Quelques bibliothèques en C comme _GMP_ au travers de _Zarith_. Leur réécriture
-en OCaml est théorique possible mais nécessiterait un effort considérable en pratique,]
-- #box[Les pilotes doivent être écrits dans un langage bas niveau.]
+- L'environnement d'exécution du langage OCaml est écrit en C. Cela inclut
+  en particulier son ramasse-miette,
+- Quelques bibliothèques en C comme _GMP_ au travers de _Zarith_. Leur
+  réécriture en OCaml est théoriquement possible mais nécessiterait un effort
+  considérable en pratique,
+- Les pilotes doivent être écrits dans un langage bas niveau comme le langage C.
 
-== Qualifications et certifications <mirageos_certifications>
+_MirageOS_ a été utilisé dans plusieurs projets d'envergures. Récemment
+l'entreprise _Tarides_ a développé le système d'exploitation _SpaceOS_ pour
+des applications spatiales et satellitaires @spaceos_tarides @spaceos_satellite.
+Il s'agit d'une solution sécurisée et efficace pour les satellites
+multi-utilisateurs et multi-missions, construite sur la technologie des
+_unikernels_.
 
-À notre connaissance, _MirageOS_ n'a pas fait l'objet de certifications. L'objectif
-premier de _MirageOS_ est davantage la sécurité que la sûreté de fonctionnement.
-Cet objectif est atteint en minimisant la surface d'attaque et en utilisant un
-langage de programmation sûr.
+_SpaceOS_ a été conçu en partenariat avec plusieurs organisations du secteur
+spatial (L'_ESA_ (_European Space Agency_), Le _CNES_, _Thales Alenia Space_
+,_OHB_ , _Eutelsat_, Le _Singapore Space Agency_).
 
-== Licences
+Le 15 mars 2025, _OCaml_ a été lancé dans l'espace à bord de la mission
+_Transporter-13_. _DPhi Space_ a embarqué son ordinateur _Clustergate_ sur ce
+vol, et l'équipe _SpaceOS_ a déployé un logiciel basé sur _OCaml 5_ sur le
+satellite. Cette mission a démontré la viabilité des _unikernels_ _MirageOS_
+pour les applications spatiales en conditions réelles.
 
-Le code de _MirageOS_ est publié sous la licence _ISC_ avec certaines parties
-sous licence _LGPLv2_. L'utilisation d'une licence open-source permissive comme
-_ISC_ est nécessaire car l'_unikernel_ produit par _MirageOS_ est lié statiquement
-avec les bibliothèques. Grâce à cette licence, vous n'avez pas les contraintes
-des licences _GPL_ lorsque vous distribuez le binaire de votre _unikernel_.
-
-=== Traçage
-
-Il existe des `hooks` dans le code de _MirageOS_ qui permet un traçage de bout
-en bout. On peut utiliser un backend spécifique comme `mirageos-trace-viewer`.
-C'est un atout majeur en comparaison de _strace_ qui ne permet que de tracer
-les appels systèmes.
-
-=== SpaceOS <mirageos_spaceos>
-
-_SpaceOS_ est un système d'exploitation basé sur _MirageOS_ développé par _Tarides_
-pour les applications spatiales et satellitaires @spaceos_tarides @spaceos_satellite.
-Il s'agit d'une solution sécurisée et efficace pour les satellites multi-utilisateurs
-et multi-missions, construite sur la technologie des _unikernels_.
-
-_SpaceOS_ a été conçu en partenariat avec plusieurs organisations du secteur spatial :
-- L'_ESA_ (_European Space Agency_)
-- Le _CNES_
-- _Thales Alenia Space_
-- _OHB_
-- _Eutelsat_
-- Le _Singapore Space Agency_
-
-Le 15 mars 2025, _OCaml_ a été lancé dans l'espace à bord de la mission _Transporter-13_.
-_DPhi Space_ a embarqué son ordinateur _Clustergate_ sur ce vol, et l'équipe _SpaceOS_
-a déployé un logiciel basé sur _OCaml 5_ sur le satellite. Cette mission a démontré
-la viabilité des _unikernels_ _MirageOS_ pour les applications spatiales en conditions
-réelles.
-
-Les principaux avantages de _SpaceOS_ incluent:
+Les principaux avantages de _SpaceOS_ incluent notamment:
 - Une réduction de taille d'un facteur 20 par rapport à un déploiement basé sur
-  des conteneurs _Linux_
-- Une sécurité accrue grâce à l'utilisation d'un langage à gestion mémoire sûre (_OCaml_)
-- Une architecture modulaire permettant de compiler uniquement les fonctionnalités
-  nécessaires du système d'exploitation
+  des conteneurs _Linux_,
+- Une sécurité accrue grâce à l'utilisation d'un langage à gestion mémoire
+  sûre (_OCaml_),
+- Une architecture modulaire permettant de compiler uniquement les
+  fonctionnalités nécessaires du système d'exploitation.
 
-Ces résultats ont valu à _SpaceOS_ une reconnaissance industrielle significative,
-notamment le prestigieux _Airbus Innovation Award_ lors de la _Paris Space Week_ 2024.
-
+Ces résultats ont valu à _SpaceOS_ une reconnaissance industrielle
+significative, notamment le prestigieux _Airbus Innovation Award_ lors de la
+_Paris Space Week_ 2024.
 
 = PikeOS <pikeos>
 
