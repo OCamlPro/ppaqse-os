@@ -1950,54 +1950,15 @@ On retrouve aussi d'autres informations intéressantes:
   - *Projet notable* : SpaceOS (déployé dans l'espace en 2025)
 ]
 
-
-Au tournant des années 2010, l'usage de la virtualisation révolutionne le
-déploiement des services, permettant de réduire les coûts et d'externaliser une
-partie de la maintenance via le concept de _cloud computing_. À cette époque,
-la majorité des @vm:pl exécutent un service dans un _GPOS_ complet. Cette
-approche présente l'avantage de circonscrire au système d'exploitation les
-modifications requises pour la virtualisation, tout en bénéficiant de
-l'isolation offerte par l'hyperviseur. En contre partie, la pile
-logicielle est grandement complexifiée comme l'illustre la
-@comparison_unikernel_gpos.
-
-En particulier, certains mécanismes d'isolation comme l'ordonnanceur de tâches
-sont dupliqués entre l'hyperviseur et le noyau exécuté dans la @vm. De plus,
-l'introduction d'un _GPOS_ augmente considérablement la surface d'attaque
-(@tcb volumineuse) et les sources de bugs potentiels. Cela est d'autant plus
-vrai que ces @gpos sont souvent écrits dans un langage de
-programmation#footnote[La vaste majorité de la programmation système est en
-langage C qui n'offre pratiquement aucune garantie mémoire et dont la sémantique
-est complexe, notamment sur les architectures @smp.] n'offrant que peu de
-garantie du point de vue des types et de la mémoire. C'est de ces deux constats
-que naît le projet _MirageOS_.
-
-Le projet est initié en 2009 au sein du laboratoire
-_Computer Laboratory_ de l'université de Cambridge sous la houlette de
-Anil Madhavapeddy @mirageos_unikernels. Il est de nos jours maintenu par la
-_MirageOS Core Team_ composée d'universitaires et d'ingénieurs du secteur privé
-(_Tarides_, _IBM Research_, ...).
-_MirageOS_ fait parti des projets soutenus par le _Xen Project_
-@mirageos_xen_project et bon nombre de ces contributeurs ont également participé
-au projet _Xen_.
-
-_MirageOS_ adopte une approche de type _LibOS_. Au lieu de fournir un environnement
-d'exécution pour les services, _MirageOS_ se présentent sous la forme d'une
-collection de bibliothèques modulaires. Ces dernières sont écrites
-majoritairement en _OCaml_, un langage de programmation de haut niveau offrant
-la sûreté des types et équipé d'un ramasse-miette. La configuration et
-l'ensemble des bibliothèques
-nécessaires au service sont liés durant la compilation pour produire une image
-appelée _unikernel_. Cet _unikernel_ peut alors être exécuté dans divers
-environnements, voir la sous-section @mirageos_environments. Cela conduit à une
-simplification de la pile logicielle comme illustré dans @comparison_unikernel_gpos.
-L'approche _unikernel_ présente de nombreux avantages:
-- #box[Une plus petite surface d'attaque à la fois par la réduction de le taille du
-code source et l'utilisation d'un langage de programmation sûr.]
-- #box[Une amélioration des performances et notamment du temps de démarrage.]
-- #box[Une réduction de la taille des exécutables produits.]
-- #box[Un profilage simplifié par la suppression d'une couche logicielle
-  volumineuse.]
+Au tournant des années 2010, le _cloud computing_ s'impose comme une solution
+pour réduire le coût et externaliser la maintenance des services web. Cette
+innovation a été rendue possible par la démocratisation au début du siècle de
+la virtualisation sur architecture _x86_. À cette époque, la majorité des
+@vm:pl exécutent un service web dans un _GPOS_ complet. Cette approche présente
+l'avantage de circonscrire au système d'exploitation les modifications
+nécessaires pour la virtualisation, tout en bénéficiant de l'isolation offerte
+par l'hyperviseur. En contre partie, la pile logicielle est grandement
+complexifiée comme l'illustre la @comparison_unikernel_gpos.
 
 #figure(
 grid(
@@ -2062,6 +2023,44 @@ grid(
   caption: [Comparaison entre l'approche _GPOS_ et l'approche _unikernel_.]
 ) <comparison_unikernel_gpos>
 
+En particulier, certains mécanismes d'isolation comme l'ordonnanceur de tâches
+sont dupliqués entre l'hyperviseur et le noyau exécuté dans la @vm. De plus,
+l'introduction d'un _GPOS_ augmente considérablement la surface d'attaque
+@tcb et les sources de bugs potentiels. Cela est d'autant plus
+vrai que ces @gpos sont souvent écrits dans un langage de
+programmation#footnote[La vaste majorité de la programmation système est en
+langage C qui n'offre pratiquement aucune garantie mémoire et dont la sémantique
+est complexe, notamment sur les architectures @smp.] n'offrant que peu de
+garantie du point de vue des types et de la mémoire. C'est de ces deux constats
+que naît le projet _MirageOS_.
+
+Le projet est initié en 2009 au sein du laboratoire
+_Computer Laboratory_ de l'université de Cambridge sous la houlette de
+Anil Madhavapeddy @mirageos_unikernels. Il est de nos jours maintenu par la
+_MirageOS Core Team_ composée d'universitaires et d'ingénieurs du secteur privé
+(_Tarides_, _IBM Research_, ...).
+_MirageOS_ fait parti des projets soutenus par le _Xen Project_
+@mirageos_xen_project et un grand nombre de ces contributeurs ont également
+participé au projet _Xen_.
+
+_MirageOS_ adopte une approche de type _LibOS_. Au lieu de fournir un
+environnement d'exécution préconfiguré pour les services, _MirageOS_ se
+présentent sous la forme d'une collection de bibliothèques. Ces dernières sont
+écrites majoritairement en _OCaml_, un langage de programmation de haut niveau
+offrant la sûreté des types et équipé d'un ramasse-miette. La configuration et
+l'ensemble des bibliothèques nécessaires au service sont liés durant la
+compilation pour produire une image appelée _unikernel_. Cet _unikernel_ peut
+alors être exécuté dans divers environnements, voir la sous-section
+@mirageos_environments. Cela conduit à une simplification de la pile logicielle
+comme illustré dans @comparison_unikernel_gpos. L'approche _unikernel_ présente
+de nombreux avantages:
+- #box[Une plus petite @tcb à la fois par la réduction de le taille du
+code source et l'utilisation d'un langage de programmation sûr,]
+- #box[Une amélioration des performances et notamment du temps de démarrage,]
+- #box[Une réduction de la taille des exécutables produits,]
+- #box[Un profilage simplifié par la suppression d'une couche logicielle
+  volumineuse.]
+
 == Tutoriel <mirageos_tutorial>
 Pour faciliter l'exécution des exemples de ce chapitre, une image `docker` est
 disponible dans le dossier `miragos/` du dépôt. Cette image contient tout le
@@ -2074,99 +2073,62 @@ Vous pouvez accéder au shell du `docker` en tapant:
 make -C mirageos shell
 ```
 
-=== SpaceOS <mirageos_spaceos>
-
-_SpaceOS_ est un système d'exploitation basé sur _MirageOS_ développé par _Tarides_
-pour les applications spatiales et satellitaires @spaceos_tarides @spaceos_satellite.
-Il s'agit d'une solution sécurisée et efficace pour les satellites multi-utilisateurs
-et multi-missions, construite sur la technologie des _unikernels_.
-
-_SpaceOS_ a été conçu en partenariat avec plusieurs organisations du secteur spatial :
-- L'_ESA_ (_European Space Agency_)
-- Le _CNES_
-- _Thales Alenia Space_
-- _OHB_
-- _Eutelsat_
-- Le _Singapore Space Agency_
-
-Le 15 mars 2025, _OCaml_ a été lancé dans l'espace à bord de la mission _Transporter-13_.
-_DPhi Space_ a embarqué son ordinateur _Clustergate_ sur ce vol, et l'équipe _SpaceOS_
-a déployé un logiciel basé sur _OCaml 5_ sur le satellite. Cette mission a démontré
-la viabilité des _unikernels_ _MirageOS_ pour les applications spatiales en conditions
-réelles.
-
-Les principaux avantages de _SpaceOS_ incluent:
-- Une réduction de taille d'un facteur 20 par rapport à un déploiement basé sur
-  des conteneurs _Linux_
-- Une sécurité accrue grâce à l'utilisation d'un langage à gestion mémoire sûre (_OCaml_)
-- Une architecture modulaire permettant de compiler uniquement les fonctionnalités
-  nécessaires du système d'exploitation
-
-Ces résultats ont valu à _SpaceOS_ une reconnaissance industrielle significative,
-notamment le prestigieux _Airbus Innovation Award_ lors de la _Paris Space Week_ 2024.
-
 == Architectures supportées <mirageos_architectures>
 
-Pour qu'une architecture soit supportée par _MirageOS_, il est nécessaire que
-celle-ci soit une cible de compilation du compilateur OCaml. Le compilateur
-_OCaml 4_ supporte les architectures suivantes: _x86-32_, _x86-64_, _ARM v7_,
-_ARM v8_, _PowerPC_, _SPARC_ et _MIPS_.
-
-Toutefois le support en natif#footnote[
+Pour qu'une architecture soit supportée par _MirageOS_, il est nécessaire
+qu'elle soit une cible de compilation du compilateur OCaml. Le compilateur
+_OCaml 4_ supporte les architectures suivantes: _x86-32_, _x86-64_, _ARMv7_,
+_ARMv8_, _PowerPC_, _SPARC_ et _MIPS_. Toutefois le support en natif#footnote[
 Il subsiste en _bytecode_, ce qui n'est pas pertinent ici puisqu'il faudrait
-porter la machine virtuelle d'OCaml pour obtenir des performances médiocres
-en définitif.] pour les architectures 32-bits a été supprimé à partir
+porter la machine virtuelle d'OCaml pour obtenir probablement des performances
+médiocres.] pour les architectures 32-bits a été supprimé à partir
 d'_OCaml 5_. Il n'est donc pas recommandé d'utiliser _MirageOS_ sur de telles
 plateformes.
 
 En pratique, les _unikernels_ produits par _MirageOS_ sont rarement exécutés
 en @baremetal mais plutôt dans une partition d'un hyperviseur. Il est donc
-nécessaire que l'hyperviseur supporte les architectures citées ci-dessus et que
-l'environnement d'exécution de _MirageOS_ ait été porté dessus. Le projet
-_solo5_ vise à fournir une couche d'abstraction logicielle entre l'environnement
-d'exécution de _MirageOS_ et les différentes @api d'hyperviseurs et de @gpos.
-Il semble qu'à l'heure actuelle le projet _solo5_ n'offre qu'un support pour
-des systèmes sur _x86-64_, _ARM v8_ et _PowerPC_ (uniquement pour
-l'environnement d'exécution _spt_).
+nécessaire que cet hyperviseur supporte une des architectures ci-dessus et
+que l'environnement d'exécution de _MirageOS_ ait été porté dessus.
 
-Nous considérons donc ces architectures comme étant les seules bénéficiant d'un
-support officiel par le projet _MirageOS_.
+Porter une _LibOS_ sur un hyperviseur étant une tâche répétitive, le projet
+_solo5_ vise à mutualiser les efforts en fournissant une couche d'abstraction
+logicielle entre le @rte de _MirageOS_ et les différentes @api d'hyperviseurs
+et de @gpos. À l'heure actuelle, _solo5_ semble n'offrit qu'un support pour les
+systèmes sur _x86-64_, _ARMv8_ et _PowerPC_ (limité à l'environnement
+d'exécution _spt_).
+
+Nous considérons donc que seuls ces architectures sont officiellement supportées
+par le projet _MirageOS_.
 
 == Support multi-processeur <mirageos_multiprocessors>
 
-Les _unikernels_ générés avec _MirageOS_ étant le plus souvent exécutés au-dessus
-d'un hyperviseur, la question du support d'architectures multi-processeur revient
-à déterminer si ces images peuvent tirer parti du parallélisme qu'offre ces
-processeurs. À ce titre, l'environnement d'exécution d'_OCaml_ doit supporter
-le parallélisme.
+Les _unikernels_ de _MirageOS_ étant souvent exécutés au-dessus d'un
+hyperviseur, la question du support d'architectures multi-processeur revient
+à déterminer si ces images peuvent tirer parti du parallélisme de ces
+processeurs. En premier lieu, le @rte d'_OCaml_ doit permettre le parallélisme
+du code _OCaml_.
 
 Jusqu'à _OCaml 4_, le @runtime _OCaml_ utilisait un verrou global assurant
 que le code _OCaml_ ne puisse jamais être exécuté en parallèle. Ce verrou
-permettait de garantir que certains invariants internes étaient préservés,
-notamment au niveau du ramasse-miette. Un moyen de bénéficier malgré tout du
-parallélisme était d'écrire le code à paralléliser en C puis de l'interfacer
-avec le code _OCaml_.
+permettait de garantir la préservation d'invariants internes, notamment au
+niveau du ramasse-miette. Un moyen de bénéficier malgré tout du parallélisme
+était d'écrire le code à paralléliser en C puis de l'interfacer avec le code
+_OCaml_.
 
 Cette solution n'a pas été retenue par les développeurs de _MirageOS_ qui
-souhaitaient bénéficier de la sûreté des types offerte par le langage _OCaml_.
+souhaitaient bénéficier de la sûreté des types du langage _OCaml_.
 Les services web étant généralement des applications _I/O bound_#footnote[Une
-application est _I/O bound_ si son temps d'exécution est dominé la vitesse de
-traitement des entrées/sorties.], une approche à base de programmation
-asynchrone a été retenue pour permettre l'entrelacement de fils d'exécutions.
-_MirageOS_ a donc été implémenté avec la bibliothèque de _threads_ coopératifs
-_Lwt_ @vouillon2008lwt @lwt_manual.
-
-Lorsque le parallélisme est vraiment nécessaire, par exemple si un service doit
-effectuer une tâches lourdes en calcul, une solution est d'exécuter plusieurs
-instances du même _unikernel_ et de les synchroniser via les @ipc de
-l'hyperviseur sous-jacent. Cette solution a été mise en pratique sur
-l'hyperviseur _Xen_.
+application est qualifiée _I/O bound_ si son temps d'exécution est dominé la
+vitesse de traitement des entrées/sorties.], une approche à base de
+programmation asynchrone a été retenue pour permettre l'entrelacement de fils
+d'exécutions. _MirageOS_ a donc été implémenté avec la bibliothèque de _threads_
+coopératifs _Lwt_ @vouillon2008lwt @lwt_manual.
 
 #aside[Bibliothèque _Lwt_][
-  _Lwt_ est une bibliothèque de _threads_ coopératifs écrit en _OCaml_ dans
+  _Lwt_ est une bibliothèque de _threads_ coopératifs écrite en _OCaml_ dans
   le cadre du projet _Ocsigen_ @mirageos_ocsigen. Elle simplifie la
   programmation asynchrone en proposant un style de programmation monadique
-  pour des promesses.
+  via des promesses.
 
   Par exemple, dans le code suivant, deux _threads_ légers sont lancés pour
   afficher un message après un décompte grâce à la fonction `Mirage_sleep.ns`:
@@ -2188,16 +2150,23 @@ l'hyperviseur _Xen_.
   est résolue, on peut afficher le message _Finished_ dans le terminal.
 ]
 
+Lorsque le parallélisme est vraiment nécessaire, par exemple si un service doit
+effectuer une tâches lourdes en calcul, une solution est d'exécuter plusieurs
+instances du même _unikernel_ et de les synchroniser via les @ipc de
+l'hyperviseur sous-jacent. Cette solution a été mise en pratique sur
+l'hyperviseur _Xen_ @madhavapeddy2015jitsu @vchan_low_latency.
+
 La version 5 d'_OCaml_ introduit deux nouvelles fonctionnalités utiles pour
-_MirageOS_. Tout d'abord le verrou global du @runtime _OCaml_ a été supprimé.
+_MirageOS_:
+- #box[D'une part le verrou global du @rte d'_OCaml_ a été supprimé.
 L'exécution en parallèle de code _OCaml_ est donc possible via le concept de
 _domaine_ @retrofitting_parallelism. Cet ajout s'est fait aux prix d'une
 complexification du modèle mémoire d'OCaml mais néanmoins maîtrisé
-@mirageos_ocaml_memory_model. D'autre part _OCaml 5_ supporte les effets
-algébriques. Ces derniers permettent d'implémenter une bibliothèque de
-_threads coopératif_ sans utiliser le style monadique et la pile d'exécution
-de ces _threads_ utilise celle d'OCaml plutôt que des clôtures alloués sur son
-tas, ce qui conduit à de meilleures performances.
+@mirageos_ocaml_memory_model,]
+- #box[D'autre part l'introduction des effets algébriques facilite la création
+d'une bibliothèque de _threads_ coopératifs. Il est désormais possible de
+réaliser une telle bibliothèque sans utiliser un style monadique, ni allouer
+des clôtures sur le tas pour représenter les piles d'exécution des _threads_.]
 
 Un effort est en cours pour porter _MirageOS_ sur _OCaml 5_ @mirageos_on_ocaml5,
 ce qui devrait conduire à une amélioration des performances des _unikernels_
@@ -2248,7 +2217,7 @@ dans un environnement _unikraft_.]
 
 Dans les sections suivantes, nous exécuterons les exemples dans l'hyperviseur
 _Xen_. Ce choix est motivé par le fait qu'il s'agit aujourd'hui du cas d'usage
-le plus fréquent.
+fréquent.
 
 == Partitionnement <mirageos_partitioning>
 
@@ -2262,31 +2231,32 @@ En particulier, si vous utiliser _Xen_ comme noyau de séparation, vous pouvez
 utiliser la bibliothèque _ocaml-vchan_ @mirageos_ocaml_vchan de _MirageOS_ pour
 communiquer entre deux _unikernels_.
 
-=== Déterminisme <mirageos_determinism>
-
 À notre connaissance, _MirageOS_ n'a jamais été utilisé dans un contexte temps
 réel. Le principal obstacle vient du ramasse-miette d'OCaml qui n'offre pas de
 garanties déterministes. Quant à la bibliothèque _Lwt_, elle n'a pas été
 conçue pour cet usage puisque les tâches doivent rendre la main volontairement
-à l'ordonnanceur _Lwt_. Si vous souhaitez exécuter une tâche temps réel, il
-faudra avoir recours à un hyperviseur temps réel et exécuter cette tâche dans
-une partition distincte.
+à l'ordonnanceur _Lwt_. Si vous souhaitez exécuter une tâche temps réel en
+parallèle d'un _unikernel_ _MirageOS_, il faudra avoir recours à un hyperviseur
+temps réel et exécuter cette tâche dans une partition distincte.
 
 == Corruption de la mémoire <mirageos_memory_corruption>
 
 La gestion de la corruption de la mémoire est généralement déléguée à
 l'environnement d'exécution de l'_unikernel_.
 
-Dans le cas de _Xen_ avec un noyau _Linux_ dans le domaine _dom0_, il suffira
-d'utiliser les sous-systèmes décrits dans @linux_memory_corruption et
-les @ipc de _Xen_ pour récupérer ces informations dans l'_unikernel_.
+Pour la journalisation des événements, il suffirait de se reposer sur le support
+offert par le système exécuté dans _dom0_. Par exemple, dans le cas de _Xen_
+avec un noyau _Linux_ dans _dom0_, on pourrait utiliser les sous-systèmes
+décrits dans la sous-section @linux_memory_corruption et les @ipc de _Xen_ pour
+récupérer ces informations dans l'_unikernel_.
 
 == Perte du flux d'exécution <mirageos_hijacking_criteria>
 
-Le _typechecker_ _OCaml_ garantie à la compilation la sûreté des types. Une donnée
-d'un certain type A ne peut pas être accédée par une série d'instructions qui
-attendaient une donnée d'un autre type B dont les représentations binaires ne
-sont pas compatibles.
+Le _typechecker_ _OCaml_ garantit à la compilation la sûreté des types. Une
+donnée d'un type A ne peut pas être accédée par une série d'instructions
+attendant une donnée d'un autre type B. En particulier la représentation machine
+des données est compatible avec celle attendue par les instructions qui y
+accèdent.
 
 Le @runtime _OCaml_ garantie à l'exécution l'absence de dépassement de tampon
 en insérant des vérifications aux endroits appropriés. En cas d'erreur, une
@@ -2294,35 +2264,36 @@ exception est levée par le @runtime et met généralement fin à l'exécution d
 programme.
 
 Ces deux garanties éliminent une grande partie des vecteurs d'attaques de
-la pile d'exécution. D'autres stratégies d'atténuation peuvent être mise en
-place au niveau de l'hyperviseur.
+la pile d'exécution. Bien sûr, d'autres stratégies d'atténuation peuvent être
+mise en place au niveau de l'hyperviseur.
 
 == Écosystème <mirageos_ecosystem>
 
 Le profilage et le débogage d'un _unikernel_ dépend fortement de
 l'environnement dans lequel il est exécuté. Pour _MirageOS_, le cas le plus
 favorable est celui d'une distribution _GNU/LINUX_, puisqu'il y existe pléthore
-d'outils, voir la sous-section @linux_ecosystem. Le manuel _OCaml_ contient un
-guide pour le profilage avec _perf_ de programmes _OCaml_ @ocaml_profiling.
+d'outils, voir la sous-section @linux_ecosystem. Le manuel _OCaml_ contient
+également un guide pour le profilage avec _perf_ de programmes _OCaml_
+@ocaml_profiling.
 
 Il existe aussi quelques outils spécifiques à _MirageOS_ ou au langage _OCaml_:
 - #box[_mirage-monitoring_ @mirageos_mirage_monitoring: Outil de monitoring
   pour les _unikernels_ produits par _MirageOS_. Il supporte le _dashboard_
-  _Telegraph_ de _Grafana_.]
+  _Telegraph_ de _Grafana_,]
 - #box[_memtrace_ @memtrace_github: Profileur mémoire pour le langage _OCaml_
   développé par l'entreprise _Janestreet_. Il permet de générer une trace
   compacte de l'utilisation de la mémoire par un programme _OCaml_. La trace
   produite peut ensuite être explorée avec _memtrace_viewer_
   @memtrace_viewer_github. Il existe une bibliothèque _MirageOS_
   _memtrace-mirage_ @mirageos_memtrace_mirage qui offre un support pour cet
-  outil dans un _unikernel_.]
+  outil dans un _unikernel_,]
 - #box[_memtrace_viewer_ @memtrace_viewer_github: Outil d'exploration de
-  traces produites par _memtrace_.]
+  traces produites par _memtrace_,]
 - #box[_mirage-profile_ @mirageos_mirage_profile: Profileur pour les programmes
   _OCaml_ utilisant la bibliothèque _Lwt_ et en particulier les _unikernels_ de
   _MirageOS_. Sa conception et des exemples d'utilisation sont exposés dans un
   article de blog @mirageos_visualising_lwt. Le projet ne semble plus être
-  maintenu.]
+  maintenu,]
 - #box[_mirage-trace-viewer_ @mirageos_mirage_trace_viewer: Outil de
   visualisation des traces produites par _mirage-profile_ ou
   _mirage-trace-dump-xen_.]
@@ -2452,6 +2423,38 @@ en bout. On peut utiliser un backend spécifique comme `mirageos-trace-viewer`.
 C'est un atout majeur en comparaison de _strace_ qui ne permet que de tracer
 les appels systèmes.
 
+=== SpaceOS <mirageos_spaceos>
+
+_SpaceOS_ est un système d'exploitation basé sur _MirageOS_ développé par _Tarides_
+pour les applications spatiales et satellitaires @spaceos_tarides @spaceos_satellite.
+Il s'agit d'une solution sécurisée et efficace pour les satellites multi-utilisateurs
+et multi-missions, construite sur la technologie des _unikernels_.
+
+_SpaceOS_ a été conçu en partenariat avec plusieurs organisations du secteur spatial :
+- L'_ESA_ (_European Space Agency_)
+- Le _CNES_
+- _Thales Alenia Space_
+- _OHB_
+- _Eutelsat_
+- Le _Singapore Space Agency_
+
+Le 15 mars 2025, _OCaml_ a été lancé dans l'espace à bord de la mission _Transporter-13_.
+_DPhi Space_ a embarqué son ordinateur _Clustergate_ sur ce vol, et l'équipe _SpaceOS_
+a déployé un logiciel basé sur _OCaml 5_ sur le satellite. Cette mission a démontré
+la viabilité des _unikernels_ _MirageOS_ pour les applications spatiales en conditions
+réelles.
+
+Les principaux avantages de _SpaceOS_ incluent:
+- Une réduction de taille d'un facteur 20 par rapport à un déploiement basé sur
+  des conteneurs _Linux_
+- Une sécurité accrue grâce à l'utilisation d'un langage à gestion mémoire sûre (_OCaml_)
+- Une architecture modulaire permettant de compiler uniquement les fonctionnalités
+  nécessaires du système d'exploitation
+
+Ces résultats ont valu à _SpaceOS_ une reconnaissance industrielle significative,
+notamment le prestigieux _Airbus Innovation Award_ lors de la _Paris Space Week_ 2024.
+
+
 = PikeOS <pikeos>
 
 #showybox(
@@ -2464,7 +2467,7 @@ les appels systèmes.
 )[
   - *Type* : RTOS + Hyperviseur type 1 (inspiré du micronoyau L4)
   - *Langage* : C
-  - *Architectures* : x86-64, ARM v7/v8, PowerPC, RISC-V, SPARC
+  - *Architectures* : x86-64, ARMv7/v8, PowerPC, RISC-V, SPARC
   - *Usage principal* : Systèmes critiques (aéronautique, automobile, défense, médical)
   - *Points forts* : Conçu pour la certification, paravirtualisation + HVM, support multi-criticité
   - *Limitations* : Propriétaire, coût de licence
@@ -2607,6 +2610,36 @@ est en particulier possible de l'utiliser sur la plateforme _LEON_,]
 sur _x86_ @pikeos_windows.]
 
 == Corruption de la mémoire <pikeos_memory_corruption>
+
+_PikeOS_ ne semble pas fournir d'@api unifiée pour la gestion des erreurs mémoire
+@ecc au niveau du noyau de séparation. La documentation publique de _SYSGO_ ne
+détaille pas de mécanisme centralisé de journalisation des erreurs mémoire
+comparable à _EDAC_ sous _Linux_ ou au _Health Monitor_ d'_XtratuM_ pour les
+erreurs mémoire.
+
+La gestion de la corruption de la mémoire dans _PikeOS_ s'effectue à plusieurs
+niveaux:
+- #box[Le @bsp (_Board Support Package_) peut intégrer un support pour les contrôleurs
+mémoire @ecc spécifiques à la plateforme. Par exemple, pour les processeurs _LEON_ _SPARC_
+que _PikeOS_ supporte @pikeos_rtems_leon, les versions durcies comme le _LEON3FT_
+et le _LEON5_ intègrent des mécanismes matériels de correction d'erreurs et de
+_scrubbing_ automatique de la mémoire cache pour prévenir l'accumulation d'erreurs
+dues aux radiations spatiales @leon_radiation. Ces fonctionnalités sont accessibles
+via l'@api du @bsp _LEON_ de _PikeOS_.]
+- #box[Les systèmes d'exploitation invités (_GuestOS_) peuvent implémenter leur propre
+gestion des erreurs mémoire. Ainsi, lorsque _PikeOS_ exécute _ELinOS_ (une distribution
+_Linux_ embarqué développée par _SYSGO_) dans une partition, ce système invité peut
+utiliser le sous-système _EDAC_ de _Linux_ pour détecter et journaliser les erreurs
+mémoire @ecc, comme décrit dans @linux_memory_corruption.]
+- #box[Le _Health Monitor_ de _PikeOS_ permet la détection d'erreurs et la gestion
+des fautes au niveau des partitions @pikeos_health_monitor. Bien que les détails
+techniques ne soient pas publiquement documentés, ce mécanisme peut être configuré
+pour réagir aux erreurs matérielles, y compris potentiellement les erreurs mémoire
+critiques.]
+
+Cette approche décentralisée est cohérente avec l'architecture de noyau de séparation
+de _PikeOS_, où chaque partition est isolée et peut avoir des exigences différentes
+en matière de gestion d'erreurs selon son niveau de criticité.
 
 == Écosystème <pikeos_ecosystem>
 
@@ -2821,7 +2854,8 @@ dans la sécurité et les systèmes embarqués critiques.
 L'hyperviseur est disponible sur l'architecture _ARM v8-A_. Il offre un support
 pour le _MMU_ sur cette architecture.
 
-_ProvenCore_ est conçu pour fonctionner avec le @tee _TrustZone_ de l'architecture _ARM_.
+_ProvenCore_ est conçu pour fonctionner avec le @tee _TrustZone_ de
+l'architecture _ARM_.
 
 == Certifications <provenvisor_certifications>
 
@@ -3671,8 +3705,8 @@ make user
 
 Le développement initial de _seL4_ s'est fait uniquement sur l'architecture
 _ARM v7_. Le projet a depuis été porté sur les plateformes _x86_ et _RISC-V_.
-La dernière version du micronoyau supporte les architectures suivantes: _ARM v7_,
-_ARM v8_, _x86-32_, _x86-64_ et _RISC-V_.
+La dernière version du micronoyau supporte les architectures suivantes:
+_x86-32_, _x86-64_, _ARM v7_, _ARM v8_ et _RISC-V_.
 
 Sur l'architecture _x86_, il est possible d'utiliser les instructions _VT-X_ pour
 la virtualisation assistée par le matériel.
@@ -4854,7 +4888,7 @@ jamais existé.
 
 D'après les dernières brochures @xtratum_flyer, _XtratuM_ supporte les
 architectures suivantes: _ARM-v7_, _ARM-v8_, _SPARC_, _RISC-V_. En particulier,
-il supporte les architectures _SPARCv8_ _LEON3_ et _LEON4_ qui sont utilisées
+il supporte les architectures _SPARCv8_, _LEON3_ et _LEON4_ qui sont utilisées
 dans des missions spatiales. Le support se fait via des @bsp.
 
 == Support multi-processeur <xtratum_multiprocessor>

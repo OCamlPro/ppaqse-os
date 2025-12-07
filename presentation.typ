@@ -103,9 +103,10 @@
 
 #table(
   columns: (2fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+  align: (x, _) => { if x == 0 { left } else { center } },
   table.header[OS][Temps réel][Hyperviseur][LibOS][GPOS][RTOS],
   [Linux],
-  supported([]), supported([]), notsupported([]), supported([]), notsupported([]),
+  supported([]), supported([]), partiallysupported([]), supported([]), notsupported([]),
 
   [MirageOS],
   notsupported([]), notsupported([]), supported([]), notsupported([]), notsupported([]),
@@ -136,6 +137,7 @@
 #set text(size: 14pt)
 #table(
   columns: (1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+  align: (x, _) => { if x == 0 { left } else { center } },
   table.header(
     [OS],
     [x86-32],
@@ -153,11 +155,11 @@
   supported([]), supported([]), supported([]), supported([]),
 
   [MirageOS],
-  notsupported([]), supported([]), notsupported([]), supported([]),
-  notsupported([]), notsupported([]), notsupported([]), notsupported([]),
+  partiallysupported([OCaml < 5]), supported([]), partiallysupported([OCaml < 5]), supported([]),
+  partiallysupported([spt]), notsupported([]), notsupported([]), notsupported([]),
 
   [PikeOS],
-  supported([]), supported([]), supported([]), supported([]),
+  notsupported([]), supported([]), supported([]), supported([]),
   supported([]), notsupported([]), supported([]), supported([]),
 
   [ProvenVisor],
@@ -173,18 +175,57 @@
   notsupported([]), notsupported([]), supported([]), notsupported([]),
 
   [Xen],
-  notsupported([]), notsupported([]), supported([]), notsupported([]),
-  supported([]), notsupported([]), notsupported([]), notsupported([]),
+  supported([]), supported([]), supported([]), supported([]),
+  partiallysupported([]), partiallysupported([]), notsupported([]), notsupported([]),
 
   [XtratuM],
-  notsupported([]), notsupported([]), supported([]), notsupported([]),
-  supported([]), notsupported([]), notsupported([]), notsupported([]),
+  deprecated([?]), notsupported([?]), supported([]), supported([]),
+  supported([]), notsupported([]), supported([]), supported([]),
+)
+]
+
+#slide(title: "Critère - Perte du flux d'exécution")[
+#set text(size: 13pt)
+#table(
+  columns: (1.3fr, 1.2fr, 1.2fr, 1.5fr),
+  align: (x, _) => { if x == 0 { left } else { center } },
+  table.header(
+    [OS],
+    [CFI / ASLR / Canaris],
+    [Extensions matérielles],
+    [Autres protections]
+  ),
+
+  [Linux],
+  partiallysupported([Partiel]), supported([Intel CET, ARM BTI]), notsupported([]),
+
+  [MirageOS],
+  notsupported([]), notsupported([]), supported([Typechecker OCaml]),
+
+  [PikeOS],
+  notsupported([]), notsupported([]), supported([Isolation + CC EAL 5+]),
+
+  [ProvenVisor],
+  notsupported([]), supported([NX, PAN, PAC]), supported([Vérification formelle]),
+
+  [RTEMS],
+  notsupported([]), notsupported([]), notsupported([Applications de confiance]),
+
+  [seL4],
+  notsupported([]), notsupported([]), supported([Vérification formelle]),
+
+  [Xen],
+  partiallysupported([Partiel]), supported([Intel CET, ARM BTI]), partiallysupported([Dev sécurisé]),
+
+  [XtratuM],
+  [?], [?], [?],
 )
 ]
 
 #slide(title: "Critère - Support watchdog")[
 #table(
-  columns: (1.5fr, 1fr, 1fr, 1fr),
+  columns: (1.3fr, 1fr, 1fr, 1fr),
+  align: (x, _) => { if x == 0 { left } else { center } },
   table.header(
     [OS],
     [_Watchdog_ matériel],
@@ -212,4 +253,34 @@
 ]
 
 #slide(title: "Programmation baremetal")[
+#set text(size: 15pt)
+#table(
+  columns: (1.5fr, 1fr, 1fr, 1fr, 1fr),
+  align: (x, _) => { if x == 0 { left } else { center } },
+  table.header(
+    [Hyperviseur],
+    [Ada],
+    [C],
+    [OCaml],
+    [Rust]
+  ),
+
+  [KVM (Linux)],
+  [N/A], [N/A], [N/A], [N/A],
+
+  [PikeOS],
+  supported([Ravenscar]), supported([]), notsupported([]), supported([]),
+
+  [ProvenVisor],
+  notsupported([]), notsupported([]), notsupported([]), notsupported([]),
+
+  [seL4],
+  notsupported([]), supported([]), notsupported([]), supported([]),
+
+  [Xen],
+  notsupported([]), supported([]), supported([]), supported([]),
+
+  [XtratuM],
+  supported([Ravenscar]), supported([]), notsupported([]), supported([]),
+)
 ]
