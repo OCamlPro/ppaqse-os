@@ -652,32 +652,37 @@ Pour chaque système, nous examinerons donc le support pour les architectures
 
 ==== Partitionnement temporel <time_partitioning>
 
-Le partitionnement temporel désigne le partage du temps _CPU_ entre les
-tâches exécutées. Contrairement à son homologue spatial, le pendant temporel
-est souvent géré par une couche logicielle: l'ordonnanceur de tâches
-(_scheduler_). Il a pour rôle de décider quelle tâche doit s'exécuter sur quel
-processeur et pendant combien de temps.
+Le partitionnement temporel est le partage du temps _CPU_ entre les tâches
+en cours d'exécution. Contrairement à son homologue spatial, ce partage est
+le plus souvent géré par une couche logicielle appelée _ordonnanceur de
+tâches_ (_scheduler_). Le rôle principal de l'ordonnanceur est de décider
+qu'elle tâche doit maintenant s'exécuter et sur quel processeur.
 
-Un ordonnanceur poursuit des objectifs variés et parfois incompatibles. Parmi
-les principaux critères, on peut citer:
-- #box[_Throughput_: maximiser la quantité de travail accomplie par unité de
+Un ordonnanceur de tâches poursuit des objectifs variés et parfois
+incompatibles. Il existe de nombreux critères pour qualifier et quantifier
+les qualités et défauts d'un ordonnanceur. Nous ne retenons que les suivants:
+- #box[_Throughput_: quantité de travail accomplie par unité de
   temps,]
-- #box[_Latency_: minimiser le délai qui s'écoule entre le réveil d'une tâche
+- #box[_Latency_: délai qui s'écoule entre le réveil d'une tâche
   et son exécution sur un cœur,]
-- #box[_Fairness_: répartir équitablement le temps de calcul en tenant compte
+- #box[_Fairness_: équité quant au temps de calcul en tenant compte
   des priorités des tâches,]
-- #box[_Déterminisme_: avoir un comportement aussi déterministe que possible.]
+- #box[_Déterminisme_: capacité à prédire l'ordre d'exécution des tâches.]
 
+Il est difficile de concilier toutes ces qualités dans un même ordonnanceur.
 Par exemple, utiliser un algorithme de décision astucieux aura tendance à
 augmenter la latence mais peut augmenter le débit. De même, tirer parti du
 parallélisme d'une architecture @smp diminue la latence mais augmente
-l'indéterminisme du système. Il existe donc une multitude d'ordonnanceurs qui
-font des compromis différentes entre ces aspects et beaucoup d'autres.
+l'indéterminisme du système.
 
-De façon générale un ordonnanceur de @gpos cherche à maximiser le débit et être
-équitable, tandis qu'un ordonnanceur temps réel cherche plutôt à être
-déterministe et à minimiser la latence.
+Généralement un ordonnanceur de tâches d'un @gpos cherchera à maximiser le
+_throughput_ tout en restant équitable. Quant à un ordonnanceur de tâches d'un
+@rtos, il cherchera à être aussi déterministe que possible et à minimiser la
+latence, même si cela réduit parfois le _throughput_.
 
+Il existe donc une multitude d'ordonnanceurs faisant des compromis dans la
+poursuite des qualités ci-dessus. Les systèmes d'exploitation offrent souvent
+plusieurs ordonnanceurs afin de pouvoir s'adapter aux différents usages.
 Pour chacun des systèmes étudiés, nous avons donc décrit les ordonnanceurs
 disponibles. On examinera en particulier la présence de politiques
 d'ordonnancement temps réel parmi la liste suivante:
@@ -914,15 +919,28 @@ courant, notamment dans le cloud computing, est de lancer des @vm à la demande
 pour s'adapter au mieux aux variations de la charge de travail. Ces @vm doivent
 se lancer rapidement pour garantir des temps de réponse acceptables.
 
-== Maintenabilité
+== Maintenabilité <criteria_maintainability>
 
-L'usage d'un @cots présente le risque d'une rupture de la maintenance du système.
+La _maintenabilité_ d'une solution informatique est un facteur essentiel à
+analyser afin de faire un choix éclairé. Si l'usage d'un @cots offre des
+avantages indéniables durant la phase développement, il introduit une dépendance
+technologique significative sur le long terme. La maintenance du @cots peut
+cesser ou ses conditions d'utilisation peuvent changées, entrainant une
+transition vers une solution alternative, souvent coûteuses et complexes.
 
-La maintenabilité du système d'exploitation est évalué à travers différents
-sous-critères:
-- La taille du code source.
-- La modularité de la base de code et la complexité des invariants de celle-ci.
-- L'organisation et le nombres de développeurs.
+Nous avons analysé la maintenabilité des différents systèmes étudiés suivant
+les critères ci-dessous:
+- _Licence_: une licence libre ou _Open Source_ présente l'avantage d'avoir
+  un accès facile au code source. Même si le @cots n'est plus maintenu, il est
+  toujours possible de le faire évolution et d'appliquer des correctifs,
+- _Taille de l'écosystème_: un grand écosystème facilite le développement et
+  assure que d'autres utilisateurs souhaitent son maintien,
+- _Taille du code source_: la taille du code source n'est pas toujours gage de
+  complexité mais cela reste un indice important,
+- _Ancienté_: un @cots ancien est souvent plus mature mais il embarque aussi
+   davantage de dette technique,
+- _Support commercial_: la présence d'un support commercial assure de recevoir
+  une aide, au moins sur le moyen terme.
 
 = Linux <linux>
 
@@ -5234,7 +5252,32 @@ auparavant prises en charge par des calculateurs dédiés.
 _XtratuM/NG_(abrégé _XNG_) est une version plus récente de l'hyperviseur qui offre un meilleur
 support multi-cœur.
 
-= Tableaux comparitifs<comp>
+= Tableaux comparitifs <comparison_tables>
+
+== Maintenabilité <maintainability_tables>
+
+Une première mesure simple de la complexité d'un programme est donné par la métrique _SLOC_
+(pour _source lines of code_) qui mesure la taille d'un programme informatique en nombres de lignes dans
+son code source. Les sources de `PikeOS`, `ProvenVisor` and `XtratuM` étant fermées et n'ayant pas trouvé de
+données concernant le _SLOC_ pour ces OS, nous les excluons de cette section.
+
+Pour les OS open-sources, nous avons utilisé l'outil `SLOCCount`@sloccount_website pour effectuer ces mesures. Cet outil ne compte pas les commentaires.
+
+#table(
+  columns: 4,
+  align: (center, center, center, center),
+  [OS],          [Total (SLOC)],  [Pilotes (SLOC)], [Langage],
+  [Linux & KVM], [26 927 724],    [18 920 036],     [C (98%)],
+  [MirageOS],    [9,075],         [?],              [OCaml (99%)],
+  [PikeOS],      [?],             [?],              [C (?)],
+  [ProvenVisor], [?],             [?],              [C (?)],
+  [RTEMS],       [1 990 023],     [71,238],         [C (96%)],
+  [seL4],        [68 175],        [1 086],          [C (87%)],
+  [Xen],         [581 193],       [45 220],         [C (93%)],
+  [XtratuM],     [?],             [?],              [C (?)],
+)
+
+== Draft
 
 #table(
   columns: 3,
@@ -5289,28 +5332,6 @@ s'agit du support pour le matériel surlequel est exécuté l'hyperviseur.
         [Non],    [Non],    [Oui],     [Non],     [Oui],     [Non],  [Non],    [Non],
 )
 
-== SLOC
-
-Une première mesure simple de la complexité d'un programme est donné par la métrique _SLOC_
-(pour _source lines of code_) qui mesure la taille d'un programme informatique en nombres de lignes dans
-son code source. Les sources de `PikeOS`, `ProvenVisor` and `XtratuM` étant fermées et n'ayant pas trouvé de
-données concernant le _SLOC_ pour ces OS, nous les excluons de cette section.
-
-Pour les OS open-sources, nous avons utilisé l'outil `SLOCCount`@sloccount_website pour effectuer ces mesures. Cet outil ne compte pas les commentaires.
-
-#table(
-  columns: 4,
-  align: (center, center, center, center),
-  [OS],          [Total (SLOC)],  [Pilotes (SLOC)], [Langage],
-  [Linux & KVM], [26 927 724],    [18 920 036],     [C (98%)],
-  [MirageOS],    [9,075],         [?],              [OCaml (99%)],
-  [PikeOS],      [?],             [?],              [C (?)],
-  [ProvenVisor], [?],             [?],              [C (?)],
-  [RTEMS],       [1 990 023],     [71,238],         [C (96%)],
-  [seL4],        [68 175],        [1 086],          [C (87%)],
-  [Xen],         [581 193],       [45 220],         [C (93%)],
-  [XtratuM],     [?],             [?],              [C (?)],
-)
 
 == Politiques d'ordonnancement
 

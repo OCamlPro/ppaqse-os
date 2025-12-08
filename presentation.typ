@@ -288,38 +288,46 @@
 #slide(title: "Critère - Maintenabilité")[
 #set text(size: 13pt)
 #table(
-  columns: (1.2fr, 1fr, 1.2fr, 1fr, 1.5fr),
-  align: (x, _) => { if x == 0 { left } else { center } },
+  columns: (1.2fr, 1fr, 1.2fr, 1fr, 1.5fr, 1.5fr),
   table.header(
     [OS],
-    [Licence],
-    [Écosystème],
+    [Licence(s)],
+    [Taille de l'écosystème],
     [Taille TCB],
-    [Support / Communauté]
+    [Support],
+    [Âge]
   ),
 
   [Linux],
-  supported([GPL]), supported([Large]), notsupported([~20M LoC]), supported([Très actif]),
+  [GPLv2], supported([Très large]), notsupported([~20M SLOC]),
+  supported([Très actif]), [~34 ans],
 
   [MirageOS],
-  supported([ISC/BSD]), partiallysupported([Moyen]), supported([< 10k LoC]), partiallysupported([Niche]),
+  [ISC/BSD], partiallysupported([Moyen]), supported([< 10k SLOC]),
+  partiallysupported([Niche]), [~16 ans],
 
   [PikeOS],
-  notsupported([Propriétaire]), partiallysupported([Moyen]), partiallysupported([~50k LoC]), supported([Support commercial]),
+  [Propriétaire], partiallysupported([Moyen]), partiallysupported([~50k SLOC]),
+  supported([Support commercial]), [~20 ans],
 
   [ProvenVisor],
-  notsupported([Propriétaire]), partiallysupported([Limité]), supported([~10k LoC]), partiallysupported([Support commercial]),
+  [Propriétaire], notsupported([Limité]), supported([~10k SLOC]),
+  partiallysupported([Support commercial]), [~10 ans],
 
   [RTEMS],
-  supported([BSD]), supported([Large]), partiallysupported([~500k LoC]), supported([Actif]),
+  [BSD], supported([Large]), partiallysupported([~500k SLOC]),
+  supported([Actif]), [~32 ans],
 
   [seL4],
-  supported([GPLv2]), partiallysupported([Moyen]), supported([~10k LoC]), supported([Actif]),
+  [GPLv2], partiallysupported([Moyen]), supported([~10k SLOC]),
+  supported([Actif]), [~19 ans],
 
   [Xen],
-  supported([GPLv2]), supported([Large]), partiallysupported([~400k LoC]), supported([Très actif]),
+  [GPLv2], supported([Large]), partiallysupported([~400k SLOC]),
+  supported([Très actif]), [~22 ans],
 
   [XtratuM],
-  supported([GPL]), partiallysupported([Limité]), partiallysupported([~50k LoC]), notsupported([Peu actif]),
+  [GPL], partiallysupported([Limité]), partiallysupported([~50k SLOC]),
+  notsupported([Peu actif]), [~21 ans]
 )
 ]
