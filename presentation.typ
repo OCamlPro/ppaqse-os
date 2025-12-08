@@ -284,3 +284,42 @@
   supported([Ravenscar]), supported([]), notsupported([]), supported([]),
 )
 ]
+
+#slide(title: "Critère - Maintenabilité")[
+#set text(size: 13pt)
+#table(
+  columns: (1.2fr, 1fr, 1.2fr, 1fr, 1.5fr),
+  align: (x, _) => { if x == 0 { left } else { center } },
+  table.header(
+    [OS],
+    [Licence],
+    [Écosystème],
+    [Taille TCB],
+    [Support / Communauté]
+  ),
+
+  [Linux],
+  supported([GPL]), supported([Large]), notsupported([~20M LoC]), supported([Très actif]),
+
+  [MirageOS],
+  supported([ISC/BSD]), partiallysupported([Moyen]), supported([< 10k LoC]), partiallysupported([Niche]),
+
+  [PikeOS],
+  notsupported([Propriétaire]), partiallysupported([Moyen]), partiallysupported([~50k LoC]), supported([Support commercial]),
+
+  [ProvenVisor],
+  notsupported([Propriétaire]), partiallysupported([Limité]), supported([~10k LoC]), partiallysupported([Support commercial]),
+
+  [RTEMS],
+  supported([BSD]), supported([Large]), partiallysupported([~500k LoC]), supported([Actif]),
+
+  [seL4],
+  supported([GPLv2]), partiallysupported([Moyen]), supported([~10k LoC]), supported([Actif]),
+
+  [Xen],
+  supported([GPLv2]), supported([Large]), partiallysupported([~400k LoC]), supported([Très actif]),
+
+  [XtratuM],
+  supported([GPL]), partiallysupported([Limité]), partiallysupported([~50k LoC]), notsupported([Peu actif]),
+)
+]

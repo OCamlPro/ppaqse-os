@@ -7,7 +7,7 @@
 #import fletcher.shapes: house, hexagon
 #set text(lang: "fr", size: 12pt)
 #set par(justify: true)
-#set par.line(numbering: "1", numbering-scope: "page")
+// #set par.line(numbering: "1", numbering-scope: "page")
 
 #show heading.where(level: 1, outlined: true): it => {
     pagebreak(weak: true)
@@ -1856,15 +1856,6 @@ pas ce dernier dans un délai de 30 secondes.
   caption: [Exemple de service _systemd_ avec _watchdog_.]
 ) <linux_systemd_watchdog_example>
 
-== Licences <linux_licenses>
-
-Le noyau `Linux` est un logiciel libre distribué sous licence `GPL-2.0` avec
-l'exception _syscall_ qui stipule qu'un logiciel utilisant le noyau `Linux` au
-travers des appels systèmes n'est pas considéré comme une œuvre dérivée et
-peut être distribué sous une licence qui n'est pas compatible avec la GPL,
-y compris une licence propriétaire. Plus d'informations sont disponibles dans
-le dossier `LICENSES` des sources du noyau `Linux`.
-
 == Temps de démarrage <linux_booting>
 
 Il existe de nombreuses techniques pour réduire le temps de démarrage d'un système
@@ -1928,6 +1919,14 @@ On retrouve aussi d'autres informations intéressantes:
 - #box[_Initrd_: Temps d'initialisation de la _RAM disk_.]
 - #box[_Userspace_: Temps écoulé pour lancer tous les services de l'@userspace.]
 
+== Maintenabilité <linux_mainability>
+
+Le noyau `Linux` est un logiciel libre distribué sous licence `GPL-2.0` avec
+l'exception _syscall_ qui stipule qu'un logiciel utilisant le noyau `Linux` au
+travers des appels systèmes n'est pas considéré comme une œuvre dérivée et
+peut être distribué sous une licence qui n'est pas compatible avec la GPL,
+y compris une licence propriétaire. Plus d'informations sont disponibles dans
+le dossier `LICENSES` des sources du noyau `Linux`.
 
 = MirageOS <mirageos>
 
@@ -2394,15 +2393,7 @@ fonctionnement, il pourrait faire donc l'objet de certifications comme celles
 décrites dans les Critères Communs (niveau _EAL_) mais rien de tel semble avoir
 été entrepris jusqu'à présent.
 
-== Licences <mirageos_licenses>
-
-Le code de _MirageOS_ est publié sous la licence _ISC_ avec certaines parties
-sous licence _LGPLv2_. L'utilisation d'une licence open-source permissive comme
-_ISC_ est nécessaire car l'_unikernel_ produit par _MirageOS_ est lié statiquement
-avec les bibliothèques. Grâce à cette licence, vous n'avez pas les contraintes
-des licences _GPL_ lorsque vous distribuez le binaire de votre _unikernel_.
-
-== Maintenabilité <mirageos_maintenability>
+== Maintenabilité <mirageos_maintainability>
 
 _MirageOS_ est en majorité écrit en OCaml, un langage de haut niveau qui offre
 de bonne garantie du point de vue de la sûreté des types et de la mémoire.
@@ -2417,6 +2408,13 @@ codes _OCaml_. Il subsiste plusieurs parties en langage C et notamment:
   réécriture en OCaml est théoriquement possible mais nécessiterait un effort
   considérable en pratique,
 - Les pilotes doivent être écrits dans un langage bas niveau comme le langage C.
+
+Le code de _MirageOS_ est publié sous la licence _ISC_ avec certaines parties
+sous licence _LGPLv2_. L'utilisation d'une licence open-source permissive comme
+_ISC_ est nécessaire car l'_unikernel_ produit par _MirageOS_ est lié
+statiquement avec les bibliothèques. Grâce à cette licence, vous n'avez pas les
+contraintes des licences _GPL_ lorsque vous distribuez le binaire de votre
+_unikernel_.
 
 _MirageOS_ a été utilisé dans plusieurs projets d'envergures. Récemment
 l'entreprise _Tarides_ a développé le système d'exploitation _SpaceOS_ pour
@@ -2460,14 +2458,16 @@ _Paris Space Week_ 2024.
   - *Type* : RTOS + Hyperviseur type 1 (inspiré du micronoyau L4)
   - *Langage* : C
   - *Architectures* : x86-64, ARMv7/v8, PowerPC, RISC-V, SPARC
-  - *Usage principal* : Systèmes critiques (aéronautique, automobile, défense, médical)
-  - *Points forts* : Conçu pour la certification, paravirtualisation + HVM, support multi-criticité
+  - *Usage principal* : Systèmes critiques (aéronautique, automobile, défense,
+    médical)
+  - *Points forts* : Conçu pour la certification, paravirtualisation + HVM,
+    support multi-criticité
   - *Limitations* : Propriétaire, coût de licence
   - *Licences* : Propriétaire (SYSGO/Thalès)
   - *Certifications* : Kits disponibles pour DO-178B/C, IEC 61508, ISO 26262
 ]
 
-_PikeOS_ est un micronoyau temps réel dédié à l'embarqué critique.
+_PikeOS_ est un hyperviseur temps réel dédié à l'embarqué.
 
 Depuis la fin des années 90, l'entreprise _SYSGO_ développait son propre
 micronoyau baptisé _P4_ et inspiré du noyau _L4_ de Jochen Liedtke
@@ -2475,35 +2475,40 @@ micronoyau baptisé _P4_ et inspiré du noyau _L4_ de Jochen Liedtke
 est envisagé du fait de l'augmentation des performances et du besoin croissant
 de fiabilité dans les logiciels embarqués. Contrairement à la majorité des
 implémentations du micronoyau _L4_ de l'époque, _P4_ était donc conçu pour
-l'embarqué et était totalement préemptif afin d'être utilisé dans des systèmes
-temps réel. Cette expérience a permis aux ingénieurs de _SYSGO_ d'identifier
+l'embarqué et était totalement préemptif pour des usages temps réel. Cette
+expérience a permis aux ingénieurs de _SYSGO_ d'identifier
 des limites dans la conception du noyau _P4_, principalement héritées de l'@api
-de _L4_. Ces limites concernées notamment l'isolation temporelle et spatiale.
+de _L4_. Ces limites concernaient notamment l'isolation temporelle et spatiale.
 
 Les ingénieurs de _SYSGO_ ont alors développé un nouveau micronoyau _PikeOS_
 avec pour objectif une meilleure isolation afin qu'il soit utilisable dans
 les systèmes de criticité mixte. L'idée était de développer un hyperviseur
 pour assurer l'isolation de partition. La plateforme a également été pensée pour
-faciliter la certification. La première version est publiée en 2005.
+faciliter la certification. La première version est commercialisée en 2005.
+
+En 2006, _SYSGO_ ajoute le support de l'architecture _ARM_.
 
 En 2008, l'avioneur _Airbus_ choisit _PikeOS_ comme plateforme de référence
 _DO-178B_ pour le système _FSA-NG_ de l'_A350_.
 
 En 2012, l'entreprise _Thales_ acquière _SYSGO_.
 
+En 2022, _PikeOS 5.1.3_ obtient la certification de sécurité _Critères Communs_ au
+niveau _EAL 5+_ pour les architectures _x86-64_, _ARMv8_ et _PowerPC_ @pikeos_cc_eal5_cert.
+
 == Architectures supportées <pikeos_architectures>
 
-_PikeOS_ supporte les architectures suivantes: _x86-64_, _ARM v7_, _ARM v8_,
-_PowerPC_, _RISC-V_ et _SPARC_.
+_PikeOS_ supporte les architectures suivantes: _x86-64_, _ARMv7_, _ARMv8_,
+_PowerPC_, _RISC-V_ et _SPARC_. Le support pour l'architecture _ARM_ existe
+depuis 2006. En particulier, _PikeOS_ supporte les architectures _SPARC_
+_LEON3_ et _LEON4_ utilisés dans le spatial.
 
-Le support pour l'architecture _ARM_ existe depuis 2006.
 Quant à son hyperviseur, il propose un support pour la virtualisation matérielle
-sur les architectures _ARM v7_ @pikeos_hwvirt_armv7 et _x86-64_ @pikeos_hwvirt_x86.
+sur les architectures _ARM v7_ @pikeos_hwvirt_armv7 et _x86-64_
+@pikeos_hwvirt_x86.
 
-Le support matériel se fait via des @bsp. En particulier, _PikeOS_ supporte
-les architectures _SPARC_ _LEON3_ et _LEON4_.
-
-_SYSGO_ propose également le développement de nouveaux @bsp à la demande.
+Le support matériel se fait via des @bsp et _SYSGO_ propose le développement
+de nouveau @bsp à la demande.
 
 == Support multi-processeur <pikeos_multiprocessor>
 
@@ -2532,59 +2537,138 @@ de _MPU_ et offre en particulier un support pour des architecture @amp. Il suppo
 architectures _ARMv7-R_, _ARMv8-R_ et dispose de @bsp les @mpsoc _NG-Ultra_ et
 _AMD Zynq Ultrascale+_.
 
-== Partitionnement en espace <pikeos_space_partitioning>
+== Partitionnement <pikeos_space>
 
-_PikeOS_ a été conçu pour offrir de solide garantie quant au partitionnement
-en temps et en espace. Sa conception est inspirée de l'_ARINC 653_, une norme
-avionique pour les systèmes temps réel. Toutefois _PikeOS_ n'est pas conforme
-_ARINC 653_.
+_PikeOS_ offre une solide isolation spatiale et temporelle de ses partitions.
+Sa conception est inspirée de la norme avionique _ARINC 653_ pour les systèmes
+temps réel. Toutefois _PikeOS_ ne se conforme pas à celle-ci.
 
-Son hyperviseur permet à la fois la paravirtualisation et la virtualisation
-de assistée par le matériel.
-- _HwVirt_ désigne la virtualisation assistée par le matériel.
-- _Pv-virt_ désigne la paravirtualisation.
+=== Partitionnement spatial <pikeos_space_partitioning>
 
+Le noyau de séparation de _PikeOS_ garantit une isolation stricte de la
+mémoire entre les partitions @pikeos_security_target_v5. Cette isolation a
+fait l'objet d'une vérification formelle au niveau du code source
+@pikeos_memory_separation. La séparation mémoire a été prouvée formellement en
+décomposant les exigences de haut niveau en propriétés fonctionnelles du
+gestionnaire de mémoire sous forme d'assertions vérifiables.
 
-Le partitionnement spatial est au cœur de l'architecture de _PikeOS_. Son noyau
-de séparation (_separation kernel_) a été conçu pour garantir une isolation
-stricte de la mémoire entre les partitions @pikeos_security_target_v5. Chaque
-partition peut être vue comme un conteneur avec des privilèges pré-alloués pour
-accéder à la mémoire, au temps _CPU_, aux périphériques d'_I/O_ et à une liste
-de services du système d'exploitation.
+La version standard de _PikeOS_ utilise un @mmu pour créer des espaces
+d'adressages virtuels et contrôler les accès mémoires. Pour les systèmes
+embarqués dépourvus de @mmu, _SYSGO_ propose _PikeOS for MPU_. Cette version
+fonctionne sur des architectures _ARM_ de type @mpsoc. À notre connaissance,
+il n'y a pas de support pour des architectures dépourvues de tout contrôle
+mémoire.
 
-_PikeOS_ utilise les mécanismes matériels de protection mémoire pour contrôler
-l'accès aux ressources. Le noyau s'appuie sur le @mmu lorsque disponible pour
-créer des espaces d'adressage virtuels isolés. Chaque tâche utilisateur
-s'exécute dans son propre espace d'adressage virtuel, mappé vers les zones de
-mémoire physique disponibles. Cette approche garantit qu'une partition ne peut
-ni lire ni écrire dans la mémoire d'une autre partition @pikeos_wikipedia.
+=== Partitionnement temporel <pikeos_temporal_partitioning>
 
-Pour les systèmes embarqués sans @mmu, l'entreprise _SYSGO_ propose
-_PikeOS for MPU_, une édition dédiée aux architectures équipées uniquement d'un
-@mpu. Cette version supporte en particulier les architectures _ARMv7-R_
-(_Cortex-R5_) et _ARMv8-R_ (_Cortex-R52_) avec des @bsp pour différentes
-plateformes dont _NG-Ultra_, _AMD Zynq UltraScale+_ et _QEMU_. Le @mpu permet
-une protection mémoire sans virtualisation d'adresses, ce qui convient aux
-applications temps réel critiques nécessitant un déterminisme maximal.
+_PikeOS_ utilise un ordonnanceur hiérarchique breveté à double niveau inspiré de
+la norme _ARINC 653_ @pikeos_safe_real_time_scheduling. Cette architecture combine
+un partitionnement temporel strict au niveau des partitions avec une flexibilité
+d'ordonnancement au niveau des threads.
 
-L'isolation mémoire de _PikeOS_ a fait l'objet d'une vérification formelle au
-niveau du code source @pikeos_memory_separation. La séparation mémoire a été
-prouvée formellement en décomposant les exigences de haut niveau en propriétés
-fonctionnelles du gestionnaire de mémoire, représentées sous forme d'assertions
-vérifiables. Le noyau de séparation _PikeOS 5.1.3_ est certifié _Common Criteria_
-(_ISO/IEC 15408_) _EAL 5+_ pour la cybersécurité, attestant de son niveau élevé
-de sûreté et de sécurité.
+==== Ordonnancement au niveau des partitions
 
-== Partitionnement en temps <pikeos_time_partitioning>
+Le premier niveau de l'ordonnanceur assure l'isolation temporelle stricte entre
+les partitions. Il distribue statiquement le temps _CPU_ selon un schéma cyclique
+de type _TDM_ (_Time Division Multiplexing_). Le cycle complet, appelé _major
+time frame_ dans la terminologie _ARINC 653_, est subdivisé en plusieurs fenêtres
+temporelles (_partition windows_ ou _minor time frames_) de durées variables,
+chacune allouée à une partition spécifique.
 
-_PikeOS_ utilise un ordonnanceur hybride breveté baptisé
-_Adaptive Time-Partitioning Scheduler_ @pikeos_safe_real_time_scheduling. Ce
-dernier est un ordonnanceur à double niveau. Le premier niveau est chargé de
-l'isolation temporelle stricte. Il permet de distribuer statiquement des tranches
-de temps _CPU_ entre les partitions de _PikeOS_. Le second niveau est un
-ordonnanceur par priorité.
+Cette approche permet de garantir qu'une partition reçoit toujours son temps
+d'exécution alloué de manière déterministe. La configuration de ces fenêtres
+temporelles est entièrement statique et définie lors de la phase de
+configuration du système, garantissant ainsi un comportement prévisible. La
+granularité des fenêtres temporelles peut descendre jusqu'à 250 µs, offrant
+une précision de l'ordre de la microseconde pour l'ordonnancement des partitions.
+
+==== Ordonnancement au niveau des threads
+
+Le second niveau de l'ordonnanceur opère au sein de chaque partition pendant sa
+fenêtre temporelle. _PikeOS_ propose plusieurs politiques d'ordonnancement pour
+les threads:
+- #box[_Fixed-priority preemptive scheduling_: il s'agit de la politique
+  principale. L'ordonnanceur sélectionne toujours le thread avec la plus haute
+  priorité parmi les threads prêts à s'exécuter dans la partition active. Un
+  thread de haute priorité peut immédiatement préempter un thread de plus faible
+  priorité,]
+- #box[_Earliest Deadline First_ (_EDF_): _PikeOS_ supporte également des
+  politiques d'ordonnancement _EDF_, permettant de prioriser dynamiquement les
+  threads selon leurs échéances.]
+
+Cette combinaison d'un ordonnancement temporel strict au niveau des partitions
+et d'un ordonnancement flexible au niveau des threads permet à _PikeOS_ de
+supporter simultanément des applications de criticités différentes tout en
+garantissant l'isolation temporelle nécessaire pour les systèmes temps réel.
+
+=== Déterminisme <pikeos_determinism>
+
+_PikeOS_ a été conçu dès le départ pour offrir un comportement déterministe
+adapté aux exigences du temps réel.
+
+=== Draft
+
+Son hyperviseur support la virtualisation assisté par le matériel (_HW-Virt_).
+
 
 === Déterminisme <pikeos_real_time>
+
+_PikeOS_ a été conçu dès l'origine pour offrir un comportement déterministe
+adapté aux exigences temps réel dur. Plusieurs mécanismes architecturaux
+garantissent la prévisibilité et le contrôle des latences. Contrairement
+aux premiers micronoyaux de la famille _L4_, _PikeOS_ est totalement
+préemptif @kaiser2007evolution.
+
+==== Préemption du micronoyau
+
+Le micronoyau _PikeOS_ est totalement préemptif @kaiser2007evolution. Cette
+caractéristique est fondamentale pour minimiser les latences et respecter les
+échéances temps réel. Contrairement à son prédécesseur _P4_, _PikeOS_ a été
+spécifiquement pensé pour éliminer les sections non préemptibles qui pouvaient
+introduire de la gigue et empêcher une estimation précise du @wcet.
+
+L'ordonnancement au sein des partitions utilise un mécanisme préemptif à
+priorités fixes. Cela garantit qu'une tâche de haute priorité peut
+immédiatement interrompre une tâche de plus faible priorité pour respecter ses
+contraintes temporelles. _PikeOS_ supporte également des politiques
+d'ordonnancement de type _EDF_ (_Earliest Deadline First_), permettant de
+prioriser dynamiquement les tâches selon leurs échéances.
+
+==== Latences bornées
+
+Le déterminisme de _PikeOS_ repose sur des latences bornées, inhérentes à sa
+conception microkernel. En limitant les fonctionnalités du noyau aux services
+essentiels, _PikeOS_ réduit les surcoûts et élimine les éléments non
+déterministes tels que l'allocation dynamique de mémoire dans les chemins
+d'exécution critiques. Cette approche minimaliste garantit des temps de
+réponse prévisibles.
+
+Le partitionnement temporel applique des allocations strictes de temps _CPU_.
+Chaque partition reçoit des fenêtres d'exécution dédiées définies par des
+tranches de temps, ce qui assure un ordonnancement déterministe avec une
+précision de l'ordre de la microseconde. Cette isolation temporelle est
+essentielle pour garantir qu'une partition ne puisse pas accaparer le
+processeur au détriment des autres.
+
+==== Estimation du @wcet
+
+Les temps d'exécution dans le pire cas sont contrôlés via plusieurs
+mécanismes. Comme mentionné dans la sous-section @pikeos_smp, _PikeOS_
+utilise depuis la version _4.2_ un système de verrouillage à granularité fine
+qui prévient la contention dans les configurations multiprocesseurs. Cette
+évolution a permis d'améliorer significativement les estimations @wcet en
+permettant l'exécution parallèle d'appels systèmes n'accédant pas aux mêmes
+ressources.
+
+_PikeOS_ fournit également des mécanismes de timers haute résolution pour la
+gestion précise des événements, facilitant ainsi l'implémentation de modèles
+d'exécution déclenchés par le temps (_time-triggered_).
+
+Enfin, comme évoqué précédemment, _PikeOS_ peut être configuré pour invalider
+les caches et la @tlb lors des changements de partition temporelle. Bien que
+cette option réduise les performances, elle élimine les interférences entre
+partitions et améliore la prévisibilité des temps d'exécution, ce qui peut
+être nécessaire pour des analyses @wcet très conservatrices.
 
 === OS invités supportés
 
@@ -2737,12 +2821,17 @@ Normes:
 
 Il est possible d'avoir une certification pour une partition spécifique.
 
-== Licences <pikeos_licenses2>
+== Maintenabilité <pikeos_maintainability>
 
-_PikeOS_ est un logiciel propriétaire aux sources fermées. L'entreprise
-_SYSGO_ ne semble pas communiquer sur ses licences ou sa politique tarifaire.
-Les modalités et les coûts des licences sont négociés avec _SYSGO_ en fonction
-des besoins du projet.
+_PikeOS_ est un logiciel propriétaire aux sources fermées. Nous n'avons pas pu
+évaluer la taille de sa base de code faute d'informations communiquées par
+_SYSGO_. Toutefois, au vu du nombres de certifications et de sa conception de
+type _L4_, le noyau est sans doute de petite taille, c'est-à-dire de l'ordre de
+quelques dizaines de milliers de lignes de code.
+
+L'entreprise ne semble pas davantage communiquer sur ses licences. Les modalités
+et les coûts de ces licences sont certainement à négociés avec _SYSGO_ en
+fonction de chaque projet.
 
 == Draft
 
@@ -3269,20 +3358,23 @@ sur _ProvenVisor_.
 )[
   - *Type* : RTOS libre
   - *Langage* : C (96%)
-  - *Architectures* : 20+ architectures (ARM, PowerPC, RISC-V, SPARC, x86, MIPS, ...)
-  - *Usage principal* : Systèmes embarqués temps-réel (spatial, militaire, médical, industriel)
-  - *Points forts* : Libre (GPL/BSD), API POSIX, support SMP, modulaire, mature, utilisé par NASA/ESA
+  - *Architectures* : 20+ architectures (ARM, PowerPC, RISC-V, SPARC, x86,
+    MIPS, ...)
+  - *Usage principal* : Systèmes embarqués temps-réel (spatial, militaire,
+    médical, industriel)
+  - *Points forts* : Libre (GPL/BSD), API POSIX, support SMP, modulaire, mature,
+    utilisé par NASA/ESA
   - *Limitations* : Documentation parfois limitée, configuration complexe
   - *Licences* : BSD 2-clause + exceptions (permettant code propriétaire)
   - *Missions notables* : Galileo, James Webb Space Telescope, Mars rovers
 ]
 
-_RTEMS_ (_Real-Time Executive for Multiprocessor Systems_) est un _RTOS_ libre conçu
-pour les systèmes embarqués.
+_RTEMS_ (_Real-Time Executive for Multiprocessor Systems_) est un _RTOS_ libre
+conçu pour les systèmes embarqués.
 
 Le projet est initié en 1988 par l'entreprise _OAR_ (_On-Line Appications
-Research Corporaton_) sous contrat de l'_U.S. Army Missile Command_. Cette
-dernière voulait un système d'exploitation
+Research Corporaton_) sous contrat de l'_U.S. Army Missile Command_
+@rtems_history_timeline. Cette dernière voulait un système d'exploitation
 temps-réel basé sur des normes libres et exempt de redevances @rtems_oar. À
 cette époque, le système est destiné à un usage militaire, en particulier dans
 des missiles#footnote[Le sigle _RTEMS_ signifiait alors _Real-Time Executive
@@ -3304,40 +3396,42 @@ _USB_ afin d'interagir avec le noyau installé sur la carte via ses pins `TX`,
 `RX` et `Ground`.
 
 #warning[][
-  Prenez garde à ce que l'adapteur fonctionne en 3,3V, sans quoi vous détruirez
-  votre _Raspberry_.
+  Prenez garde à ce que l'adapteur _USB/UART_ fonctionne avec un voltage de
+  3,3V, sans quoi vous détruirez votre _Raspberry_.
 ]
 
-Un fichier _Docker_ pour générer la chaîne de compilation _RTEMS_ pour
-_Raspberry_ est disponible dans le dossier `./rtems/dockers/`.
-Vous pouvez lancer sa génération avec la commande suivante:
+Vous pouvez générer la chaîne de compilation _RTEMS_ pour _Raspberry_ à partir
+d'un fichier _Docker_ en tapant la commande suivante:
 ```console
 make setup -C ./rtems
 ```
-ce qui prend environ une demie heure pour terminer. Finalement, notez que
-les images produites par cette chaîne de compilation nécessite un @bootloader.
-Le plus simple est d'utiliser le @bootloader de _Raspberry OS lite_ et de remplacer
-le fichier `/boot/kernel8.img` par l'image produite.
+ce qui prend environ une demie heure pour terminer la compilation. Finalement,
+notez que les images produites par cette chaîne de compilation nécessite un
+@bootloader. Le plus simple est de réutiliser le @bootloader de
+_Raspberry OS lite_ et de remplacer le fichier `/boot/kernel8.img` par l'image
+produite.
 
 Après avoir branché le _Raspberry_ sur votre ordinateur et avant de le mettre
 sous tension, vous pouvez lancez la commande suivante afin d'interagir avec
 l'interface _UART_:
-```
+```console
 minicom -D /dev/ttyUSB0
 ```
-Le nom de l'interface _TTY_ peut varier suivant l'adaptateur utilisé.
+Notez que le nom de l'interface _TTY_ peut varier suivant l'adaptateur utilisé.
 
 == Architectures supportées <rtems_architectures>
 
 Du fait de sa longue histoire, _RTEMS_ a supporté et supporte encore aujourd'hui
 un grand nombre d'architectures. Nous nous concentrons ici sur les architectures
-énumérées dans la sous-section @criteria_architectures. D'après
-@rtems_architectures_website, _RTEMS_ supporte les familles d'architectures
-suivantes dans leur version 32bits
-et 64bits: _x86_, _ARM_, _PowerPC_, _MIPS_, _RISC-V_, _SPARC_.
-Le support se fait via des @bsp. En particulier, le projet distribue un @bsp pour
-les processeurs _LEON2_ et _LEON3_ ayant pour architectures _SPARC v8_ et
-conçus pour des applications dans le spatial.
+énumérées dans la sous-section @criteria_architectures.
+
+D'après @rtems_architectures_website, _RTEMS_ supporte les familles
+d'architectures suivantes: _x86-32_, _x86-64_ _ARMv7_, _ARMv8_, _PowerPC_,
+_MIPS_, _RISC-V_ et _SPARC_.
+
+Le support se fait via des @bsp. En particulier, le projet distribue
+un @bsp pour les processeurs _LEON2_ et _LEON3_ ayant pour architectures
+_SPARC v8_ et conçus pour des applications dans le spatial.
 
 == Support multi-processeur <rtems_multiprocessors>
 
@@ -3376,17 +3470,22 @@ nous le verrons dans la sous-section @rtems_certifications.
 Il est possible d'utiliser _RTEMS_ sur des @mpsoc. Par exemple, il existe un
 @bsp pour le @mpsoc _Xilinx Zynq UltraScale+_ @rtems_xilinx_bsp.
 
-== Partitionnement spatial <rtems_space_partitioning>
+== Partitionnement <rtems_partitioning>
+
+_RTEMS_ fournit un partitionnement temporel temps réel avec de nombreux
+ordonnanceurs et des protocoles de synchronisation fins. En revna
+
+=== Partitionnement spatial <rtems_spatial_partitioning>
 
 Contrairement à un @gpos ou un hyperviseur, _RTEMS_ n'offre pas de séparation
 traditionnelle entre @userspace et @kernelspace. Cette absence de séparation
 permet de meilleures performances et un meilleur déterminisme au prix
-d'une isolation spatiale faible.
+d'une isolation spatiale faible. Ce choix de conception résulte d'un compromis
+entre le caractère déterministe du noyau et l'isolation spatiale.
 
-Les versions récentes de _RTEMS_ prennent en charge aussi bien des processeurs
-munis de @mmu, de @mpu ou d'aucun contrôleur pour la gestion mémoire. Le
-support est relatif à chaque @bsp. Pour la majorité des @bsp, il est possible
-de ne pas activer le @mmu et de disposer d'un modèle mémoire plat
+Les versions récentes de _RTEMS_ prennent en charge les @mmu ou @mpu de
+processeurs récents. Le support est relatif à chaque @bsp et il est possible de
+pas activer le @mmu ou le @mpu et de disposer d'un modèle mémoire plat
 (_flat memory model_) afin de bénéficier des avantages précités. En présence
 d'un microcontrôleur de gestion de la mémoire, son initialisation est à la
 charge du @bsp @rtems_system_initialization @rtems_memory_model.
@@ -3395,7 +3494,7 @@ Lorsqu'une isolation spatiale est requise, l'usage est d'exécuter _RTEMS_ dans
 une partition d'un noyau de séparation, typiquement dans l'hyperviseur de
 _XtratuM_.
 
-== Partitionnement temporel <rtems_time_partitioning>
+=== Partitionnement temporel <rtems_time_partitioning>
 
 _RTEMS_ est distribué avec quatre ordonnanceurs différents:
 - #box[_Deterministic Priority Scheduler_ est un ordonnanceur préemptif basé
@@ -3414,24 +3513,29 @@ ordonnanceur existe pour les architectures @smp @rtems_smp_schedulers.]
 sur l'isolation temporelle. Chaque tâche dispose d'un budget strict et ne peut
 pas influencer l'exécution des autres.]
 
-Il est possible d'implémenter son propre ordonnanceur. Il est également possible
-de rendre une tâche non préemptible.
+Il est possible d'implémenter son propre ordonnanceur et de rendre
+non-préemptible une tâche.
+
+=== Déterminisme <rtems_determinism>
+
+_RTEMS_ est avant tout un _RTOS_. Sa conception est donc guidée par le souci
+de préserver le déterminisme autant que possible.
 
 === Protocols de synchonisation
 
 Afin d'assurer la synchronisation des sections critiques et de prévenir les
-inversions de priorité, _RTEMS_ propose quatre protocols de verrouillage:
-- #box[_ICPP_ (_Immediate Ceiling Priority Protocol_) pour les architectures
-monoprocesseur]
-- #box[_PIP_ (_Priority Inheritance Protocol_) pour les architectures
-monoprocesseur. La prorité d'une tâche est élevée au niveau de la plus haute
-priorité d'une tâche qui attend un verrou. C'est une approche similaire aux
-verrous _rt-mutex_ de _Linux_ vu en sous-section @linux_determinism.]
-- #box[_MrsP_ (_Multiprocessor Resource Sharing Protocol_) pour les architectures
-@smp. Il généralise les verrous _ICPP_ aux multiprocesseur @smp et utilise de
-l'attente active.]
-- #box[_OMIP_ (_O(m) Independence Preserving Protocol_) pour les architectures
-@smp. Il généralise le protocol _PIP_ aux architectures @smp.]
+inversions de priorité, _RTEMS_ propose quatre protocoles de verrouillage:
+- _ICPP_ (_Immediate Ceiling Priority Protocol_) pour les architectures
+  monoprocesseur,
+- _PIP_ (_Priority Inheritance Protocol_) pour les architectures
+  monoprocesseur. La prorité d'une tâche est élevée au niveau de la plus haute
+  priorité d'une tâche qui attend un verrou. C'est une approche similaire aux
+  verrous _rt-mutex_ de _Linux_ vu en sous-section @linux_determinism,
+- _MrsP_ (_Multiprocessor Resource Sharing Protocol_) pour les architectures
+  @smp. Il généralise les verrous _ICPP_ aux multiprocesseur @smp et utilise de
+  l'attente active,
+- _OMIP_ (_O(m) Independence Preserving Protocol_) pour les architectures
+  @smp. Il généralise le protocol _PIP_ aux architectures @smp.
 
 === Rate Monotonic Manager
 
@@ -3442,31 +3546,31 @@ inversement proportionnel à la période. Cette politique d'attribution
 des priorités peut être combiné avec les ordonnanceurs décrits dans la
 sous-section précédente.
 
-=== Déterminisme <rtems_determinism>
-
-En tant que _RTOS_, _RTEMS_ a été conçu pour être déterministe. À cette fin,
-il dispose de plusieurs ordonnanceurs préemptifs couvrant différents cas d'usage.
-_RTEMS_ offrent des ordonnanceurs pour monoprocesseur et pour multiprocesseur
-de type @smp. En @smp, tous les ordonnanceurs sont basées sur des priorités.
-
 == Corruption de la mémoire <rtems_memory_corruption>
 
-_RTEMS_ ne semble pas fournir d'@api unifié pour gérer le _scrubbing_. Le
-support est donc relatif au @bsp utilisé. Par exemple, il existe une @api pour
-gérer le _scrubbing_ dans le fichier `bsps/include/grlib/memscrub.h`. Ce dernier
-fait parti du @bsp pour les microprocesseurs _LEON_. L'usage du _scrubbing_
-étant rendu nécessaire par le rayonnement inhérent aux missions spatiales,
-il y a fort à parier qu'un tel support est développé dans un @bsp chaque
-fois que celui-ci est utilisé dans une telle mission.
+_RTEMS_ ne semble pas fournir d'@api unifié pour journaliser les erreurs
+mémoires ou gérer le _scrubbing_.
+
+Dans le cas du _scrubbing_, le support est relatif au @bsp utilisé.
+Par exemple, il existe une @api pour gérer le _scrubbing_ dans le fichier
+`bsps/include/grlib/memscrub.h`. Ce dernier fait parti du @bsp pour les
+microprocesseurs _LEON_. L'usage du _scrubbing_ étant rendu nécessaire par le
+rayonnement inhérent aux missions spatiales, il est très probable qu'un tel
+support est développé dans un @bsp chaque fois que celui-ci est nécessaire pour
+une telle mission.
 
 == Perte du flux d'exécution <rtems_hijacking_flow>
 
 _RTEMS_ étant principalement écrit en langage _C_, il est exposés aux
-vulnérabilités classiques liées à la corruption de la mémoire afin de
-détourner le flux d'exécution. Nous n'avons pas trouvé de mécanisme de
-protection face à ce type d'attaques dans _RTEMS_. Cette absence s'explique
-par le fait que le noyau n'offre pas d'isolation spatiale forte. Les
-applications s'exécutant dans _RTEMS_ doivent donc être de confiance.
+vulnérabilités classiques par corruption de la mémoire afin de détourner le
+flux d'exécution.
+
+Nous n'avons pas trouvé de mécanisme de protection face à ce type d'attaques
+dans _RTEMS_. Cette absence s'explique par le fait que le noyau n'offre pas
+d'isolation spatiale forte. Les applications s'exécutant dans _RTEMS_ doivent
+donc être de confiance et leur développement nécessite une attention accrue
+pour éviter les erreurs de programmation. À défaut, il faut recourir à un
+hyperviseur pour assurer l'isolation spatiale.
 
 == Écosystème <rtems_ecosystem>
 
@@ -3496,12 +3600,56 @@ _PMU_. Un support existe dans certains @bsp.
 
 == Gestion des interruptions <rtems_interrupt_managing>
 
+_RTEMS_ fournit un _Interrupt Manager_ qui offre les primitives nécessaires
+pour masquer les interruptions et installer des gestionnaires d'interruption
+@rtems_interrupt_manager @rtems_interrupt_intro.
+
+=== Masquage des interruptions
+
+_RTEMS_ propose plusieurs directives pour masquer les interruptions. En
+configuration uniprocesseur, `rtems_interrupt_disable()` et
+`rtems_interrupt_enable()` désactivent et restaurent les interruptions
+masquables. Pour garantir la portabilité entre configurations uniprocesseur et
+@smp, les directives `rtems_interrupt_local_disable()` et
+`rtems_interrupt_local_enable()` sont disponibles dans toutes les
+configurations @rtems_interrupt_directives.
+
+En configuration @smp, le masquage local des interruptions ne garantit pas
+l'exclusion mutuelle à l'échelle du système. _RTEMS_ fournit donc des
+_interrupt locks_, implémentés sous forme de _ticket locks_, pour assurer la
+synchronisation entre cœurs tout en garantissant l'équité _FIFO_ nécessaire à
+la prévisibilité des systèmes temps réel @rtems_smp_services
+@rtems_interrupt_locks. Dans les configurations uniprocesseur, ces verrous se
+réduisent à de simples séquences de désactivation/activation d'interruptions.
+
+_RTEMS_ permet également de contrôler des vecteurs d'interruption individuels
+via `rtems_interrupt_vector_enable()` et `rtems_interrupt_vector_disable()`
+@rtems_interrupt_directives.
+
+=== Gestionnaires d'interruption
+
+Les directives `rtems_interrupt_catch()` et `rtems_interrupt_handler_install()`
+permettent d'installer des @isr pour des vecteurs d'interruption spécifiques.
+_RTEMS_ sauvegarde automatiquement le contexte et garantit un ordonnancement
+correct des tâches à la sortie d'une interruption @rtems_interrupt_intro.
+
+La latence d'interruption est bornée en minimisant la durée des sections
+critiques. Des mesures sur processeur _SPARC Leon 2_ montrent des latences
+typiques de 10 à 40 µs @rtems_perf_measurements. En configuration @smp, les
+interruptions peuvent être affectées à des cœurs spécifiques pour gérer la
+latence sous charge @rtems_smp_core_affinity.
+
 == _Watchdog_ <rtems_watchdog>
 
 _RTEMS_ ne fournit pas à notre connaissance d'API unifiée pour gérer les
 _watchdogs_ matériels. Le support est implémenté au niveau du
 @bsp. Ce support est disponible pour le _Raspberry PI 4_ comme nous l'illustrons
 dans la sous-section @rtems_watchdog_raspberry.
+
+D'après la documentation, il est également possible d'implémenter un _watchdog_
+logiciel via le _Timer Manager_. Plus précisément, on peut mettre en place un
+_timer_ avec la fonction `rtems_timer_fire_after` pour implémenter la logique
+d'un tel _watchdog_.
 
 === Watchdog matériel avec un _Raspberry PI 4_ <rtems_watchdog_raspberry>
 
@@ -3516,7 +3664,7 @@ le watchdog d'un Raspberry.
 La commande suivante compile et produit une image dans
 `./rtems/artifacts/watchdog.img`.
 ```console
-make watchdog -C ./rtems/watchdog
+make  -C ./rtems/watchdog watchdog
 ```
 
 == Qualifications & certifications <rtems_certifications>
@@ -3579,10 +3727,8 @@ du noyau _RTEMS_.
 
 == Maintenabilité <rtems_maintening>
 
- Le projet _RTEMS_ est développé et maintenu depuis plus de 30 ans. Il est
- écrit en langage C à plus de 96% pour 1 990 023 _SLOC_.
-
-== Licences <rtems_licenses>
+Le projet _RTEMS_ est développé et maintenu depuis plus de 30 ans. Il est
+écrit en langage C à plus de 96% pour 1 990 023 _SLOC_.
 
 _RTEMS_ est un logiciel libre distribué sous une multitude de licences libres
 et open-sources avec pour licence principale _BSD 2-Clause_. Le point commun de
@@ -3618,25 +3764,6 @@ des caches des cœurs.] tout en préservant un bon contrôle sur la latence dans
 inter-clusters. En utilisant des clusters et des mécanismes de synchronisation
 adéquate, il est possible d'avoir des tâches temps réels et des tâches maximisant le
 _throughput_.
-
-
-== Profilage <rtems_profiling>
-
-Il y a un support pour profiler les goulots d'étranglement, notamment
-les verrous et le thread dispatch. Cela produit une sortie XML. @rtems_test_suites.
-
-== Watchdog
-
-=== Time Manager
-
-Il est possible d'implémenter un _watchdog_ logiciel via le _Timer Manager_.
-Plus précisément, on peut mettre en place un timer avec la fonction
-`rtems_timer_fire_after`.
-
-#figure(
-  snippet("./rtems/examples/timer/src/init.c", lang:"c"),
-  caption: [Exemple d'interaction avec un _watchdog_ logiciel.]
-) <rtems_deadman_example>
 
 = seL4 <sel4>
 
@@ -4034,7 +4161,7 @@ ainsi des garanties de type temps réel strict (_hard real-time_).
 
 Il permet de faire du temps réel tout en ayant l'isolation spatiale, ce qui
 n'est pas le cas de nombreux @rtos comme _RTEMS_ (voir la sous-section
-@rtems_space_partitioning). Le système de capacités et le partitionnement spatial
+@rtems_spatial_partitioning). Le système de capacités et le partitionnement spatial
 rigoureux de _seL4_ n'affectent pas ses capacités temps réel, permettant ainsi
 de concevoir des systèmes à criticité mixte avec de fortes garanties de sécurité
 et de sûreté. Cette combinaison unique de déterminisme temporel et d'isolation
@@ -4873,13 +5000,13 @@ critiques.
 == Architectures supportées <xtratum_architectures>
 
 Les premières versions de _XtratuM_ ont supporté les architectures _x86-32_,
-_PowerPC_ et _SPARC_ (_LEON2_). Toutefois les brochures récentes ne mentionnent
+_PowerPC_ et _LEON2_. Toutefois les brochures récentes ne mentionnent
 plus les architectures _x86_ et _PowerPC_, ce qui laisse à penser que leur support
 n'a pas été maintenu et que le support pour l'architecture _x86-64_ n'a
 jamais existé.
 
 D'après les dernières brochures @xtratum_flyer, _XtratuM_ supporte les
-architectures suivantes: _ARM-v7_, _ARM-v8_, _SPARC_, _RISC-V_. En particulier,
+architectures suivantes: _ARMv7_, _ARMv8_, _SPARC_, _RISC-V_. En particulier,
 il supporte les architectures _SPARCv8_, _LEON3_ et _LEON4_ qui sont utilisées
 dans des missions spatiales. Le support se fait via des @bsp.
 
@@ -4965,7 +5092,7 @@ L'hyperviseur de _XtratuM_ offre un support pour les _OS_ suivants:
 Il a été porté sur _XtratuM_ en 2011 @esquinas2011ork. Il permet le
 développement d'applications en _Ada_ avec le profile _Ravenscar_.]
 
-=== Programmation @baremetal <xtratum_baremetal>
+== Programmation @baremetal <xtratum_baremetal>
 
 Il est possible d'exécuter des applications @baremetal dans les partitions
 de _Xtratum_ à condition d'adapter un @rte du langage
@@ -4977,12 +5104,11 @@ de programmation pour l'@api de _Xtratum_. Il est possible de programmer en
 de _XtratuM_. Une _crate_ est disponible @xtratum_xng_rs.]
 
 == Corruption de la mémoire <xtratum_memory_corruption>
-
 Le _Health Monitor_ d'_XtratuM_ est capable de journaliser les @mce en cas
 d'erreur de mémoire non corrigible. Comme pour les autres erreurs, il est possible
 de configurer un paliatif.
 
-== Outils <xtratum_tools>
+== Écosystème <xtratum_ecosystem>
 
 _fentISS_ propose une suite d'outils pour faciliter le développement avec _XtratuM_:
 - *XPM* : plugin Eclipse pour la gestion de projets _XtratuM_
@@ -5011,7 +5137,14 @@ de récupération appropriées.
 
 == Support de _watchdog_ <xtratum_watchdog>
 
+Nous n'avons pas trouvé d'informations sur le support de _watchdog_. Toutefois
+étant donné le domaine d'application de cet hyperviseur, il est très probable
+qu'un tel support existe.
+
 == Temps de démarrage <xtratum_boot_time>
+
+Nous n'avons pas trouvé d'informations sur le temps de démarrage de
+l'hyperviseur _XtratuM_.
 
 == Qualifications et certifications <xtratum_qualifications>
 
@@ -5028,7 +5161,55 @@ lequel un processus de qualification ECSS niveau B est en cours.
 
 == Masquage des interruptions <xtratum_interrupt_masking>
 
-== Licences <xtratum_licences>
+_XtratuM_ virtualise les interruptions matérielles pour garantir l'isolation
+spatiale et temporelle des partitions conformément à la norme _ARINC-653_. Les
+partitions ne peuvent pas accéder directement à la table des interruptions ni
+interagir avec les interruptions matérielles natives. Toute tentative
+d'activation ou de désactivation directe des interruptions matérielles déclenche
+un _trap_ géré par l'hyperviseur @xtratum_user_manual @xtratum_tsp_aerospace.
+
+=== Virtualisation des interruptions
+
+L'hyperviseur définit ses propres interruptions virtuelles qui sont délivrées
+aux partitions @xtratum_user_manual. Toutes les interruptions matérielles sont
+directement gérées par _XtratuM_ et, lorsque nécessaire, propagées aux
+partitions qui définissent leur propre table d'interruptions virtuelles
+@xtratum_virtual_interrupts. Le sous-système d'interruptions virtuelles a été
+réécrit de zéro dans la version 3.1 de _XtratuM_.
+
+Durant l'exécution d'une partition, seules les interruptions allouées à cette
+partition sont activées au niveau matériel, ce qui minimise les interférences
+entre partitions grâce à un mécanisme d'isolation matériel
+@xtratum_leon3. Lorsqu'une partition est dans l'état suspendu, son _CPU_ virtuel
+n'est pas ordonnancé et les interruptions ne sont pas délivrées. Les
+interruptions survenues pendant cet état restent en attente
+@xtratum_tsp_aerospace.
+
+=== @api de masquage des interruptions
+
+_XtratuM_ fournit une @api basée sur des _hypercalls_ pour permettre aux
+partitions de masquer et démasquer les interruptions virtuelles
+@xtratum_libxm. Les principaux _hypercalls_ disponibles sont:
+- #box[`XM_mask_irq()` : masque une interruption virtuelle spécifique,]
+- #box[`XM_unmask_irq()` : démasque une interruption virtuelle.]
+
+Ces _hypercalls_ vérifient que le numéro d'interruption est dans les plages
+autorisées (interruptions matérielles ou interruptions étendues) et utilisent
+des opérations atomiques (`XMAtomicSetMask` et `XMAtomicClearMask`) pour
+modifier les masques d'interruption dans la _Partition Control Table_ (pct)
+@xtratum_libxm. Une partition ne peut masquer que les interruptions matérielles
+qui lui ont été allouées, ce qui fait partie de la stratégie de _XtratuM_ pour
+maintenir l'isolation temporelle et spatiale entre les partitions dans les
+systèmes critiques @xtratum_libxm.
+
+=== _Health Monitor_
+
+_XtratuM_ intègre un module appelé _Health Monitor_ qui gère de façon étendue
+les _traps_, les interruptions et les erreurs @xtratum_leon3. Ce module permet
+la détection et la gestion centralisée des événements liés aux interruptions,
+contribuant à la robustesse du système dans un contexte critique.
+
+== Maintenabilité <xtratum_maitainability>
 
 À l'origine _XtratuM_ était un projet open source sous licence _GPLv2_
 @xtratum_mirror_source. Cette version ne semble plus être développée et
@@ -5052,35 +5233,6 @@ auparavant prises en charge par des calculateurs dédiés.
 
 _XtratuM/NG_(abrégé _XNG_) est une version plus récente de l'hyperviseur qui offre un meilleur
 support multi-cœur.
-
-// = OS généralistes
-//
-// Leurs noyaux se répartissent en deux catégories:
-// - #box[Les _noyaux monolithiques_ qui se caractérisent pas le fait que la majorité
-// de leurs services s'exécutent en _mode noyau_.]
-// - #box[Les _micronoyaux_ qui n'exécutent que le strict nécessaire en espace
-// noyau, à savoir l'ordonnancement des processus, la communication
-// inter-processus et la gestion de la mémoire.]
-//
-// = Types de système d'exploitation
-//
-// Les systèmes d'exploitation se distinguent par les mécanismes d'abstraction
-// qu'ils offrent, leur organisation et leur modularité.
-// Certaines tâches gérées par un noyau peuvent être dans une configuration
-// différente déléguées à une autre couche logicielle, voire au matériel. Nous
-// proposons dans cette section une classification en trois catégories: les
-// _unikernels_, les _hyperviseurs_ et les _OS classiques_.
-//
-// == Les unikernels
-//
-// Les _unikernel_ sont des systèmes d'exploitation qui se présentent sous la
-// forme d'une collection de bibliothèques. Le développeur sélectionne les modules
-// indispensables à l'exécution de son application, puis crée une _image_ en
-// compilant son application avec les modules choisis. Cette image est ensuite
-// exécutée sur un _hyperviseur_ ou en _bare-metal_#footnote[C'est-à-dire directement
-// sur la couche matérielle sans l'intermédiaire d'un système d'exploitation.]
-//
-// == Les OS classiques
 
 = Tableaux comparitifs<comp>
 
