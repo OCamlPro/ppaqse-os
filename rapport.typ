@@ -4399,24 +4399,23 @@ Le _seL4 Microkit_ offre également une @api pour les langages _C_ et _Rust_
 
 == Partitionnement <sel4_partition>
 
-#figure(
-  cetz.canvas({
-    import cetz.draw: *
-    cell((-3, -1.5), (12, -0.5), color: blue, [seL4])
-    cell((-3, -3), (12, -2), color: gray, [Couche matérielle])
-    cell((-3, 0.5), (0, 1.6), color: purple, [Application])
-    cell((0.5, 0.5), (3.5, 6), color: yellow, [VM 1])
-    cell((0.7, 0.7), (3.3, 4), color: orange, [Linux])
-    cell((0.9, 0.9), (3.1, 2), color: orange, [Pilote])
-    cell((4, 0.5), (7, 6), color: yellow, [VM 2])
-    cell((4.2, 0.7), (6.8, 4), color: orange, [Linux])
-    cell((4.5, 0.9), (6.5, 2), color: orange, [FS])
-    cell((9, 0.5), (12, 3), color: green, [Pilote])
-  })
-  ,
-  caption: [Architecture de l'hyperviseur _seL4_.]
-) <architecture_xen>
-
+// #figure(
+//   cetz.canvas({
+//     import cetz.draw: *
+//     cell((-3, -1.5), (12, -0.5), color: blue, [seL4])
+//     cell((-3, -3), (12, -2), color: gray, [Couche matérielle])
+//     cell((-3, 0.5), (0, 1.6), color: purple, [Application])
+//     cell((0.5, 0.5), (3.5, 6), color: yellow, [VM 1])
+//     cell((0.7, 0.7), (3.3, 4), color: orange, [Linux])
+//     cell((0.9, 0.9), (3.1, 2), color: orange, [Pilote])
+//     cell((4, 0.5), (7, 6), color: yellow, [VM 2])
+//     cell((4.2, 0.7), (6.8, 4), color: orange, [Linux])
+//     cell((4.5, 0.9), (6.5, 2), color: orange, [FS])
+//     cell((9, 0.5), (12, 3), color: green, [Pilote])
+//   })
+//   ,
+//   caption: [Architecture de l'hyperviseur _seL4_.]
+// )
 Lorsqu'il est utilisé en tant qu'hyperviseur, _seL4_ s'exécute dans le mode
 d'exécution _hyperviseur_.
 
@@ -4648,19 +4647,19 @@ virtualisation assisté par le matériel. Ce type de partition offre souvent de 
 performances que les partitions _PV_ et _HVM_ sans avoir besoin de modifiant autant
 le noyau hôte.]
 
-#figure(
-  cetz.canvas({
-    import cetz.draw: *
-    cell((-3, -1.5), (12, -0.5), color: blue, [Xen])
-    cell((-3, -3), (12, -2), color: gray, [Couche matérielle])
-    cell((-3, 0.5), (0, 6), color: green, [Dom0])
-    cell((0.5, 0.5), (3.5, 6), color: green, [DomU#sub[1]])
-    cell((4, 0.5), (7, 6), color: green, [DomU#sub[2]])
-    cell((9, 0.5), (12, 6), color: green, [DomU#sub[n]])
-  })
-  ,
-  caption: [Architecture de _Xen_]
-) <architecture_xen>
+// #figure(
+//   cetz.canvas({
+//     import cetz.draw: *
+//     cell((-3, -1.5), (12, -0.5), color: blue, [Xen])
+//     cell((-3, -3), (12, -2), color: gray, [Couche matérielle])
+//     cell((-3, 0.5), (0, 6), color: green, [Dom0])
+//     cell((0.5, 0.5), (3.5, 6), color: green, [DomU#sub[1]])
+//     cell((4, 0.5), (7, 6), color: green, [DomU#sub[2]])
+//     cell((9, 0.5), (12, 6), color: green, [DomU#sub[n]])
+//   })
+//   ,
+//   caption: [Architecture de _Xen_]
+// ) <architecture_xen>
 
 _Xen_ utilise le terme de _domaine_ pour qualifier les conteneurs des machines
 virtuelles en cours d'exécution. Il existe trois types de domaines:
@@ -5068,37 +5067,41 @@ Foundation_, coordonne le développement Open Source et fédère la communauté.
   - *Langage* : C
   - *Architectures* : x86-32, SPARC/LEON (LEON2/3/4), ARM v7/v8
   - *Usage principal* : Spatial, aéronautique (IMA - Integrated Modular Avionics)
-  - *Points forts* : Qualifié ECSS catégorie B, 1000+ satellites déployés, ordonnancement cyclique ARINC-653, isolation temporelle et spatiale forte, health monitoring
-  - *Limitations* : Version NG propriétaire, écosystème limité, principalement orienté spatial/aéro
-  - *Licences* : GPL v2 (version libre) + version propriétaire XtratuM/NG (fentISS)
-  - *Missions spatiales* : Galileo, JUICE, SWOT, PLATiNO, MERLIN, SVOM
+  - *Points forts* : Qualifié ECSS catégorie B, 1000+ satellites déployés,
+    ordonnancement cyclique ARINC-653, isolation temporelle et spatiale forte,
+    _health monitoring_
+  - *Limitations* : Version NG propriétaire, écosystème limité, principalement
+    orienté spatial et avionique
+  - *Licences* : GPL v2 (version libre) + version propriétaire XtratuM/NG
+    (fentISS)
 ]
 
-_XtratuM_ est un hyperviseur temps-réel de type 1 qualifié pour un usage dans
-le spatial. Le projet est initié en 2004 au sein de l'institut
-_Automática e Informática Industrial_ (ai2) de l'_Universidad Politécnica_ de
-Valence en Espagne @masmano2005overview @red5gespacial. Ces travaux
-universitaires ont abouti à la création de l'entreprise _fentISS_
-@fentiss_website en 2010 avec le soutien du _CNES_ et du groupe
-_Airbus_ @red5gespacial. L'hyperviseur _XtratuM_ est désormais maintenu et
-développé par _fentISS_. _XtratuM_ a été conçu pour être exécuté sur de
-l'embarqué critique en donnant de fortes garanties quant à l'isolation
-spatiale et temporaire de ses partitions @masmano2005overview. L'entreprise
+_XtratuM_ est un hyperviseur temps-réel qualifié pour un usage dans
+l'avionique ou le spatial.
+
+Le projet est initié en 2004 au sein de l'institut _Automática e Informática
+Industrial_ (ai2) de l'_Universidad Politécnica_ de Valence en Espagne
+@masmano2005overview @red5gespacial. Ces travaux universitaires ont abouti à la
+création de l'entreprise _fentISS_ @fentiss_website en 2010 avec le soutien du
+_CNES_ et du groupe _Airbus_ @red5gespacial. L'hyperviseur _XtratuM_ est
+désormais maintenu et développé par _fentISS_. _XtratuM_ a été conçu pour être
+exécuté sur de l'embarqué critique en donnant de fortes garanties quant à
+l'isolation spatiale et temporaire de ses partitions @masmano2005overview.
 
 Le succès de _XtratuM_ dans le spatial est remarquable: son hyperviseur temps-réel
 est désormais déployé dans plus d'un millier de satellites et engins spatiaux
-@xtratum_milestone_1000 @xtratum_missions, en faisant l'un des logiciels système
-les plus largement adoptés en orbite. Cette présence massive témoigne de la
-maturité et de la fiabilité du système dans des environnements opérationnels
-critiques.
+@xtratum_milestone_1000 @xtratum_missions @fentiss_1000_deployments, en faisant
+l'un des logiciels système les plus largement adoptés en orbite. Cette présence
+massive témoigne de la maturité et de la fiabilité du système dans des
+environnements opérationnels critiques.
 
 == Architectures supportées <xtratum_architectures>
 
 Les premières versions de _XtratuM_ ont supporté les architectures _x86-32_,
-_PowerPC_ et _LEON2_. Toutefois les brochures récentes ne mentionnent
-plus les architectures _x86_ et _PowerPC_, ce qui laisse à penser que leur support
-n'a pas été maintenu et que le support pour l'architecture _x86-64_ n'a
-jamais existé.
+_PowerPC_ et _LEON2_. Toutefois les documents récentes ne mentionnent
+plus les architectures _x86_ et _PowerPC_, ce qui laisse à penser que leur
+support n'a pas été maintenu et nous n'avons pas trouvé de mention de
+l'architecture _x86-64_.
 
 D'après les dernières brochures @xtratum_flyer, _XtratuM_ supporte les
 architectures suivantes: _ARMv7_, _ARMv8_, _SPARC_, _RISC-V_. En particulier,
@@ -5179,13 +5182,13 @@ La norme _ARINC-653_ définit deux modes de transfert de messages:
 === OS invités supportés
 
 L'hyperviseur de _XtratuM_ offre un support pour les _OS_ suivants:
-- #box[Le @rtos LithOS développé par _fentISS_ et conforme _ARINC-653_
-@xtratum_lithos @lithos_arinc653_xtratum,]
-- #box[Le @rtos _RTEMS_, notamment sur les plateformes _LEON_ @xtratum_homepage.]
-- #box[Le noyau _Linux_ @xtratum_homepage,]
-- #box[Le micronoyau temps réel _ORK+_ (_Open Ravenscar Kernel_).
-Il a été porté sur _XtratuM_ en 2011 @esquinas2011ork. Il permet le
-développement d'applications en _Ada_ avec le profile _Ravenscar_.]
+- Le @rtos LithOS développé par _fentISS_ et conforme _ARINC-653_
+  @xtratum_lithos @lithos_arinc653_xtratum,
+- Le @rtos _RTEMS_, notamment sur les plateformes _LEON_ @xtratum_homepage,
+- Le noyau _Linux_ @xtratum_homepage,
+- Le micronoyau temps réel _ORK+_ (_Open Ravenscar Kernel_).
+  Il a été porté sur _XtratuM_ en 2011 @esquinas2011ork. Il permet le
+  développement d'applications en _Ada_ avec le profile _Ravenscar_.
 
 == Programmation @baremetal <xtratum_baremetal>
 
@@ -5205,12 +5208,13 @@ de configurer un paliatif.
 
 == Écosystème <xtratum_ecosystem>
 
-_fentISS_ propose une suite d'outils pour faciliter le développement avec _XtratuM_:
-- *XPM* : plugin Eclipse pour la gestion de projets _XtratuM_
-- *Xoncrete* : analyse et génération d'ordonnancement
-- *Xcparser* : configuration de l'hyperviseur
-- *Xtraceview* : support d'observabilité
-- *SKE* : simulateur _XtratuM_ sur serveurs
+L'entreprise _fentISS_ commercialise une suite d'outils pour faciliter le
+développement avec _XtratuM_. Cette suite inclus les outils suivants:
+- _SKE_ @xtratum_ske: simulateur _XtratuM_ sur serveurs,
+- _XPM_ @xtratum_homepage: plugin Eclipse pour la gestion de projets _XtratuM_,
+- _Xoncrete_ @xtratum_homepage: analyse et génération d'ordonnancement,
+- _Xmcparser_ @xtratum_user_manual_esa: configuration de l'hyperviseur,
+- _Xtraceview_ @xtratum_fentiss_the_xtratum_hypervisor: support d'observabilité.
 
 === _Health monitoring_
 
@@ -5309,9 +5313,9 @@ contribuant à la robustesse du système dans un contexte critique.
 À l'origine _XtratuM_ était un projet open source sous licence _GPLv2_
 @xtratum_mirror_source. Cette version ne semble plus être développée et
 _fentISS_ distribue une réécriture du noyau appelée _XNG_ (_XtratuM Next
-Generation_) sous licence propriétaire. L'entreprise _fentISS_ ne semble pas
-communiquer sur ses licences. Les modalités sont donc probablement
-à négocier avec _fentISS_ au cas par cas.
+Generation_) sous licence propriétaire @xtratum_derisc @xtratum_metasat.
+L'entreprise _fentISS_ ne semble pas communiquer sur ses licences. Les modalités
+sont donc probablement à négocier avec _fentISS_ au cas par cas.
 
 Nous n'avons pas pu évaluer la taille de la base de code, faute d'informations
 librement accessibles. _XtratuM_ étant un noyau de séparation certifiable, sa

@@ -180,7 +180,15 @@
 )
 - Support relatif à la carte (BSP)
 - Extension de virtualisation nécessaire
+]
 
+#slide(title: "Critère - Partitionnement spatial")[
+]
+
+#slide(title: "Critère - Partitionnement temporel")[
+]
+
+#slide(title: "Critère - Corruption mémoire")[
 ]
 
 #slide(title: "Critère - Perte du flux d'exécution")[
@@ -251,7 +259,7 @@
 
 ]
 
-#slide(title: "Programmation baremetal")[
+#slide(title: "Critère - Programmation baremetal")[
 #set text(size: 15pt)
 #table(
   columns: (1.5fr, 1fr, 1fr, 1fr, 1fr),
