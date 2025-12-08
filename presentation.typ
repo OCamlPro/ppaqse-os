@@ -9,16 +9,9 @@
   show-progress: true,
 )
 
-#let frame(stroke) = (x, y) => (
-  left: if x > 0 { 0pt } else { stroke },
-  right: stroke,
-  top: if y < 2 { stroke } else { 0pt },
-  bottom: stroke,
-)
-
 #set table(
   fill: (_, y) => if calc.odd(y) { rgb("EAF2F5") },
-  stroke: frame(1pt + rgb("21222C")),
+  stroke: 1pt + rgb("21222C"),
 )
 
 #front-slide(
@@ -93,6 +86,12 @@
 ]
 
 #let scell(color: white, txt) = table.cell(fill: color.lighten(40%), [#txt])
+
+
+#let good(txt) = scell(color:green, txt)
+#let mediocre(txt) = scell(color:yellow, txt)
+#let bad(txt) = scell(color:red, txt)
+#let unknown(txt) = scell(color:black, txt)
 
 #let supported(txt) = scell(color:green, txt)
 #let notsupported(txt) = scell(color:red, txt)
@@ -286,48 +285,45 @@
 ]
 
 #slide(title: "Critère - Maintenabilité")[
-#set text(size: 13pt)
+
 #table(
-  columns: (1.2fr, 1fr, 1.2fr, 1fr, 1.5fr, 1.5fr),
+  columns: (auto, auto, auto, auto, auto, auto),
+  align: center + horizon,
   table.header(
     [OS],
     [Licence(s)],
-    [Taille de l'écosystème],
-    [Taille TCB],
-    [Support],
-    [Âge]
+    [Écosystème],
+    [Taille (SLOC)],
+    [Support commercial],
+    [Ancienneté (années)]
   ),
 
   [Linux],
-  [GPLv2], supported([Très large]), notsupported([~20M SLOC]),
-  supported([Très actif]), [~34 ans],
+  good([GPLv2]), good([Très large]), bad([~27M]), [Red Hat, SUSE, Canonical, ...], [~34],
 
   [MirageOS],
-  [ISC/BSD], partiallysupported([Moyen]), supported([< 10k SLOC]),
-  partiallysupported([Niche]), [~16 ans],
+  good([ISC/BSD]), mediocre([Moyen]), good([< 10k]), [Tarides], [~16],
 
   [PikeOS],
-  [Propriétaire], partiallysupported([Moyen]), partiallysupported([~50k SLOC]),
-  supported([Support commercial]), [~20 ans],
+  bad([Propriétaire]), mediocre([Moyen]), unknown([]), [SYSGO], [~20],
 
   [ProvenVisor],
-  [Propriétaire], notsupported([Limité]), supported([~10k SLOC]),
-  partiallysupported([Support commercial]), [~10 ans],
+  bad([Propriétaire]), bad([Limité]), unknown([]), [ProvenRun], [~10],
 
   [RTEMS],
-  [BSD], supported([Large]), partiallysupported([~500k SLOC]),
-  supported([Actif]), [~32 ans],
+  good([BSD 2-Clause]), good([Large]), bad([~2M]), [OAR], [~32],
 
   [seL4],
-  [GPLv2], partiallysupported([Moyen]), supported([~10k SLOC]),
-  supported([Actif]), [~19 ans],
+  good([GPLv2]), (mediocre[Moyen]), good([~70k]), [seL4], [~19],
 
   [Xen],
-  [GPLv2], supported([Large]), partiallysupported([~400k SLOC]),
-  supported([Très actif]), [~22 ans],
+  good([GPLv2]), good([Large]), bad([~500k]), [Citrix, Xen Project], [~22],
 
   [XtratuM],
-  [GPL], partiallysupported([Limité]), partiallysupported([~50k SLOC]),
-  notsupported([Peu actif]), [~21 ans]
+  bad([Propriétaire]), bad([Limité]), unknown[], [fentISS], [~21]
 )
+
+- Ancienneté $arrow.r.double.long$ grand écosystème,
+- Ancienneté $arrow.r.double.long$ grande dette technique et grande base de code,
+- Libre $arrow.r.double.long$ plus grand écosystème.
 ]

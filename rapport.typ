@@ -928,16 +928,16 @@ technologique significative sur le long terme. La maintenance du @cots peut
 cesser ou ses conditions d'utilisation peuvent changées, entrainant une
 transition vers une solution alternative, souvent coûteuses et complexes.
 
-Nous avons analysé la maintenabilité des différents systèmes étudiés suivant
-les critères ci-dessous:
+Nous avons comparé la maintenabilité des différents systèmes avec les critères
+suivants:
 - _Licence_: une licence libre ou _Open Source_ présente l'avantage d'avoir
   un accès facile au code source. Même si le @cots n'est plus maintenu, il est
-  toujours possible de le faire évolution et d'appliquer des correctifs,
+  toujours possible de le faire évoluer et d'appliquer des correctifs,
 - _Taille de l'écosystème_: un grand écosystème facilite le développement et
-  assure que d'autres utilisateurs souhaitent son maintien,
+  assure que d'autres utilisateurs contribuent à son maintien,
 - _Taille du code source_: la taille du code source n'est pas toujours gage de
   complexité mais cela reste un indice important,
-- _Ancienté_: un @cots ancien est souvent plus mature mais il embarque aussi
+- _Ancienneté_: un @cots ancien est souvent plus mature mais il embarque aussi
    davantage de dette technique,
 - _Support commercial_: la présence d'un support commercial assure de recevoir
   une aide, au moins sur le moyen terme.
@@ -5254,28 +5254,88 @@ support multi-cœur.
 
 = Tableaux comparitifs <comparison_tables>
 
+Ce dernier chapitre regroupe des tableaux récapitulatifs et comparatifs suivant
+les différents critères de l'étude.
+
 == Maintenabilité <maintainability_tables>
 
-Une première mesure simple de la complexité d'un programme est donné par la métrique _SLOC_
-(pour _source lines of code_) qui mesure la taille d'un programme informatique en nombres de lignes dans
-son code source. Les sources de `PikeOS`, `ProvenVisor` and `XtratuM` étant fermées et n'ayant pas trouvé de
-données concernant le _SLOC_ pour ces OS, nous les excluons de cette section.
 
-Pour les OS open-sources, nous avons utilisé l'outil `SLOCCount`@sloccount_website pour effectuer ces mesures. Cet outil ne compte pas les commentaires.
+#let scell(color: white, txt) = table.cell(fill: color.lighten(40%), [#txt])
 
-#table(
-  columns: 4,
-  align: (center, center, center, center),
-  [OS],          [Total (SLOC)],  [Pilotes (SLOC)], [Langage],
-  [Linux & KVM], [26 927 724],    [18 920 036],     [C (98%)],
-  [MirageOS],    [9,075],         [?],              [OCaml (99%)],
-  [PikeOS],      [?],             [?],              [C (?)],
-  [ProvenVisor], [?],             [?],              [C (?)],
-  [RTEMS],       [1 990 023],     [71,238],         [C (96%)],
-  [seL4],        [68 175],        [1 086],          [C (87%)],
-  [Xen],         [581 193],       [45 220],         [C (93%)],
-  [XtratuM],     [?],             [?],              [C (?)],
+
+#let good(txt) = scell(color:green, txt)
+#let mediocre(txt) = scell(color:yellow, txt)
+#let bad(txt) = scell(color:red, txt)
+#let unknown(txt) = scell(color:black, txt)
+
+#let supported(txt) = scell(color:green, txt)
+#let notsupported(txt) = scell(color:red, txt)
+#let partiallysupported(txt) = scell(color:yellow, txt)
+#let deprecated(txt) = scell(color:black, txt)
+
+Le tableau ci-dessous rassemble les informations relatives à la maintenabilité
+des différents systèmes d'exploitation de l'étude.
+
+#figure(
+table(
+  columns: (auto, auto, auto, auto, auto, auto),
+  align: center + horizon,
+  table.header(
+    [OS],
+    [Licence(s)],
+    [Écosystème],
+    [Taille (SLOC)],
+    [Support commercial],
+    [Ancienneté (années)]
+  ),
+
+  [Linux],
+  good([GPLv2]), good([Très large]), bad([~27M]), [Red Hat, SUSE, Canonical, ...], [~34],
+
+  [MirageOS],
+  good([ISC/BSD]), mediocre([Moyen]), good([< 10k]), [Tarides], [~16],
+
+  [PikeOS],
+  bad([Propriétaire]), mediocre([Moyen]), unknown([]), [SYSGO], [~20],
+
+  [ProvenVisor],
+  bad([Propriétaire]), bad([Limité]), unknown([]), [ProvenRun], [~10],
+
+  [RTEMS],
+  good([BSD 2-Clause]), good([Large]), bad([~2M]), [OAR], [~32],
+
+  [seL4],
+  good([GPLv2]), (mediocre[Moyen]), good([~70k]), [seL4], [~19],
+
+  [Xen],
+  good([GPLv2]), good([Large]), bad([~500k]), [Citrix, Xen Project], [~22],
+
+  [XtratuM],
+  bad([Propriétaire]), bad([Limité]), unknown[], [fentISS], [~21]
+),
+caption: [Comparaison de la maintenabilité des systèmes d'exploitation.]
 )
+
+Quelques remarques concernant ces données:
+- Les tailles des bases de code ont été estimées en utilisant le logiciel
+  `SLOCCount` @sloccount_website. Ce dernier utilise le _SLOC_ (_source line of
+  code_) comme unité et n'inclut pas les commentaires dans le comptage. De plus,
+  nous n'avons pas pris les pilotes en compte dans la mesure. Cela explique
+  certaines divergences avec des chiffres trouvables sur le web. Par exemple
+  _Linux_ distribue une quantité colossale de pilotes pour un total de l'ordre
+  de dizaines de millions de _SLOC_. La majorités de ces lignes de code
+  n'aboutissent pas dans l'exécutable final et il serait injuste de les prendre
+  en compte,
+- Pour _MirageOS_, la taille de la base de code ne concerne que le noyau
+  irréductible de l'OS. En pratique, il faut utiliser d'autres bibliothèques
+  du projet _MirageOS_ pour développer son application,
+- Pour _seL4_, le tableau comparatif ne prend pas en compte la maintenance
+  des preuves qui constituent en réalité une part importante des efforts
+  de développement,
+- Si l'ancienneté est souvent un gage de stabilité, elle entraîne aussi une
+  dette technique plus importante. On constate que les systèmes les plus anciens
+  sont également ceux ayant la base de code la plus volumineuse. En
+  contrepartie, ils sont un écosystème plus développé et mature.
 
 == Draft
 
