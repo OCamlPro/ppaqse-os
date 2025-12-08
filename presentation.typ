@@ -129,14 +129,12 @@
   supported([]), supported([]), notsupported([]), notsupported([]), notsupported([]),
 )
 
-
 ]
 
 #slide(title: "Critère - Architectures supportées")[
-#set text(size: 14pt)
 #table(
-  columns: (1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
-  align: (x, _) => { if x == 0 { left } else { center } },
+  columns: (auto, auto, auto, auto, auto, auto, auto, auto, auto),
+  align: center + horizon,
   table.header(
     [OS],
     [x86-32],
@@ -150,37 +148,39 @@
   ),
 
   [Linux],
-  supported([]), supported([]), supported([]), supported([]),
-  supported([]), supported([]), supported([]), supported([]),
+  good([]), good([]), good([]), good([]), good([]), good([]), good([]), good([]),
 
   [MirageOS],
-  partiallysupported([OCaml < 5]), supported([]), partiallysupported([OCaml < 5]), supported([]),
-  partiallysupported([spt]), notsupported([]), notsupported([]), notsupported([]),
+  mediocre([OCaml < 5]), good([]), mediocre([OCaml < 5]), good([]),
+  mediocre([spt]), bad([]), bad([]), bad([]),
 
   [PikeOS],
-  notsupported([]), supported([]), supported([]), supported([]),
-  supported([]), notsupported([]), supported([]), supported([]),
+  bad([]), good([]), good([]), good([]),
+  good([]), bad([]), good([]), good([]),
 
   [ProvenVisor],
-  notsupported([]), notsupported([]), notsupported([]), supported([]),
-  notsupported([]), notsupported([]), notsupported([]), notsupported([]),
+  bad([]), bad([]), bad([]), good([]),
+  bad([]), bad([]), bad([]), bad([]),
 
   [RTEMS],
-  supported([]), supported([]), supported([]), supported([]),
-  supported([]), supported([]), supported([]), supported([]),
+  good([]), good([]), good([]), good([]),
+  good([]), good([]), good([]), good([]),
 
   [seL4],
-  supported([]), supported([]), supported([]), supported([]),
-  notsupported([]), notsupported([]), supported([]), notsupported([]),
+  good([]), good([]), good([]), good([]),
+  bad([]), bad([]), good([]), bad([]),
 
   [Xen],
-  supported([]), supported([]), supported([]), supported([]),
-  partiallysupported([]), partiallysupported([]), notsupported([]), notsupported([]),
+  good([]), good([]), good([]), good([]),
+  mediocre([]), mediocre([]), bad([]), bad([]),
 
   [XtratuM],
-  deprecated([?]), notsupported([?]), supported([]), supported([]),
-  supported([]), notsupported([]), supported([]), supported([]),
+  deprecated([?]), bad([?]), good([]), good([]),
+  good([]), bad([]), good([]), good([]),
 )
+- Support relatif à la carte (BSP)
+- Extension de virtualisation nécessaire
+
 ]
 
 #slide(title: "Critère - Perte du flux d'exécution")[
@@ -287,40 +287,41 @@
 #slide(title: "Critère - Maintenabilité")[
 
 #table(
-  columns: (auto, auto, auto, auto, auto, auto),
+  columns: (auto, auto, auto, auto, auto, auto, auto),
   align: center + horizon,
   table.header(
     [OS],
     [Licence(s)],
     [Écosystème],
     [Taille (SLOC)],
+    [Doc],
     [Support commercial],
     [Ancienneté (années)]
   ),
 
   [Linux],
-  good([GPLv2]), good([Très large]), bad([~27M]), [Red Hat, SUSE, Canonical, ...], [~34],
+  good([GPLv2]), good([Très large]), bad([~27M]), good([Excellente]), [Red Hat, SUSE, Canonical, ...], [~34],
 
   [MirageOS],
-  good([ISC/BSD]), mediocre([Moyen]), good([< 10k]), [Tarides], [~16],
+  good([ISC/LGPLv2]), mediocre([Moyen]), good([< 10k]), good([Bonne]), [Tarides], [~16],
 
   [PikeOS],
-  bad([Propriétaire]), mediocre([Moyen]), unknown([]), [SYSGO], [~20],
+  bad([Propriétaire]), mediocre([Moyen]), unknown([]), mediocre([Limitée]), [SYSGO], [~20],
 
   [ProvenVisor],
-  bad([Propriétaire]), bad([Limité]), unknown([]), [ProvenRun], [~10],
+  bad([Propriétaire]), bad([Limité]), unknown([]), unknown([]), [ProvenRun], [~10],
 
   [RTEMS],
-  good([BSD 2-Clause]), good([Large]), bad([~2M]), [OAR], [~32],
+  good([BSD 2-Clause]), good([Large]), bad([~2M]), mediocre([limitée]), [OAR], [~32],
 
   [seL4],
-  good([GPLv2]), (mediocre[Moyen]), good([~70k]), [seL4], [~19],
+  good([GPLv2]), (mediocre[Moyen]), good([~70k]), mediocre([Technique]), [seL4], [~19],
 
   [Xen],
-  good([GPLv2]), good([Large]), bad([~500k]), [Citrix, Xen Project], [~22],
+  good([GPLv2]), good([Large]), bad([~500k]), mediocre([Datée]), [Citrix, Xen Project], [~22],
 
   [XtratuM],
-  bad([Propriétaire]), bad([Limité]), unknown[], [fentISS], [~21]
+  bad([Propriétaire]), bad([Limité]), unknown[], unknown([]), [fentISS], [~21]
 )
 
 - Ancienneté $arrow.r.double.long$ grand écosystème,

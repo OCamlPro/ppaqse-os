@@ -1939,12 +1939,28 @@ On retrouve aussi d'autres informations intéressantes:
 
 == Maintenabilité <linux_mainability>
 
-Le noyau `Linux` est un logiciel libre distribué sous licence `GPL-2.0` avec
-l'exception _syscall_ qui stipule qu'un logiciel utilisant le noyau `Linux` au
-travers des appels systèmes n'est pas considéré comme une œuvre dérivée et
-peut être distribué sous une licence qui n'est pas compatible avec la GPL,
-y compris une licence propriétaire. Plus d'informations sont disponibles dans
-le dossier `LICENSES` des sources du noyau `Linux`.
+_Linux_ est un logiciel libre distribué sous licence `GPL-2.0` avec
+l'exception _syscall_. Cette exception stipule qu'un logiciel utilisant le noyau
+_Linux_ au travers de ses appels systèmes n'est pas considéré comme une œuvre
+dérivée et peut être distribué sous une licence qui n'est pas compatible avec
+la licence _GPL_, y compris une licence propriétaire. Plus d'informations sont
+disponibles dans le dossier `LICENSES` des sources du noyau.
+
+Le développement du noyau a débuté en 1991, ce qui fait plus de 34 ans
+d'existence. Cette longue histoire a permis à _Linux_ et à son écosystème
+d'atteindre un niveau de maturité exceptionnel. Des milliers de développeurs
+contribuent au noyau au travers de centaines d'entreprises (_Intel_, _Google_,
+_Samsung_, _AMD_, _Red Hat_, ...).
+
+Toutefois avec plus de 26 millions de lignes de code (et 18,9 millions de plus
+pour les pilotes seulement), le noyau _Linux_ est une d'une complexité rarement
+atteinte dans l'histoire du développement logiciel. Cette taille colosse
+constitue un défi pour la vérification du noyau ou la certification
+de solutions logicielles intégrant _Linux_.
+
+De nombreuses entreprises proposent un support commercial pour _Linux_,
+notamment _Red Hat_, _SUSE_ et _Canonical_. Ce support couvre aussi bien les
+distributions grand public que les versions temps réel pour l'embarqué.
 
 = MirageOS <mirageos>
 
@@ -1960,9 +1976,12 @@ le dossier `LICENSES` des sources du noyau `Linux`.
   - *Langage* : OCaml (99%)
   - *Architectures* : x86-64, ARM v8, PowerPC#footnote[Support limité à
     l'environnement d'exécution _spt_ du projet _solo5_.]
-  - *Usage principal* : Cloud computing, applications réseau, systèmes embarqués, spatial
-  - *Points forts* : Sécurité renforcée (surface d'attaque réduite, langage sûr), taille minimale, temps de démarrage rapide, modularité
-  - *Limitations* : Portabilité limitée sans hyperviseur, débogage complexe, pas d'interface POSIX
+  - *Usage principal* : Cloud computing, applications réseau, systèmes embarqués,
+    spatial
+  - *Points forts* : Sécurité renforcée (surface d'attaque réduite, langage
+    sûr), taille minimale, temps de démarrage rapide, modularité
+  - *Limitations* : Portabilité limitée sans hyperviseur, débogage complexe,
+    pas d'interface POSIX
   - *Licences* : ISC (majoritaire) + LGPLv2 (certaines parties)
   - *Projet notable* : SpaceOS (déployé dans l'espace en 2025)
 ]
@@ -2413,13 +2432,25 @@ décrites dans les Critères Communs (niveau _EAL_) mais rien de tel semble avoi
 
 == Maintenabilité <mirageos_maintainability>
 
+Le code de _MirageOS_ est publié sous la licence _ISC_ avec certaines parties
+sous licence _LGPLv2_. L'utilisation d'une licence _Open Source_ permissive
+comme _ISC_ est nécessaire car l'_unikernel_ produit par _MirageOS_ est lié
+statiquement avec les bibliothèques. Grâce à cette licence, l'utilisateur n'a
+pas les contraintes des licences _GPL_ lorsqu'il distribue son _unikernel_.
+
+Le projet a été initié en 2009, ce qui en fait un projet relativement
+jeune avec environ 16 ans d'existence.
+
 _MirageOS_ est en majorité écrit en OCaml, un langage de haut niveau qui offre
 de bonne garantie du point de vue de la sûreté des types et de la mémoire.
 À ce jour le dépôt https://github.com/mirage/mirage est constitué à 99% de code
 OCaml pour un total de 9075 _SLOC_.
 
-Toutefois la totalité de l'unikernel ne provient pas de la compilation de
-codes _OCaml_. Il subsiste plusieurs parties en langage C et notamment:
+Cette valeur doit être considérée avec prudence puisqu'un véritable projet devra
+certainement utiliser d'autres bibliothèques de _MirageOS_ pour fonctionner.
+
+De plus la totalité de l'_unikernel_ produit ne provient pas de la compilation
+de codes _OCaml_. Il subsiste plusieurs parties en langage C et notamment:
 - L'environnement d'exécution du langage OCaml est écrit en C. Cela inclut
   en particulier son ramasse-miette,
 - Quelques bibliothèques en C comme _GMP_ au travers de _Zarith_. Leur
@@ -2427,12 +2458,11 @@ codes _OCaml_. Il subsiste plusieurs parties en langage C et notamment:
   considérable en pratique,
 - Les pilotes doivent être écrits dans un langage bas niveau comme le langage C.
 
-Le code de _MirageOS_ est publié sous la licence _ISC_ avec certaines parties
-sous licence _LGPLv2_. L'utilisation d'une licence open-source permissive comme
-_ISC_ est nécessaire car l'_unikernel_ produit par _MirageOS_ est lié
-statiquement avec les bibliothèques. Grâce à cette licence, vous n'avez pas les
-contraintes des licences _GPL_ lorsque vous distribuez le binaire de votre
-_unikernel_.
+_MirageOS_ bénéficie d'un support commercial de l'entreprise _Tarides_, qui
+maintient activement le projet et propose des services de conseil et de
+développement autour de la technologie _MirageOS_. La _MirageOS Core Team_,
+composée d'universitaires et d'ingénieurs du secteur privé, assure la
+maintenance continue du projet.
 
 _MirageOS_ a été utilisé dans plusieurs projets d'envergures. Récemment
 l'entreprise _Tarides_ a développé le système d'exploitation _SpaceOS_ pour
@@ -2841,20 +2871,27 @@ Il est possible d'avoir une certification pour une partition spécifique.
 
 == Maintenabilité <pikeos_maintainability>
 
-_PikeOS_ est un logiciel propriétaire aux sources fermées. Nous n'avons pas pu
-évaluer la taille de sa base de code faute d'informations communiquées par
-_SYSGO_. Toutefois, au vu du nombres de certifications et de sa conception de
-type _L4_, le noyau est sans doute de petite taille, c'est-à-dire de l'ordre de
-quelques dizaines de milliers de lignes de code.
+_PikeOS_ est un logiciel propriétaire aux sources fermées. L'entreprise _SYSGO_
+ne semble pas communiquer sur ses licences. Les modalités et les tarifs des
+licences sont certainement à négociés au cas par cas.
 
-L'entreprise ne semble pas davantage communiquer sur ses licences. Les modalités
-et les coûts de ces licences sont certainement à négociés avec _SYSGO_ en
-fonction de chaque projet.
+_PikeOS_ a été commercialisé pour la première fois en 2005, ce qui en fait un
+système avec environ 20 ans d'existence.
 
-== Draft
+Nous n'avons pas pu évaluer la taille de la base de code, faute d'informations
+librement accessibles. Toutefois, au vu des nombreuses certifications et de sa
+conception inspirée du micronoyau _L4_, nous spéculons que le noyau de
+_PikeOS_ est probablement de petite taille, c'est-à-dire de l'ordre quelques
+dizaines de milliers de lignes de code.
 
-- Un noyau de séparation permettant la criticité mixte
-- Ce noyau de séparation répond au standard MILS (_Multiple Independent Levels of Security_)
+Le système d'exploitation bénéficie d'un écosystème solide dans les domaines
+critiques, notamment l'aéronautique (avec _Airbus_ qui l'a choisi comme
+plateforme de référence pour l'_A350_), l'automobile, le ferroviaire et le
+médical.
+
+Le support commercial de _PikeOS_ est assuré par _SYSGO_, filiale du groupe
+_Thales_ depuis 2012. Cette acquisition par un acteur majeur de la défense et de
+l'aérospatial est un gage de pérennité du produit.
 
 = ProvenVisor <provenvisor>
 
@@ -3364,6 +3401,24 @@ utiliser l'hyperviseur dans leurs produits. La qualité et la complétude de cet
 documentation sont des facteurs importants pour la maintenabilité des systèmes basés
 sur _ProvenVisor_.
 
+=== Taille du code et licence
+
+Comme _ProvenVisor_ est un logiciel propriétaire, la taille exacte du code source
+n'est pas communiquée publiquement. Toutefois, étant donné sa conception minimale
+et son focus sur un @tcb réduit, le noyau est vraisemblablement de petite taille,
+caractéristique typique des hyperviseurs formellement vérifiés.
+
+_ProvenVisor_ est distribué sous licence propriétaire par _ProvenRun_. Les
+modalités d'utilisation et les coûts doivent être négociés directement avec
+l'éditeur en fonction des besoins spécifiques de chaque projet.
+
+=== Écosystème
+
+_ProvenVisor_ cible principalement le marché de l'@ido (_Internet des Objets_) et
+des systèmes embarqués critiques nécessitant une sécurité renforcée. Son écosystème
+se concentre sur les architectures _ARM v8-A_ et les applications où la vérification
+formelle apporte une valeur significative en termes de garanties de sécurité.
+
 = RTEMS <rtems>
 
 #showybox(
@@ -3753,6 +3808,18 @@ et open-sources avec pour licence principale _BSD 2-Clause_. Le point commun de
 ces licences est qu'elles autorisent l'utilisateur a lié son programme avec le
 code source de _RTEMS_ sans devoir redistribuer son propre code source
 @rtems_licenses_website.
+
+_RTEMS_ bénéficie d'un écosystème particulièrement important dans le domaine
+spatial, où il est utilisé par la _NASA_ et l'@esa dans de nombreuses missions,
+notamment la constellation de satellites _Galileo_, le _James Webb Space Telescope_,
+et les rovers martiens. Cette adoption par des agences spatiales de premier plan
+témoigne de la maturité et de la fiabilité du système.
+
+Le support commercial de _RTEMS_ est assuré principalement par l'entreprise _OAR_
+(_On-Line Applications Research Corporation_), qui maintient et développe le
+projet depuis 1995. Un support est disponible pour les entreprises européennes
+et américaines. La communauté active du projet offre également un support gratuit,
+bien que sans garantie formelle.
 
 == Draft
 - Il offre un support pour les architectures @smp et @amp.
@@ -4359,11 +4426,24 @@ Le noyau _seL4_ a fait l'objet d'une vérification formelle profonde. L'approche
 suppose la correction du compilateur, du code assembleur et du matériel mais
 démontre la conformité du code C avec ses spécifications.
 
-== Licences & brevets <sel4_licenses>
+== Maintenabilité <sel4_maintainability>
 
-Le noyau de `seL4` est un logiciel libre distribué principalement sous licence
-`GNU General Public License version 2 only (GPL-2.0)`. Le code utilisateur et
-les pilotes peuvent être distribués sous n'importe quelle licence @sel4_licensing.
+Le noyau _seL4_ est un logiciel libre distribué principalement sous licence
+_GPLv2_. Le code utilisateur et les pilotes peuvent être distribués sous
+n'importe quelle licence @sel4_licensing.
+
+Le projet a débuté en 2006, ce qui en fait un projet d'environ 19 ans.
+
+La base de code est écrite en langage C à 87% pour un total de 68 175 _SLOC_.
+Cette petite taille est le gage d'une @tcb réduite. Cependant, ce chiffre ne
+tient pas compte de la difficulté importante à maintenir des démonstrations
+tout en continuant à faire évoluer le logiciel.
+
+_seL4_ bénéficie d'un écosystème actif dans les domaines critiques et son code
+librement accessible facilite le développement de nouveaux logiciels.
+
+Le support commercial de _seL4_ est assuré par plusieurs organisations, dont
+la _seL4 Foundation_ et _Trustworthy Systems_.
 
 == draft
 
@@ -4916,33 +4996,6 @@ pour la majorité des interruptions matérielles comme en _HVM_ mais il est
 toujours possible d'utiliser des périphériques paravirtualisés et les
 _events PIRQ_ pour gérer les interruptions matérielles @xen_misc_pvh.
 
-== Maintenabilité
-
-_Xen_ est écrit à 93% en langage _C_ pour un total de 581 193 _SLOC_ dont
-45 220 _SLOC_ pour les pilotes. Ces chiffres inclus toutes les architectures,
-ce qui ne tient pas compte d'une grande disparité entre les parties les plus
-anciennes pour les partitions _PV_ sur _x86_ et les parties plus récentes
-pour les partitions _PVH_ sur _ARM_.
-
-_Xen_ est réputé pour avoir un @tcb plus important que d'autres hyperviseurs,
-notamment dû à la taille importante de ces sources. Il est toutefois important
-de souligner que le volume de code varie d'un facteur 10 entre les des
-architectures les mieux supportées, à savoir _x86_ et _ARM_.
-
-Un autre facteur important qui augmente la @tcb est l'usage d'un noyau _Linux_
-dans le _dom0_. La compromission de ce noyau compromettant tout le système,
-il ne peut en être exclu. Il est possible de réduire l'influence du _dom0_
-sur la @tcb en utilisant des noyaux personnalisés.
-
-== Licences <xen_licenses>
-
-_Xen_ est un logiciel libre distribué majoritairement sous licence `GPLv2`.
-Toutefois certaines parties sont distribuées sous des licences
-plus permissives afin de pas contraindre les licences des logiciels applicatifs
-ou des _OS_ portés sur _Xen_. Ces exceptions sont spécifiées dans les en-têtes
-des fichiers concernés. Plus d'informations sont disponibles dans le
-fichier `COPYING` du dépôt git @xen_licensing.
-
 == Temps de démarrage <xen_booting>
 
 #aside[Qu'est-ce que dom0less?][
@@ -4976,6 +5029,30 @@ Cette fonctionnalité est particulièrement adaptée aux systèmes à partitionn
 statique où plusieurs domaines doivent démarrer rapidement lors de l'initialisation
 de l'hôte. Elle s'intègre désormais dans le projet _Hyperlaunch_ qui généralise
 cette approche.
+
+== Maintenabilité <xen_maintainability>
+
+_Xen_ est un logiciel libre distribué majoritairement sous licence `GPLv2`.
+Certaines portions sont distribuées sous des licences plus permissives afin
+de ne pas contraindre le choix de licence pour l'utilisateur. Ces exceptions
+sont spécifiées dans les en-têtes des fichiers concernés. Plus d'informations
+sont disponibles dans le fichier `COPYING` du dépôt git de _Xen_ @xen_licensing.
+
+Il est écrit à 93% en langage _C_ pour un total de 581 193 _SLOC_ dont
+45 220 _SLOC_ pour les pilotes. Ces chiffres inclus toutes les architectures
+et modes de virtualisation (_PV_, _HVM_ et _PVH_). _Xen_ est donc réputé avoir
+une @tcb importante du fait de ce volume de code. Cependant, il faut noter que
+la taille du code varie beaucoup suivant l'architecture et le mode de
+virtualisation considéré. Ainsi, l'implémentation du mode _PVH_ pour _ARM_
+est d'une taille nettement plus réduite.
+
+Le projet _Xen_ a débuté en 1999, ce qui en fait un système d'environ 26 ans.
+_Xen_ bénéficie d'un écosystème large dans le domaine du cloud computing
+et de l'hébergement.
+
+Le support commercial de _Xen_ est assuré principalement par _Citrix_ à travers
+sa distribution _Citrix Hypervisor_. Le _Xen Project_, hébergé par la _Linux
+Foundation_, coordonne le développement Open Source et fédère la communauté.
 
 = XtratuM <xtratum>
 
@@ -5231,11 +5308,33 @@ contribuant à la robustesse du système dans un contexte critique.
 
 À l'origine _XtratuM_ était un projet open source sous licence _GPLv2_
 @xtratum_mirror_source. Cette version ne semble plus être développée et
-_fentISS_ distribue une réécriture du noyau appelée _XNG_
-(_XtratuM Next Generation_) sous licence propriétaire. L'entreprise _fentISS_
-ne semble pas communiquer sur ses licences ou sa politique tarifaire.
-Les modalités et les coûts des licences sont négociés avec _fentISS_ en fonction
-des besoins du projet.
+_fentISS_ distribue une réécriture du noyau appelée _XNG_ (_XtratuM Next
+Generation_) sous licence propriétaire. L'entreprise _fentISS_ ne semble pas
+communiquer sur ses licences. Les modalités sont donc probablement
+à négocier avec _fentISS_ au cas par cas.
+
+Nous n'avons pas pu évaluer la taille de la base de code, faute d'informations
+librement accessibles. _XtratuM_ étant un noyau de séparation certifiable, sa
+base de code doit être réduite afin de rendre la certification possible.
+
+Le projet _XtratuM_ a été initié en 2004, ce qui en fait un système d'environ
+21 ans. Ayant été réécrit au alentour de , sa base de code aurait en fait .
+
+Le projet _XtratuM_ a été initié en 2004 au sein de l'institut _Automática e
+Informática Industrial_ (ai2) de l'_Universidad Politécnica_ de Valence en
+Espagne, ce qui en fait un système d'environ 21 ans. Le projet a connu une
+transition majeure avec le passage de la version open-source originale à la
+version propriétaire _XNG_ (_XtratuM Next Generation_) développée par _fentISS_.
+
+_XtratuM_ s'inscrit dans l'écosystème aérospatial européen, notamment à travers
+le projet _SAFEST_ qui vise à faire collaborer différents acteurs du secteur
+pour améliorer les performances et réduire les coûts. Le système cible
+particulièrement l'_IMA_ (_Integrated Modular Avionics_), une approche visant
+à consolider des fonctions logicielles auparavant dispersées sur des calculateurs
+dédiés.
+
+Le support commercial de _XtratuM_ est assuré par l'entreprise _fentISS_ qui
+développe et maintient la version _XNG_.
 
 == Draft
 
@@ -5254,12 +5353,6 @@ support multi-cœur.
 
 = Tableaux comparitifs <comparison_tables>
 
-Ce dernier chapitre regroupe des tableaux récapitulatifs et comparatifs suivant
-les différents critères de l'étude.
-
-== Maintenabilité <maintainability_tables>
-
-
 #let scell(color: white, txt) = table.cell(fill: color.lighten(40%), [#txt])
 
 
@@ -5273,50 +5366,157 @@ les différents critères de l'étude.
 #let partiallysupported(txt) = scell(color:yellow, txt)
 #let deprecated(txt) = scell(color:black, txt)
 
+Ce dernier chapitre regroupe des tableaux récapitulatifs et comparatifs suivant
+les différents critères de l'étude.
+
+== Type de système d'exploitation <table_kind>
+
+#figure(
+table(
+  columns: (auto, auto, auto, auto, auto, auto, auto),
+  align: (x, _) => { if x == 0 { left } else { center } },
+  table.header[OS][Temps réel][Hyperviseur][LibOS][GPOS][RTOS][Noyau de sép.],
+  [Linux],
+  good([]), good([]), bad([]), good([]), bad([]), bad([]),
+
+  [MirageOS],
+  bad([]), bad([]), good([]), bad([]), bad([]), bad([]),
+
+  [PikeOS],
+  good([]), good([]), bad([]), bad([]), bad([]), good([]),
+
+  [ProvenVisor],
+  good([]), good([]), bad([]), bad([]), bad([]), good([]),
+
+  [RTEMS],
+  good([]), bad([]), bad([]), bad([]), good([]), bad([]),
+
+  [seL4],
+  good([]), good([]), bad([]), bad([]), bad([]), good([]),
+
+  [Xen],
+  mediocre([]), good([]), bad([]), bad([]), bad([]), mediocre([]),
+
+  [XtratuM],
+  good([]), good([]), bad([]), bad([]), bad([]), good([]),
+),
+caption: [Type de systèmes d'exploitation]
+)
+
+== Architectures supportées <table_supported_architectures>
+
+Le tableau ci-dessous résume le support des architectures par système
+d'exploitation.
+
+#figure(
+table(
+  columns: (auto, auto, auto, auto, auto, auto, auto, auto, auto),
+  align: center + horizon,
+  table.header(
+    [OS],
+    [x86-32],
+    [x86-64],
+    [ARMv7],
+    [ARMv8],
+    [PowerPC],
+    [MIPS],
+    [RISC-V],
+    [SPARC]
+  ),
+
+  [Linux],
+  good([]), good([]), good([]), good([]), good([]), good([]), good([]), good([]),
+
+  [MirageOS],
+  mediocre([OCaml < 5]), good([]), mediocre([OCaml < 5]), good([]),
+  mediocre([spt]), bad([]), bad([]), bad([]),
+
+  [PikeOS],
+  bad([]), good([]), good([]), good([]),
+  good([]), bad([]), good([]), good([]),
+
+  [ProvenVisor],
+  bad([]), bad([]), bad([]), good([]),
+  bad([]), bad([]), bad([]), bad([]),
+
+  [RTEMS],
+  good([]), good([]), good([]), good([]),
+  good([]), good([]), good([]), good([]),
+
+  [seL4],
+  good([]), good([]), good([]), good([]),
+  bad([]), bad([]), good([]), bad([]),
+
+  [Xen],
+  good([]), good([]), good([]), good([]),
+  mediocre([]), mediocre([]), bad([]), bad([]),
+
+  [XtratuM],
+  deprecated([?]), bad([?]), good([]), good([]),
+  good([]), bad([]), good([]), good([]),
+),
+caption: [Architectures supportées par système d'exploitation.]
+)
+
+Quelques remarques pour l'interprétation de ces informations:
+- Pour les hyperviseurs, il faut un support matériel supplémentaire pour tirer
+  le meilleur du matériel. Le lecteur peut se rapporter à la section du système
+  concerné pour trouver ces informations,
+- Pour les hyperviseurs, il faut que le système invité supporte également
+  l'architecture, à moins d'avoir recours la virtualisation complète,
+- Le support de l'architecture ne suffit pas à supporter n'importe quelle carte
+  de cette architecture. _PikeOS_, _ProvenVisor_, _RTEMS_, _seL4_ et
+  _XtratuM_ publient des @bsp pour des cartes et des architectures spécifiques.
+  En dernier terme, seul l'existence de ce @bsp fait foi pour le support d'une
+  carte donnée.
+
+== Maintenabilité <table_maintainability>
+
 Le tableau ci-dessous rassemble les informations relatives à la maintenabilité
 des différents systèmes d'exploitation de l'étude.
 
 #figure(
 table(
-  columns: (auto, auto, auto, auto, auto, auto),
+  columns: (auto, auto, auto, auto, auto, auto, auto),
   align: center + horizon,
   table.header(
     [OS],
     [Licence(s)],
     [Écosystème],
     [Taille (SLOC)],
+    [Doc],
     [Support commercial],
     [Ancienneté (années)]
   ),
 
   [Linux],
-  good([GPLv2]), good([Très large]), bad([~27M]), [Red Hat, SUSE, Canonical, ...], [~34],
+  good([GPLv2]), good([Très large]), bad([~27M]), good([Excellente]), [Red Hat, SUSE, Canonical, ...], [~34],
 
   [MirageOS],
-  good([ISC/BSD]), mediocre([Moyen]), good([< 10k]), [Tarides], [~16],
+  good([ISC/LGPLv2]), mediocre([Moyen]), good([< 10k]), good([Bonne]), [Tarides], [~16],
 
   [PikeOS],
-  bad([Propriétaire]), mediocre([Moyen]), unknown([]), [SYSGO], [~20],
+  bad([Propriétaire]), mediocre([Moyen]), unknown([]), mediocre([Limitée]), [SYSGO], [~20],
 
   [ProvenVisor],
-  bad([Propriétaire]), bad([Limité]), unknown([]), [ProvenRun], [~10],
+  bad([Propriétaire]), bad([Limité]), unknown([]), unknown([]), [ProvenRun], [~10],
 
   [RTEMS],
-  good([BSD 2-Clause]), good([Large]), bad([~2M]), [OAR], [~32],
+  good([BSD 2-Clause]), good([Large]), bad([~2M]), mediocre([limitée]), [OAR], [~32],
 
   [seL4],
-  good([GPLv2]), (mediocre[Moyen]), good([~70k]), [seL4], [~19],
+  good([GPLv2]), (mediocre[Moyen]), good([~70k]), mediocre([Technique]), [seL4], [~19],
 
   [Xen],
-  good([GPLv2]), good([Large]), bad([~500k]), [Citrix, Xen Project], [~22],
+  good([GPLv2]), good([Large]), bad([~500k]), mediocre([Datée]), [Citrix, Xen Project], [~22],
 
   [XtratuM],
-  bad([Propriétaire]), bad([Limité]), unknown[], [fentISS], [~21]
+  bad([Propriétaire]), bad([Limité]), unknown[], unknown([]), [fentISS], [~21]
 ),
 caption: [Comparaison de la maintenabilité des systèmes d'exploitation.]
 )
 
-Quelques remarques concernant ces données:
+Quelques remarques pour l'interprétation de ces données:
 - Les tailles des bases de code ont été estimées en utilisant le logiciel
   `SLOCCount` @sloccount_website. Ce dernier utilise le _SLOC_ (_source line of
   code_) comme unité et n'inclut pas les commentaires dans le comptage. De plus,
@@ -5360,36 +5560,6 @@ Quelques remarques concernant ces données:
     - Outil de débogage
   ], [
   ],
-)
-
-== Architectures supportées
-
-Le tableau suivant résume le support de ces architectures de processeur pour les
-systèmes d'exploitation de cette étude. Lorsque l'OS est un hyperviseur, il
-s'agit du support pour le matériel surlequel est exécuté l'hyperviseur.
-
-#table(
-  columns: 9,
-  align: (center, center, center, center, center, center, center, center, center, center),
-  [OS], [x86-32], [x86-64], [ARM v7],  [ARM v8],  [PowerPC], [MIPS], [RISC-V], [SPARC],
-  [Linux @linux_arch],
-        [Oui],    [Oui],    [Oui],     [Oui],     [Oui],     [Oui],  [Oui],    [Oui],
-  [KVM @kvm_arch],
-        [Oui],    [Oui],    [Oui],     [Oui],     [Oui],     [Non],  [Non],    [Non],
-  [MirageOS @mirage_os_arm64 @mirage_os_installation],
-        [Non],    [Oui],    [Non],     [Oui],     [Non],     [Non],  [Non],    [Non],
-  [PikeOS @pikeos_homepage],
-        [Oui],    [Oui],    [Oui],     [Oui],     [Oui],     [Non],  [Oui],    [Oui],
-  [ProvenVisor @provenrun_homepage],
-        [Non],    [Non],    [Non],     [Oui],     [Non],     [Non],  [Non],    [Non],
-  [RTEMS @rtems_architectures],
-        [Oui],    [Oui],    [Oui],     [Oui],     [Oui],     [Oui],  [Oui],    [Oui],
-  [seL4 @sel4_supported_platforms],
-        [Oui],    [Oui],    [Oui],     [Oui],     [Non],     [Non],  [Oui],    [Non],
-  [Xen],
-        [Non],    [Non],    [Oui],     [Non],     [Oui],     [Non],  [Non],    [Non],
-  [XtratuM],
-        [Non],    [Non],    [Oui],     [Non],     [Oui],     [Non],  [Non],    [Non],
 )
 
 
