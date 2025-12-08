@@ -871,7 +871,7 @@ Pour chaque système étudié, nous examinons les aspects suivants:
   @kernelspace,]
 - #box[Les mécanismes de virtualisation des interruptions.]
 
-== _Watchdog_ <watchdog_criteria>
+== _Watchdog_ <criteria_watchdog>
 
 Un _watchdog_ est un dispositif matériel ou logiciel conçu
 pour détecter le blocage d'un système informatique, et de réagir
@@ -888,27 +888,29 @@ recours aux _watchdogs_ pour améliorer leur fiabilité. Pour chacun des systèm
 nous avons étudiés le support des _watchdog_ logiciels et matériels et avons
 fourni un exemple d'utilisation de l'@api lorsque cela était possible.
 
-== Programmation @baremetal
+== Programmation @baremetal <criteria_baremetal_programming>
 
-La programmation @baremetal était et demeure commune dans les systèmes critiques.
-Toutefois, comme mentionné dans la sous-section @why_os, l'adoption d'un système
-d'exploitation offre de nombreuses avantages, notamment en permettant
-l'isolation logicielle de plusieurs tâches critiques.
-Il est donc fréquent de vouloir porter des applications @baremetal existantes
-vers des architectures virtualisées pour bénéficier de l'isolation et des @api
-offertes par ces dernières.
+La programmation @baremetal demeure commune dans les systèmes critiques.
+Cependant, l'adoption d'un @cots pour le système d'exploitation offre beaucoup
+d'avantages. Il est donc fréquent de vouloir porter une application @baremetal
+vers un hyperviseur.
 
-C'est dans cette optique que nous avons examiné les possibilités offertes en
-matière de programmation @baremetal par les hyperviseurs étudiés. Notre analyse
-est circonscrite aux langages de programmation _Ada_, _C_, _OCaml_ et _Rust_.
+C'est dans cette optique que nous avons examiné les solutions proposées en
+matière de programmation @baremetal pour les différents hyperviseurs étudiés.
+Notre analyse se borne aux langages de programmation _Ada_, _C_, _OCaml_ et
+_Rust_.
 
 Le principal défi d'un tel portage est d'adapter un @rte de ces langages pour
-l'hyperviseur donné. Dans le cas de _Ada_, _C_ et _Rust_ se portage est grandement
-faciliter par la possibilité de limiter la taille du @rte et de se passer
-de la majorité de la bibliothèque standard ou de la remplacer par une bibliothèque
-dédiée au @baremetal. Pour le langage _OCaml_, la difficulté est plus importante
-car son @rte contient un @gc, ce qui implique de devoir porter un plus
-grand nombre d'appels systèmes.
+l'hyperviseur donné.
+
+Dans le cas de _Ada_, _C_ et _Rust_ se portage est grandement facilité par la
+la taille du @rte de ces langages et de se passer de la majorité de la
+bibliothèque standard ou encore de la remplacer par une bibliothèque dédiée au
+@baremetal.
+
+Pour le langage _OCaml_, la difficulté est plus importante car son @rte
+contient un @gc, ce qui implique de devoir porter un plus grand nombre d'appels
+systèmes.
 
 == Temps de démarrage
 
