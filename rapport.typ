@@ -2521,109 +2521,46 @@ la norme _ARINC 653_ @pikeos_safe_real_time_scheduling. Cette architecture combi
 un partitionnement temporel strict au niveau des partitions avec une flexibilité
 d'ordonnancement au niveau des threads.
 
-==== Ordonnancement au niveau des partitions
+Au premier niveau, l'ordonnanceur distribue statiquement le temps _CPU_ selon un
+schéma cyclique _TDM_ (_Time Division Multiplexing_). Le cycle complet est
+subdivisé en fenêtres temporelles de durées variables, chacune allouée à une
+partition spécifique. Cette configuration statique garantit un ordonnancement
+déterministe avec une granularité jusqu'à 250 µs.
 
-Le premier niveau de l'ordonnanceur assure l'isolation temporelle stricte entre
-les partitions. Il distribue statiquement le temps _CPU_ selon un schéma cyclique
-de type _TDM_ (_Time Division Multiplexing_). Le cycle complet, appelé _major
-time frame_ dans la terminologie _ARINC 653_, est subdivisé en plusieurs fenêtres
-temporelles (_partition windows_ ou _minor time frames_) de durées variables,
-chacune allouée à une partition spécifique.
-
-Cette approche permet de garantir qu'une partition reçoit toujours son temps
-d'exécution alloué de manière déterministe. La configuration de ces fenêtres
-temporelles est entièrement statique et définie lors de la phase de
-configuration du système, garantissant ainsi un comportement prévisible. La
-granularité des fenêtres temporelles peut descendre jusqu'à 250 µs, offrant
-une précision de l'ordre de la microseconde pour l'ordonnancement des partitions.
-
-==== Ordonnancement au niveau des threads
-
-Le second niveau de l'ordonnanceur opère au sein de chaque partition pendant sa
-fenêtre temporelle. _PikeOS_ propose plusieurs politiques d'ordonnancement pour
-les threads:
-- #box[_Fixed-priority preemptive scheduling_: il s'agit de la politique
-  principale. L'ordonnanceur sélectionne toujours le thread avec la plus haute
-  priorité parmi les threads prêts à s'exécuter dans la partition active. Un
-  thread de haute priorité peut immédiatement préempter un thread de plus faible
-  priorité,]
-- #box[_Earliest Deadline First_ (_EDF_): _PikeOS_ supporte également des
-  politiques d'ordonnancement _EDF_, permettant de prioriser dynamiquement les
+Au second niveau, _PikeOS_ propose plusieurs politiques d'ordonnancement pour
+les threads au sein de chaque partition:
+- #box[_Fixed-priority preemptive scheduling_: l'ordonnanceur sélectionne
+  toujours le thread avec la plus haute priorité et permet la préemption,]
+- #box[_Earliest Deadline First_ (_EDF_): permet de prioriser dynamiquement les
   threads selon leurs échéances.]
 
-Cette combinaison d'un ordonnancement temporel strict au niveau des partitions
-et d'un ordonnancement flexible au niveau des threads permet à _PikeOS_ de
-supporter simultanément des applications de criticités différentes tout en
-garantissant l'isolation temporelle nécessaire pour les systèmes temps réel.
+Cette architecture à deux niveaux permet de supporter simultanément des
+applications de criticités différentes tout en garantissant l'isolation
+temporelle nécessaire pour les systèmes temps réel.
 
 === Déterminisme <pikeos_determinism>
 
-_PikeOS_ a été conçu dès le départ pour offrir un comportement déterministe
-adapté aux exigences du temps réel.
-
-=== Draft
-
-Son hyperviseur support la virtualisation assisté par le matériel (_HW-Virt_).
-
-
-=== Déterminisme <pikeos_real_time>
-
 _PikeOS_ a été conçu dès l'origine pour offrir un comportement déterministe
-adapté aux exigences temps réel dur. Plusieurs mécanismes architecturaux
-garantissent la prévisibilité et le contrôle des latences. Contrairement
-aux premiers micronoyaux de la famille _L4_, _PikeOS_ est totalement
-préemptif @kaiser2007evolution.
-
-==== Préemption du micronoyau
-
-Le micronoyau _PikeOS_ est totalement préemptif @kaiser2007evolution. Cette
-caractéristique est fondamentale pour minimiser les latences et respecter les
-échéances temps réel. Contrairement à son prédécesseur _P4_, _PikeOS_ a été
-spécifiquement pensé pour éliminer les sections non préemptibles qui pouvaient
+adapté aux exigences temps réel dur. Contrairement aux premiers micronoyaux de
+la famille _L4_, le micronoyau _PikeOS_ est totalement préemptif
+@kaiser2007evolution, éliminant les sections non préemptibles qui pouvaient
 introduire de la gigue et empêcher une estimation précise du @wcet.
-
-L'ordonnancement au sein des partitions utilise un mécanisme préemptif à
-priorités fixes. Cela garantit qu'une tâche de haute priorité peut
-immédiatement interrompre une tâche de plus faible priorité pour respecter ses
-contraintes temporelles. _PikeOS_ supporte également des politiques
-d'ordonnancement de type _EDF_ (_Earliest Deadline First_), permettant de
-prioriser dynamiquement les tâches selon leurs échéances.
-
-==== Latences bornées
 
 Le déterminisme de _PikeOS_ repose sur des latences bornées, inhérentes à sa
 conception microkernel. En limitant les fonctionnalités du noyau aux services
-essentiels, _PikeOS_ réduit les surcoûts et élimine les éléments non
-déterministes tels que l'allocation dynamique de mémoire dans les chemins
-d'exécution critiques. Cette approche minimaliste garantit des temps de
-réponse prévisibles.
+essentiels, _PikeOS_ élimine les éléments non déterministes tels que
+l'allocation dynamique de mémoire dans les chemins d'exécution critiques. Le
+partitionnement temporel @pikeos_safe_real_time_scheduling garantit un
+ordonnancement déterministe avec une précision de l'ordre de la microseconde.
 
-Le partitionnement temporel applique des allocations strictes de temps _CPU_.
-Chaque partition reçoit des fenêtres d'exécution dédiées définies par des
-tranches de temps, ce qui assure un ordonnancement déterministe avec une
-précision de l'ordre de la microseconde. Cette isolation temporelle est
-essentielle pour garantir qu'une partition ne puisse pas accaparer le
-processeur au détriment des autres.
+L'ordonnancement au sein des partitions utilise un mécanisme préemptif à
+priorités fixes et supporte également des politiques d'ordonnancement de type
+_EDF_ (_Earliest Deadline First_).
 
-==== Estimation du @wcet
-
-Les temps d'exécution dans le pire cas sont contrôlés via plusieurs
-mécanismes. Comme mentionné dans la sous-section @pikeos_smp, _PikeOS_
-utilise depuis la version _4.2_ un système de verrouillage à granularité fine
-qui prévient la contention dans les configurations multiprocesseurs. Cette
-évolution a permis d'améliorer significativement les estimations @wcet en
-permettant l'exécution parallèle d'appels systèmes n'accédant pas aux mêmes
-ressources.
-
-_PikeOS_ fournit également des mécanismes de timers haute résolution pour la
-gestion précise des événements, facilitant ainsi l'implémentation de modèles
-d'exécution déclenchés par le temps (_time-triggered_).
-
-Enfin, comme évoqué précédemment, _PikeOS_ peut être configuré pour invalider
-les caches et la @tlb lors des changements de partition temporelle. Bien que
-cette option réduise les performances, elle élimine les interférences entre
-partitions et améliore la prévisibilité des temps d'exécution, ce qui peut
-être nécessaire pour des analyses @wcet très conservatrices.
+Enfin, _PikeOS_ peut être configuré pour invalider les caches et la @tlb lors
+des changements de partition temporelle @pikeos_safe_real_time_scheduling afin
+d'éliminer les interférences entre partitions, ce qui améliore la prévisibilité
+des temps d'exécution pour des analyses @wcet très conservatrices.
 
 === OS invités supportés
 
@@ -3646,6 +3583,10 @@ La commande suivante compile et produit une image dans
 ```console
 make  -C ./rtems/watchdog watchdog
 ```
+
+Il suffit alors de copier cette image sur le _Raspberry_ puis de lancer
+`minicom` pour écouter le port série et observer les messages émis par
+le noyau.
 
 == Qualifications & certifications <rtems_certifications>
 
