@@ -2662,13 +2662,21 @@ _PikeOS_ n'utilise pas les contremesures classiques (_ASLR_, _DEP_, _stack
 canaries_, _CFI_) car il adopte une approche de sécurité par isolation
 architecturale via un noyau de séparation certifié _Common Criteria EAL 5+_
 @pikeos_security_target_v5 @pikeos_wikipedia. La protection repose sur:
-- #box[La séparation spatiale et temporelle stricte via des partitions
-  logicielles @pikeos_security_target,]
-- #box[L'utilisation de _MMU_/_MPU_ pour l'isolation matérielle,]
-- #box[Une politique de liste blanche pour la communication inter-partition,]
-- #box[La prévention de propagation d'erreurs entre partitions.]
+- La séparation spatiale et temporelle stricte via des partitions
+  logicielles @pikeos_security_target @pikeos_cc_eal5_cert,
+- L'utilisation de _MMU_/_MPU_ pour l'isolation matérielle
+  @pikeos_security_target_v5,
+- Une politique de liste blanche pour la communication inter-partition
+  @pikeos_security_target,
+- La prévention de propagation d'erreurs entre partitions
+  @pikeos_security_target_v5.
 
 == _Watchdog_ <pikeos_watchdog>
+
+Nous n'avons pas trouvé d'informations sur un support _watchdog_ dans _PikeOS_.
+Il est probable que ce support est relatif à chaque @bsp et présent pour
+certains d'entre eux étant donné le domaine d'application de ce système
+d'exploitation.
 
 == Programmation @baremetal <pikeos_baremetal>
 
@@ -2696,75 +2704,51 @@ support n'existe probablement pas.
 == Qualifications et certifications
 
 Le noyau _PikeOS_ a été conçu pour faciliter la qualification et la certification
-des systèmes l'utilisant. Il propose de nombreux kits de certification en
-matière de sûreté:
-- #box[Pour l'aéronautique et le spatial avec _RTCA DO-178C_ jusqu'au plus haut
-niveau _DAL A_ (_Design Assurance Level A_),]
-- #box[Pour le ferroviaire avec _EN 50128_ et _EN 50657_ jusqu'au plus haut
-niveau _SIL 4_ (_Safety Integrity Level 4_),]
-- #box[Pour l'automobile avec _ISO 26262_ jusqu'au plus haut niveau _ASIL D_
-(_Automotive Safety Integrity Level D_),]
-- #box[Pour l'industrie médicale avec _IEC 61508_ jusqu'au niveau _SIL 3_
-(_Safety Integrity Level 3_).]
-
-Normes:
-- Critères communs (quel niveau?)
-- SAR
-
-Il est possible d'avoir une certification pour une partition spécifique.
+des systèmes l'utilisant. Il propose de nombreux kits de certification pour
+différents secteurs industriels critiques.
 
 === Certifications de sûreté
 
-_PikeOS_ version 5.1 est certifié selon la norme _DO-178C_ au niveau _DAL-A_ (le
-plus haut niveau de criticité aéronautique) ainsi que selon les standards de
-sûreté industriels les plus stricts tels que _IEC 61508_, _EN 50128_, _EN 50657_
-et _ISO 26262_.
+_PikeOS_ propose des kits de certification pour différents domaines :
+- Pour l'aéronautique et le spatial avec _RTCA DO-178C_ jusqu'au niveau
+  _DAL A_ (_Design Assurance Level A_), le niveau le plus élevé,
+- Pour le ferroviaire avec _EN 50128_ et _EN 50657_ jusqu'au niveau _SIL 4_
+  (_Safety Integrity Level 4_),
+- Pour l'automobile avec _ISO 26262_ jusqu'au niveau _ASIL D_ (_Automotive
+  Safety Integrity Level D_),
+- Pour l'industrie médicale avec _IEC 61508_ jusqu'au niveau _SIL 3_
+  (_Safety Integrity Level 3_).
+
+_PikeOS_ version 5.1 est certifié selon la norme _DO-178C_ au niveau _DAL-A_
+ainsi que selon les normes _IEC 61508_, _EN 50128_, _EN 50657_ et _ISO 26262_.
 
 _SYSGO_ a été la première entreprise au monde à atteindre le niveau de sûreté
-_SIL 4_ (le plus élevé) selon la norme _IEC 61508_ pour son système
-d'exploitation temps réel et hyperviseur _PikeOS_ multi-cœur. La norme
-_IEC 61508_ distingue quatre niveaux d'intégrité de sûreté (_Safety Integrity
-Levels_, SIL) en fonction de la probabilité de défaillances et de leurs
-dommages potentiels, et _SYSGO_ adresse les quatre niveaux. Pour le ferroviaire,
-les applications basées sur _PikeOS_ peuvent être certifiées aux niveaux
-_EN 50128 SIL 4_ et _EN 50657 SIL 4_.
+_SIL 4_ (le plus élevé) selon la norme _IEC 61508_ pour un système d'exploitation
+temps réel et hyperviseur multi-cœur.
 
 Chaque kit de certification contient un hyperviseur _PikeOS_ conforme aux
-standards, ainsi qu'une aide documentaire complète pour le développement et les
-tests. Les kits de certification incluent également un manuel de sûreté avec des
-directives d'utilisation de _PikeOS_ dans des conceptions de systèmes critiques
-pour la sûreté, et contiennent une étude de cas avec des exigences
-caractéristiques de sûreté fonctionnelle selon les niveaux d'intégrité de sûreté
-requis (_SIL/ASIL_) respectifs.
+standards, une aide documentaire complète pour le développement et les tests,
+ainsi qu'un manuel de sûreté avec des directives d'utilisation dans des
+conceptions de systèmes critiques.
 
 === Certification de sécurité
 
 Le noyau de séparation _PikeOS_ version 5.1.3 a obtenu la certification _Common
-Criteria_ (CC), également connue sous la norme _ISO 15408_, au niveau _EAL 5+_
-pour les architectures de processeurs d'application leaders: _ARMv8_, _x86-64_
-et _PowerPC_ @pikeos_cc_eal5_cert.
+Criteria_ (_ISO 15408_) au niveau _EAL 5+_ pour les architectures _ARMv8_,
+_x86-64_ et _PowerPC_ @pikeos_cc_eal5_cert.
 
 Le niveau _EAL 5+_ garantit que _PikeOS_ a été conçu de manière semi-formelle et
-vérifié contre des vulnérabilités de plus en plus complexes à exploiter. Les
-architectes systèmes et les développeurs de logiciels embarqués bénéficient de
-ce haut niveau d'assurance et peuvent avoir une forte certitude dans les mesures
-de sécurité de _PikeOS_ contre le sabotage et le vol de données.
+vérifié contre des vulnérabilités complexes. Basé sur l'architecture _MILS_
+(_Multiple Independent Levels of Security_), _PikeOS_ est présenté comme le seul
+système d'exploitation offrant les standards de certification les plus élevés en
+matière de sûreté et de cybersécurité pour le même produit et la même base de
+code.
 
-_PikeOS_, basé sur l'architecture _MILS_ (_Multiple Independent Levels of
-Security_), est le seul système d'exploitation offrant des standards de
-certification les plus élevés en matière de sûreté et de cybersécurité pour le
-même produit et la même base de code. Les clients profitent de la séparation des
-partitions (spatiale et temporelle), du contrôle des flux d'information, du
-contrôle d'accès et de la disponibilité des ressources, ainsi que de la
-détection d'intrusion, de la protection des données et de tout autre type de
-calcul de confiance.
-
-_SYSGO_ fournit un kit de certification complet conforme au niveau _Common
-Criteria_ (CC) _EAL 5+_ pour aider à réduire le temps de certification de
-sécurité d'un dispositif embarqué basé sur _PikeOS_. Les clients peuvent
-utiliser les artefacts pour leurs processus de certification en aéronautique
-(_DO-356A/ED-203A_ - Méthodes et considérations de sécurité de navigabilité),
-automobile (_ISO/SAE 21434_), ferroviaire (_CLC/TS 50701_) et défense.
+_SYSGO_ fournit un kit de certification complet conforme au niveau _EAL 5+_ pour
+faciliter la certification de sécurité des dispositifs embarqués basés sur
+_PikeOS_. Les clients peuvent utiliser ces artefacts pour leurs processus de
+certification en aéronautique (_DO-356A/ED-203A_), automobile (_ISO/SAE 21434_),
+ferroviaire (_CLC/TS 50701_) et défense.
 
 == Maintenabilité <pikeos_maintainability>
 

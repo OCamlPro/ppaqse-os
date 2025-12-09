@@ -98,35 +98,36 @@
 #let deprecated(txt) = scell(color:black, txt)
 
 #slide(title: "Critère - Type de système d'exploitation")[
-
 #table(
-  columns: (2fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+  columns: (auto, auto, auto, auto, auto, auto, auto),
   align: (x, _) => { if x == 0 { left } else { center } },
-  table.header[OS][Temps réel][Hyperviseur][LibOS][GPOS][RTOS],
+  table.header[OS][Temps réel][Hyperviseur][LibOS][GPOS][RTOS][Noyau de sép.],
   [Linux],
-  supported([]), supported([]), partiallysupported([]), supported([]), notsupported([]),
+  good([]), good([]), bad([]), good([]), bad([]), bad([]),
 
   [MirageOS],
-  notsupported([]), notsupported([]), supported([]), notsupported([]), notsupported([]),
+  bad([]), bad([]), good([]), bad([]), bad([]), bad([]),
 
   [PikeOS],
-  supported([]), supported([]), notsupported([]), notsupported([]), notsupported([]),
+  good([]), good([]), bad([]), bad([]), bad([]), good([]),
 
   [ProvenVisor],
-  supported([]), supported([]), notsupported([]), notsupported([]), notsupported([]),
+  good([]), good([]), bad([]), bad([]), bad([]), good([]),
 
   [RTEMS],
-  supported([]), notsupported([]), partiallysupported([]), notsupported([]), supported([]),
+  good([]), bad([]), bad([]), bad([]), good([]), bad([]),
 
   [seL4],
-  supported([]), supported([]), notsupported([]), notsupported([]), notsupported([]),
+  good([]), good([]), bad([]), bad([]), bad([]), good([]),
 
   [Xen],
-  partiallysupported([]), supported([]), notsupported([]), notsupported([]), notsupported([]),
+  mediocre([]), good([]), bad([]), bad([]), bad([]), mediocre([]),
 
   [XtratuM],
-  supported([]), supported([]), notsupported([]), notsupported([]), notsupported([]),
+  good([]), good([]), bad([]), bad([]), bad([]), good([]),
 )
+- Classification imparfaite,
+- Tous les hyperviseurs étudiés sont baremetal (type 1),
 
 ]
 
