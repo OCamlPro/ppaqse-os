@@ -133,8 +133,15 @@
 
 #slide(title: "Critère - Architectures supportées")[
 #table(
-  columns: (auto, auto, auto, auto, auto, auto, auto, auto, auto),
+  columns: (auto, auto, auto, auto, auto, auto, auto, auto, auto, auto),
   align: center + horizon,
+  stroke: (x, y) => {
+    if x == 9 {
+      (left: 2pt + rgb("21222C"), rest: 1pt + rgb("21222C"))
+    } else {
+      1pt + rgb("21222C")
+    }
+  },
   table.header(
     [OS],
     [x86-32],
@@ -144,39 +151,47 @@
     [PowerPC],
     [MIPS],
     [RISC-V],
-    [SPARC]
+    [SPARC],
+    [Support SMP]
   ),
 
   [Linux],
   good([]), good([]), good([]), good([]), good([]), good([]), good([]), good([]),
+  good([]),
 
   [MirageOS],
   mediocre([OCaml < 5]), good([]), mediocre([OCaml < 5]), good([]),
   mediocre([spt]), bad([]), bad([]), bad([]),
+  bad([]),
 
   [PikeOS],
   bad([]), good([]), good([]), good([]),
   good([]), bad([]), good([]), good([]),
+  good([]),
 
   [ProvenVisor],
   bad([]), bad([]), bad([]), good([]),
   bad([]), bad([]), bad([]), bad([]),
+  good([]),
 
   [RTEMS],
   good([]), good([]), good([]), good([]),
-  good([]), good([]), good([]), good([]),
+  good([]), good([]), good([]), good([]), good([]),
 
   [seL4],
   good([]), good([]), good([]), good([]),
   bad([]), bad([]), good([]), bad([]),
+  good([]),
 
   [Xen],
   good([]), good([]), good([]), good([]),
   mediocre([]), mediocre([]), bad([]), bad([]),
+  good([]),
 
   [XtratuM],
   deprecated([?]), bad([?]), good([]), good([]),
   good([]), bad([]), good([]), good([]),
+  good([]),
 )
 - Support relatif à la carte (BSP)
 - Extension de virtualisation nécessaire
