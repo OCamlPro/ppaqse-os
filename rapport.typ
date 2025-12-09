@@ -169,7 +169,7 @@
           [#text(size: 12pt, weight: "bold", fill: rgb("#003366"))[Référence CNES :] #text(size: 12pt, fill: rgb("#0066CC"))[DLA-SF-0000000-211-QGP]],
           [#text(size: 11pt, fill: rgb("#003366"))[Édition 2 - Révision 0]],
           [],
-          [#text(size: 11pt, style: "italic", fill: rgb("#003366"))[#datetime.today().display()]]
+          [#text(size: 11pt, style: "italic", fill: rgb("#003366"))[#datetime.today().display("[day]/[month]/[year]")]]
         )
       ]
     )
@@ -292,10 +292,10 @@ unifiées et parfois standardisées.
 
 En pratique, la majorité des systèmes d'exploitation fournissent au moins trois
 services:
-- #box[Un ordonnanceur de tâche qui décide quel programme doit être exécuté à un
-instant donné.]
-- #box[Une gestion de la mémoire principale.]
-- #box[Un protocole de communication entre les programmes en cours d'exécution.]
+- Un ordonnanceur de tâche qui décide quel programme doit être exécuté à un
+  instant donné,
+- Une gestion de la mémoire principale,
+- Un protocole de communication entre les programmes en cours d'exécution.
 
 == Pourquoi utiliser un système d'exploitation? <why_os>
 
@@ -332,7 +332,7 @@ enjeux de cette étude.
 
     [Multi-tâche],
     [Souvent supporté via le concept de processus/thread/partition.],
-    [Support absent.],
+    [Nécessite un support du @rte.],
 
     [Latence],
     [Induite par l'exécution de routines et les basculement de contextes.],
@@ -387,9 +387,7 @@ comparés suivant les critères suivants:
 - Type de système d'exploitation
 - Architectures supportées
 - Support multi-processeur
-- Partitionnement spatial
-- Partitionnement temporel
-- Déterminisme
+- Partitionnement
 - Corruption de la mémoire
 - Perte du flux d'exécution
 - Écosystème
@@ -822,7 +820,7 @@ même le scénario le plus courant. La présence d'interruption asynchrone indui
 deux grandes difficultés:
 - #box[La correction du noyau repose sur la préservation d'invariants pour
 ses structures de données. Ainsi, certaines sections de code sont critiques car
-elles ne peuvent être interrompues sans briser ces invariants.]
+elles ne peuvent être interrompues sans briser ces invariants,]
 - #box[La possibilité d'avoir une cascade d'interruption rend difficile
 l'estimation du temps d'exécution en @kernelspace. Elle peut même être non
 bornée dans les pires cas. Cette latence doit être contrôlée pour garantir
@@ -833,7 +831,7 @@ sections critiques. À cette fin, les architectures matérielles modernes sont
 équipées de microcontrôleurs dédiés à la programmation des interruptions.
 Ainsi les architectures _x86_ sont munies de puce _I/O APIC_
 (_Input/Output Advanced Programmable Interrupt Controller_) pour gérer les
-interruptions provenant des périphériques et pour les architectures multi-cœur,
+interruptions provenant des périphériques. Pour les architectures multi-cœur,
 chaque cœur est muni d'un _Local APIC_ pour gérer les interruptions entre cœurs.
 De même, les architectures _ARM_ diposent d'un système dévolue à la
 programmation des interruptions appelé _GIC_ (_Generic Interrupt Controller_).
@@ -845,31 +843,35 @@ Dans tous les cas, un périphérique ou un cœur qui souhaite envoyer une
 interruption matérielle commence par envoyer une @irq à un microcontrôleur
 @pic. Ce dernier décide ou non d'envoyer une interruption au cœur concerné.
 Cette décision est programmable, le plus souvent sous la forme d'un vecteur
-stocké dans un registre du _PIC_ et accessible par une adresse virtuelle.
+stocké dans un registre du _PIC_ et accessible par une adresse physique ou
+virtuelle.
 
-Si masquer les interruptions résout la première difficulté de façon drastique,
+Si masquer les interruptions résout drastiquement la première difficulté,
 elle doit être fait avec une granularité suffisante pour ne pas grever les
 performances de l'OS et en particulier la latence. De plus, la désactivation
 des interruptions rend les sections concernées non-préemptibles puisque la
-préemption est souvent gérée par une interruption matérielle déclenchée par
-une horloge matérielle. Masquer les interruptions longtemps n'est donc pas
-souhaitable non plus dans un scénario temps réel.
+préemption est souvent gérée par une interruption matérielle levée par
+une horloge. Masquer les interruptions longtemps n'est donc pas non plus
+souhaitable dans un scénario temps réel.
 
 Dans le cas d'un hyperviseur, le travail est double puisqu'il doit à la fois
 gérer les interruptions pour lui-même mais également proposer une interface
 pour que ses systèmes invités fassent de même de façon contrôlée. Pour atteindre
 ce but, l'hyperviseur peut adopter trois approches:
-- Virtualiser totalement les contrôleurs _PIC_,
-- Paravirtualiser les contrôleurs _PIC_,
-- #box[Utiliser un support matériel pour la virtualisation des interruptions.
+- Virtualiser totalement les contrôleurs _PIC_, c'est-à-dire capturer les
+  requêtes du systèmes invités en insérant des interruptions dans
+  son flot d'exécution puis en émulant ces requêtes lorsqu'elles sont
+  autorisées,
+- Paravirtualiser les contrôleurs _PIC_, c'est-à-dire exposer une @api aussi
+  proche du matériel que possible pour que le système invité puisse implémenter
+  un pilote pour celle-ci,
+- Utiliser un support matériel pour la virtualisation des interruptions.
   Les architectures _x86_ et _ARM_ modernes disposent d'un support matériel
   pour la virtualisation de leurs microcontrôleurs _PIC_ (_VGIC_ pour _ARM_,
-  _Intel APICv_ pour _Intel x86_ et _AMD AVIC_ pour _AMD x86_).]
+  _Intel APICv_ pour _Intel x86_ et _AMD AVIC_ pour _AMD x86_).
 
-Pour chaque système étudié, nous examinons les aspects suivants:
-- #box[Les mécanismes utilisés pour masquer les interruptions en
-  @kernelspace,]
-- #box[Les mécanismes de virtualisation des interruptions.]
+Pour chacun des systèmes étudiés, nous avons examinés les mécanismes de
+virtualisation et de masquage des interruptions matérielles.
 
 == _Watchdog_ <criteria_watchdog>
 
@@ -898,10 +900,8 @@ vers un hyperviseur.
 C'est dans cette optique que nous avons examiné les solutions proposées en
 matière de programmation @baremetal pour les différents hyperviseurs étudiés.
 Notre analyse se borne aux langages de programmation _Ada_, _C_, _OCaml_ et
-_Rust_.
-
-Le principal défi d'un tel portage est d'adapter un @rte de ces langages pour
-l'hyperviseur donné.
+_Rust_. Le principal défi d'un tel portage est d'adapter un @rte de ces
+langages pour l'hyperviseur donné.
 
 Dans le cas de _Ada_, _C_ et _Rust_ se portage est grandement facilité par la
 la taille du @rte de ces langages et de se passer de la majorité de la
@@ -1347,14 +1347,12 @@ effectue une attente active. Durant cette attente, la tâche n'est pas
 préemptible. En présence de _PREEMPT_RT_, ces @spinlock:pl sont donc remplacés
 par des _rt-mutex_.
 
-==== RCU
-
 == KVM <linux_kvm>
 
 Depuis la version `2.6.20` publiée 2007, _Linux_ intègre un hyperviseur
 baptisé _KVM_ (_Kernel-based Virtual Machine_)  @linux_kvm_website. Il s'agit
-d'un hyperviseur de type 1 assisté par le matériel. Il offre également un support
-pour la paravirtualisation.
+d'un hyperviseur de type 1 assisté par le matériel. Il offre également un
+support pour la paravirtualisation.
 
 === Les _control croups_
 
@@ -1583,9 +1581,8 @@ Le noyau fournit également une interface logicielle commune @linux_scrub via
 _sysfs_#footnote[Le système de fichiers _sysfs_ est un pseudo système de
 fichiers disponible sous Linux. Il permet aux logiciels tournant dans le
 _user space_ de lire et de modifier des paramètres des pilotes et
-des périphériques via des fichiers. Il est généralement monté dans le dossier _/sys_.]
-pour les interfaces de pilotage du scrubbing décrites dans le //@scrubbing_interfaces,
-à l'exception de l'interface _ARS_ qui utilise son propre pilote.
+des périphériques via des fichiers. Il est généralement monté dans le dossier
+`_/sys_`.]. Cette interface permet le pilotage du _scrubbing_.
 
 == Perte du flux d'exécution <linux_flow_hijacking>
 
@@ -1876,19 +1873,29 @@ pas ce dernier dans un délai de 30 secondes.
   caption: [Exemple de service _systemd_ avec _watchdog_.]
 ) <linux_systemd_watchdog_example>
 
+== Programmation @baremetal <linux_baremetal>
+
+_KVM_ permet l'exécution d'applications @baremetal sous forme d'_unikernels_
+dans ses machines virtuelles. Ces _unikernels_ regroupent l'application et un
+@rte minimal, sans système d'exploitation complet.
+
+En _Rust_, _RustyHermit_ @rustyhermit_github est un _unikernel_ qui peut
+s'exécuter sur _KVM_ via l'hyperviseur _uhyve_ ou _QEMU_ @rustyhermit_running.
+
+Pour _OCaml_, _MirageOS_ supporte l'exécution d'_unikernels_ sur _KVM_/_QEMU_
+via _Solo5_ @mirageos_solo5.
+
+Nous n'avons pas trouvé de solution documentée permettant d'exécuter des
+applications _Ada_ en @baremetal dans une partition _KVM_.
+
 == Temps de démarrage <linux_booting>
 
 Il existe de nombreuses techniques pour réduire le temps de démarrage d'un système
-_Linux_. Ces techniques concernent aussi bien le @bootloader, l'initialisation
-du noyau ou l'initialisation de l'@userspace.
-- #box[Pour le @bootloader, on peut n'initialiser que les périphériques
-indispensables et optimiser le code assembleur.]
-- #box[Pour l'initialisation du noyau, on peut utiliser une image non compressée, désactiver
-les fonctionnalités inutiles pour notre usage et en particulier les outils de profilages.]
-- #box[Pour l'initialisation de l'@userspace]
-
-L'initialisation de l'@userspace
-est généralement l'étape la plus longue et donc la phase à optimiser en priorité.
+_Linux_. Ces techniques concernent aussi bien le @bootloader (initialisation
+uniquement des périphériques indispensables, optimisation du code assembler,
+...), l'initialisation du noyau (image non compressée, désactivation des
+fonctionnalités inutiles, désactivation du profilage, ...) ou l'initialisation
+de l'@userspace qui est généralement l'étape la plus longue.
 
 Dans l'article @singh2011optimizing, les auteurs étudient des méthodes
 d'optimisation pour le temps démarrage d'un système _Android_ exécuté sur
@@ -1903,13 +1910,12 @@ qu'une réduction substantielle du temps démarrage de l'@userspace est possible
 leurs méthodes d'optimisation et que le choix du @initsystem est déterminant
 mais dépendant de l'environnement d'exécution.
 
-(MOVE)
-Le project Yocto @yocto_project est un projet libre offrant la possibilité de
-créer sa distribution _Linux_ dédiée à l'embarqué.
-
 === Profilage de `systemd` <linux_systemd_analyze>
 
-Le programme `systemd` fournit un outil intéressant de profilage baptisé
+Comme expliqué ci-dessus, l'initialisation de l'@userspace est souvent l'étape
+la plus longue au démarrage.
+
+Le programme _systemd_ fournit un outil intéressant de profilage baptisé
 `systemd-analyze`. Il permet d'analyser le temps de démarrage du système et
 des sessions utilisateurs afin d'identifier des goulots d'étranglement. Détaillons
 quelques unes des ses commandes:
@@ -1933,11 +1939,11 @@ multi-user.target reached after 7.321s in userspace.
 Le dernier temps indique le délais écoulé avant que l'@userspace ne soit disponible,
 ce qui correspond en général à l'affichage d'un prompteur pour ouvrir une session.
 On retrouve aussi d'autres informations intéressantes:
-- #box[_Firmware_: Temps de chargement des firmwares via le BIOS.]
-- #box[_Load_: Temps écoulé dans le @bootloader.]
-- #box[_Kernel_: Temps de chargement et d'initialisation du noyau.]
-- #box[_Initrd_: Temps d'initialisation de la _RAM disk_.]
-- #box[_Userspace_: Temps écoulé pour lancer tous les services de l'@userspace.]
+- _Firmware_: Temps de chargement des firmwares via le BIOS,
+- _Load_: Temps écoulé dans le @bootloader,
+- _Kernel_: Temps de chargement et d'initialisation du noyau,
+- _Initrd_: Temps d'initialisation de la _RAM disk_,
+- _Userspace_: Temps écoulé pour lancer tous les services de l'@userspace.
 
 == Maintenabilité <linux_mainability>
 
@@ -2871,6 +2877,59 @@ Normes:
 
 Il est possible d'avoir une certification pour une partition spécifique.
 
+=== Certifications de sûreté
+
+_PikeOS_ version 5.1 est certifié selon la norme _DO-178C_ au niveau _DAL-A_ (le
+plus haut niveau de criticité aéronautique) ainsi que selon les standards de
+sûreté industriels les plus stricts tels que _IEC 61508_, _EN 50128_, _EN 50657_
+et _ISO 26262_.
+
+_SYSGO_ a été la première entreprise au monde à atteindre le niveau de sûreté
+_SIL 4_ (le plus élevé) selon la norme _IEC 61508_ pour son système
+d'exploitation temps réel et hyperviseur _PikeOS_ multi-cœur. La norme
+_IEC 61508_ distingue quatre niveaux d'intégrité de sûreté (_Safety Integrity
+Levels_, SIL) en fonction de la probabilité de défaillances et de leurs
+dommages potentiels, et _SYSGO_ adresse les quatre niveaux. Pour le ferroviaire,
+les applications basées sur _PikeOS_ peuvent être certifiées aux niveaux
+_EN 50128 SIL 4_ et _EN 50657 SIL 4_.
+
+Chaque kit de certification contient un hyperviseur _PikeOS_ conforme aux
+standards, ainsi qu'une aide documentaire complète pour le développement et les
+tests. Les kits de certification incluent également un manuel de sûreté avec des
+directives d'utilisation de _PikeOS_ dans des conceptions de systèmes critiques
+pour la sûreté, et contiennent une étude de cas avec des exigences
+caractéristiques de sûreté fonctionnelle selon les niveaux d'intégrité de sûreté
+requis (_SIL/ASIL_) respectifs.
+
+=== Certification de sécurité
+
+Le noyau de séparation _PikeOS_ version 5.1.3 a obtenu la certification _Common
+Criteria_ (CC), également connue sous la norme _ISO 15408_, au niveau _EAL 5+_
+pour les architectures de processeurs d'application leaders: _ARMv8_, _x86-64_
+et _PowerPC_ @pikeos_cc_eal5_cert.
+
+Le niveau _EAL 5+_ garantit que _PikeOS_ a été conçu de manière semi-formelle et
+vérifié contre des vulnérabilités de plus en plus complexes à exploiter. Les
+architectes systèmes et les développeurs de logiciels embarqués bénéficient de
+ce haut niveau d'assurance et peuvent avoir une forte certitude dans les mesures
+de sécurité de _PikeOS_ contre le sabotage et le vol de données.
+
+_PikeOS_, basé sur l'architecture _MILS_ (_Multiple Independent Levels of
+Security_), est le seul système d'exploitation offrant des standards de
+certification les plus élevés en matière de sûreté et de cybersécurité pour le
+même produit et la même base de code. Les clients profitent de la séparation des
+partitions (spatiale et temporelle), du contrôle des flux d'information, du
+contrôle d'accès et de la disponibilité des ressources, ainsi que de la
+détection d'intrusion, de la protection des données et de tout autre type de
+calcul de confiance.
+
+_SYSGO_ fournit un kit de certification complet conforme au niveau _Common
+Criteria_ (CC) _EAL 5+_ pour aider à réduire le temps de certification de
+sécurité d'un dispositif embarqué basé sur _PikeOS_. Les clients peuvent
+utiliser les artefacts pour leurs processus de certification en aéronautique
+(_DO-356A/ED-203A_ - Méthodes et considérations de sécurité de navigabilité),
+automobile (_ISO/SAE 21434_), ferroviaire (_CLC/TS 50701_) et défense.
+
 == Maintenabilité <pikeos_maintainability>
 
 _PikeOS_ est un logiciel propriétaire aux sources fermées. L'entreprise _SYSGO_
@@ -2933,59 +2992,6 @@ fait l'objet d'une vérification formelle @lescuyer2015provencore.
 
 _ProvenVisor_ est développé par l'entreprise _ProvenRun_ qui est spécialisée
 dans la sécurité et les systèmes embarqués critiques.
-
-#figure(
-  diagram(
-    spacing: 10pt,
-    cell-size: (8mm, 10mm),
-    edge-stroke: 1pt,
-    edge-corner-radius: 5pt,
-    mark-scale: 70%,
-
-    blob((2.25, 3.5), [Proc 1], tint: green, width:20mm, name: <proc1>),
-    blob((2.52, 3.5), [Proc 2], tint: green, width:20mm, name: <proc2>),
-    blob((2.79, 3.5), [Proc ...], tint: green, width:20mm, name: <proc3>),
-    edge(<proc1>, "d", "-|>"),
-    edge(<proc2>, "d", "-|>"),
-    edge(<proc3>, "d", "-|>"),
-
-    blob((2.53, 4.5), [ProvenCore], tint: blue, width:73mm, name: <provencore>),
-
-    node(
-      [#align(center)[#pad(-5.8em)[
-        #text(font: "Fira Sans", size: 11pt)[Secure world]]]],
-      inset:12pt,
-      corner-radius: 3pt,
-      enclose: (<proc1>, <proc2>, <proc3>, <provencore>),
-      stroke: blue, fill: blue.lighten(90%),
-      name: <secure>),
-    edge(<secure>, "d", "-|>"),
-
-    blob((1.38, 3.5), [VM 1], tint: yellow, width:20mm, name: <vm1>),
-    blob((1.62, 3.5), [VM 2], tint: yellow, width:20mm, name: <vm2>),
-    blob((1.86, 3.5), [VM ...], tint: yellow, width:20mm, name: <vm3>),
-    edge(<vm1>, "d", "-|>"),
-    edge(<vm2>, "d", "-|>"),
-    edge(<vm3>, "d", "-|>"),
-
-    blob((1.62, 4.5), [ProvenVisor], tint: blue, width:63mm, name: <provenvisor>),
-
-    node(
-      [#align(left)[#pad(-1.8em)[#rotate(-90deg)[
-        #text(font: "Fira Sans", size: 11pt)[Normal world]]]]],
-      inset:12pt,
-      corner-radius: 3pt,
-      enclose: (<vm1>, <vm2>, <vm3>, <provenvisor>),
-      stroke: blue, fill: blue.lighten(90%),
-      name: <normal>),
-    edge(<normal>, "d", "-|>"),
-
-    blob((2,5.8), [Moniteur], tint: green, width:140mm, name: <monitor>),
-    edge("-|>"),
-    blob((2,6.8), [Couche matérielle], tint: gray, width:140mm),
-  ),
-  caption: [Architecture de _ProvenVisor_.]
-) <architecture_provenvisor>
 
 == Architectures supportées <provenvisor_architectures>
 
@@ -3066,7 +3072,7 @@ virtualisation de la mémoire. Les extensions de virtualisation matérielle de
 l'architecture _ARMv8-A_ permettent à _ProvenVisor_ d'isoler efficacement les machines
 virtuelles sans surcoût de performance significatif.
 
-L'architecture illustrée dans la @architecture_provenvisor montre clairement la
+L'architecture illustrée dans la montre clairement la
 séparation entre le _Normal world_ (où s'exécutent les VMs sous _ProvenVisor_) et le
 _Secure world_ (où s'exécutent les processus sous _ProvenCore_). Cette séparation
 s'appuie sur _TrustZone_, la technologie de sécurité matérielle d'_ARM_, qui fournit un
@@ -3196,7 +3202,7 @@ de _TrustZone_ @lescuyer2015provencore. Il fournit des conteneurs sécurisés av
 possibilité de communiquer de façon sécurisée entre eux. _ProvenVisor_ et _ProvenCore_
 collaborent pour offrir une solution complète de sécurité et d'isolation.
 
-L'architecture illustrée dans la @architecture_provenvisor montre comment _ProvenVisor_
+L'architecture illustrée dans la montre comment _ProvenVisor_
 gère les VMs dans le _Normal world_ tandis que _ProvenCore_ gère les processus
 sécurisés dans le _Secure world_. Un moniteur de sécurité coordonne les interactions
 entre ces deux mondes.
@@ -3823,35 +3829,6 @@ projet depuis 1995. Un support est disponible pour les entreprises européennes
 et américaines. La communauté active du projet offre également un support gratuit,
 bien que sans garantie formelle.
 
-== Draft
-- Il offre un support pour les architectures @smp et @amp.
-- Il permet le cross-développement via d'autres OS: distributions GNU/Linux, Windows, BSD, Solaris, MacOS.
-- Il est utilisé dans l'industrie spatiale, notamment chez les acteurs européens.
-- ARINC 653 RTEMS
-- Il existe un support commercial pour les entreprises européennes ou américaines et la communauté offre bien sûr un support gratuit sans garantie.
-
-== Partitionnement <rtems_partioning>
-
-_RTEMS_ est un système à espace d'adressage unique. Le noyau et les tâches partagent
-le même espace d'adressage et s'exécute en mode noyau (vérifier). Par conséquent _RTEMS_
-n'offre pas les mêmes niveaux de sûreté qu'un noyau de séparation comme un hyperviseur.
-C'est la raison pour laquelle il est parfois exécuté au-dessus d'un hyperviseur.
-
-Il y a un support pour les MPU (memory protection unit) qui sont des version simplifiées
-des MMU. Vérifier si cette info est valable.
-
-_RTEMS_ propose aussi des mécanismes de partitionnement en mémoire.
-
-_RTEMS_ propose un ordonnanceur en _cluster_ (_clustered scheduling_). Cet ordonnanceur
-permet de partitionner l'ensemble des cœurs en des sous-ensembles appelés _cluster_.
-L'objectif de cette conception est de limiter les migrations de tâches entre cœur pour des
-raisons de performances#footnote[La migration excessive de tâche conduit à une invalidation
-des caches des cœurs.] tout en préservant un bon contrôle sur la latence dans le pire cas
-(_worst-case latencies_). _RTEMS_ propose également des primitives de synchronisation
-inter-clusters. En utilisant des clusters et des mécanismes de synchronisation
-adéquate, il est possible d'avoir des tâches temps réels et des tâches maximisant le
-_throughput_.
-
 = seL4 <sel4>
 
 #showybox(
@@ -3865,11 +3842,16 @@ _throughput_.
   - *Type* : Micronoyau temps-réel + Hyperviseur type 1 (3ème génération L4)
   - *Langage* : C
   - *Architectures* : ARM (32/64-bit), x86 (32/64-bit), RISC-V
-  - *Usage principal* : Systèmes critiques (défense, médical, automobile, aérospatial)
-  - *Points forts* : Vérifié formellement (Isabelle/HOL), capabilities, partitions mixtes, certifiable Critères Communs EAL7, absence prouvée de bugs critiques
-  - *Limitations* : Courbe d'apprentissage élevée, écosystème limité, documentation technique avancée
+  - *Usage principal* : Systèmes critiques (défense, médical, automobile,
+    aérospatial)
+  - *Points forts* : Vérifié formellement (Isabelle/HOL), capabilities,
+    partitions mixtes, certifiable Critères Communs EAL7, absence prouvée de
+    bugs critiques
+  - *Limitations* : Courbe d'apprentissage élevée, écosystème limité,
+    documentation technique avancée
   - *Licences* : GPL v2 (noyau), code utilisateur sous licence libre au choix
-  - *Caractéristique unique* : Seul OS avec correction prouvée formellement du code C au binaire
+  - *Caractéristique unique* : Seul OS avec correction prouvée formellement du
+    code C au binaire
 ]
 
 Le noyau _seL4_ est un micronoyau temps-réel de troisième génération de la
@@ -3885,15 +3867,14 @@ Le noyau _seL4_ est un micronoyau de troisième génération. Il inclut un
 hyperviseur de type 1 et un _RTOS_. Sa conception a débuté en 2006 à
 l'institut de recherche _NICTA_ #footnote[Acronyme pour _National Information
 and Communications Technology Autralia_)]. L'objectif était de créer un
-système d'exploitation capable de satisfaire les
-exigences de sécurité et de sûreté des @cc. À ce titre, les
-contraintes induites par la vérification formelle du noyau ont été prises
-en compte dès le départ du projet. Comme son nom le suggère, dans son design,
-_seL4_ est fortement inspiré du micronoyau de seconde génération _L4_. Ainsi, il
-fournit des abstractions pour la mémoire virtuelle, les _threads_ et
-la communication inter-processus. Toutefois, contrairement à la majorité des
-autres micronoyaux de la famille _L4_, il fournit également des _capabilities_
-pour gérer les autorisations.
+système d'exploitation capable de satisfaire les exigences de sécurité et de
+sûreté des @cc. À ce titre, les contraintes induites par la vérification
+formelle du noyau ont été prises en compte dès le départ du projet. Comme son
+nom le suggère, dans son design, _seL4_ est fortement inspiré du micronoyau de
+seconde génération _L4_. Ainsi, il fournit des abstractions pour la mémoire
+virtuelle, les _threads_ et la communication inter-processus. Toutefois,
+contrairement à la majorité des autres micronoyaux de la famille _L4_, il
+fournit également des _capabilities_ pour gérer les autorisations.
 
 == Tutoriel <sel4_tutorial>
 
@@ -4387,45 +4368,18 @@ Toutefois nous avons trouvé un support pour de tels _watchdog_ dans certains
 
 == Programmation @baremetal <sel4_baremetal>
 
-La documentation de _seL4_ détaille les manipulations nécessaires pour exécuter
-du code C ou Rust en @baremetal.
+_seL4_ dispose d'un support pour la programmation @baremetal en langage _C_ et
+_Rust_. À notre connaissance, il n'existe pas de support officiel pour les
+langages _Ada_ et _OCaml_ sur _seL4_.
 
-Il y a une crate Rust @sel4_crate_rust.
+Pour le langage _C_, le projet fournit la bibliothèque _libsel4_
+@sel4_api_doc pour interagir avec le micronoyau et un @rte _sel4runtime_
+@sel4_runtime minimaliste.
 
-Le _seL4 Microkit_ offre également une @api pour les langages _C_ et _Rust_
-@sel4_microkit_manual.
+Le langage _Rust_ bénéficie d'un support officiel et documenté pour _seL4_
+@sel4_rust_docs @sel4_crate_rust.
 
 == Temps de démarrage <sel4_boot_time>
-
-== Draft
-
-== Partitionnement <sel4_partition>
-
-// #figure(
-//   cetz.canvas({
-//     import cetz.draw: *
-//     cell((-3, -1.5), (12, -0.5), color: blue, [seL4])
-//     cell((-3, -3), (12, -2), color: gray, [Couche matérielle])
-//     cell((-3, 0.5), (0, 1.6), color: purple, [Application])
-//     cell((0.5, 0.5), (3.5, 6), color: yellow, [VM 1])
-//     cell((0.7, 0.7), (3.3, 4), color: orange, [Linux])
-//     cell((0.9, 0.9), (3.1, 2), color: orange, [Pilote])
-//     cell((4, 0.5), (7, 6), color: yellow, [VM 2])
-//     cell((4.2, 0.7), (6.8, 4), color: orange, [Linux])
-//     cell((4.5, 0.9), (6.5, 2), color: orange, [FS])
-//     cell((9, 0.5), (12, 3), color: green, [Pilote])
-//   })
-//   ,
-//   caption: [Architecture de l'hyperviseur _seL4_.]
-// )
-Lorsqu'il est utilisé en tant qu'hyperviseur, _seL4_ s'exécute dans le mode
-d'exécution _hyperviseur_.
-
-== Vérifications formelles <sel4_formal_verification>
-
-Le noyau _seL4_ a fait l'objet d'une vérification formelle profonde. L'approche
-suppose la correction du compilateur, du code assembleur et du matériel mais
-démontre la conformité du code C avec ses spécifications.
 
 == Maintenabilité <sel4_maintainability>
 
@@ -4445,6 +4399,14 @@ librement accessible facilite le développement de nouveaux logiciels.
 
 Le support commercial de _seL4_ est assuré par plusieurs organisations, dont
 la _seL4 Foundation_ et _Trustworthy Systems_.
+
+== Draft
+
+== Vérifications formelles <sel4_formal_verification>
+
+Le noyau _seL4_ a fait l'objet d'une vérification formelle profonde. L'approche
+suppose la correction du compilateur, du code assembleur et du matériel mais
+démontre la conformité du code C avec ses spécifications.
 
 == draft
 
@@ -4935,8 +4897,16 @@ les performances des domaines.]
 Il est possible d'exécuter des applications @baremetal dans les domaines
 de _Xen_ pour les langages _C_, _Rust_ et _OCaml_.
 
+Pour le langage _C_, _Mini-OS_ @xen_minios est un noyau minimaliste distribué
+avec _Xen_ qui fournit une base pour le développement d'applications @baremetal.
+Il est principalement utilisé pour les _stub domains_ @xen_stubdomain, des
+domaines légers dédiés à l'exécution de composants isolés.
+
+Pour le langage _Rust_, il existe des crates _xen_ et _xen-sys_.
+
 Le projet _MirageOS_ a développé un environnement d'exécution complet pour
-le langage de programmation _OCaml_ sur des partitions de type _pvh_.
+le langage de programmation _OCaml_ sur des partitions de type _PVH_
+@mirageos_xen_project.
 
 == Watchdog <xen_watchdog>
 
@@ -5475,6 +5445,42 @@ Quelques remarques pour l'interprétation de ces informations:
   _XtratuM_ publient des @bsp pour des cartes et des architectures spécifiques.
   En dernier terme, seul l'existence de ce @bsp fait foi pour le support d'une
   carte donnée.
+
+== Partitionnement temporel <table_time_partitioning>
+
+== Programmation @baremetal <table_baremetal_programming>
+
+#figure(
+table(
+  columns: (1.5fr, 1.5fr, 1.5fr, 1.5fr, 1.5fr),
+  align: center + horizon,
+  table.header(
+    [Hyperviseur],
+    [Ada],
+    [C],
+    [OCaml],
+    [Rust]
+  ),
+
+  [KVM (Linux)],
+  bad([]), good([]), good([]), good([]),
+
+  [PikeOS],
+  good([Ravenscar]), good([]), bad([]), good([]),
+
+  [ProvenVisor],
+  unknown([]), unknown([]), unknown([]), unknown([]),
+
+  [seL4],
+  bad([]), good([]), bad([]), good([]),
+
+  [Xen],
+  bad([]), good([]), good([]), good([]),
+
+  [XtratuM],
+  good([Ravenscar]), good([]), bad([]), good([]),
+)
+)
 
 == Maintenabilité <table_maintainability>
 

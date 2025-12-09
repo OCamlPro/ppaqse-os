@@ -71,8 +71,7 @@
     Critères:
     - Type de système d'exploitation
     - Architectures supportées + multi-cœur
-    - Partitionnement spatial/temporel
-    - Déterminisme (temps-réel)
+    - Partitionnement (spatial/temporel/déterminisme)
     - Corruption de la mémoire
     - Perte du flux d'exécution
     - Écosystème
@@ -273,22 +272,22 @@
   ),
 
   [KVM (Linux)],
-  [N/A], [N/A], [N/A], [N/A],
+  bad([]), good([]), good([]), good([]),
 
   [PikeOS],
-  supported([Ravenscar]), supported([]), notsupported([]), supported([]),
+  good([Ravenscar]), good([]), bad([]), good([]),
 
   [ProvenVisor],
-  notsupported([]), notsupported([]), notsupported([]), notsupported([]),
+  unknown([]), unknown([]), unknown([]), unknown([]),
 
   [seL4],
-  notsupported([]), supported([]), notsupported([]), supported([]),
+  bad([]), good([]), bad([]), good([]),
 
   [Xen],
-  notsupported([]), supported([]), supported([]), supported([]),
+  bad([]), good([]), good([]), good([]),
 
   [XtratuM],
-  supported([Ravenscar]), supported([]), notsupported([]), supported([]),
+  good([Ravenscar]), good([]), bad([]), good([]),
 )
 ]
 
