@@ -1709,123 +1709,22 @@ Le parcours est nettement plus lent et le nombre de `cache-misses` explose.
 
 == Masquage des interruptions <linux_masking>
 
-Le noyau _Linux_ propose une @api en langage C pour masquer les interruptions.
+Le noyau _Linux_ propose une @api en langage C pour masquer les interruptions
+@linux_kernel_irq_api. Les principales primitives sont `local_irq_disable`,
+`local_irq_save` et `disable_irq` qui permettent de désactiver toutes les
+interruptions du _CPU_ ou une interruption spécifique au niveau du contrôleur.
+
+Pour les systèmes temps réel, le projet _PREEMPT_RT_ introduit le concept
+d'_interruptions threadées_ où le gestionnaire matériel se limite à masquer
+l'interruption, acquitter le contrôleur et réveiller un thread noyau qui
+effectue le traitement réel de façon préemptible. Cette approche résout les
+problèmes d'_inversion d'interruptions_ et réduit la latence.
 
 _KVM_ fournit un support pour la virtualisation des interruptions matérielles
-sur architecture _ARM_ via les interfaces _VGIC v2_ @linux_kvm_vgic_v2 et
-_VGIC v3_ @linux_kvm_vgic_v3 et sur architecture _x86_ via les interfaces
-_Intel APICv_ pour le module _kvm_intel_ et _AMD AVIC_ pour le module _kvm_amd_.
-
-DRAFT
-
-Le noyau _Linux_ propose plusieurs interfaces pour masquer les interruptions,
-chacune adaptée à des besoins spécifiques :
-- #box[`local_irq_disable()` et `local_irq_save()` : désactivent toutes les
-interruptions au niveau de l'interface IRQ du CPU.]
-- #box[`disable_irq()` : désactive une interruption spécifique au niveau du
-contrôleur d'interruptions.]
-
-Ces primitives sont essentielles pour protéger les sections critiques du noyau,
-mais leur usage doit être parcimonieux. Par exemple, des mesures avec le traceur
-_irqsoff_ ont révélé que dans certains cas, la fonction `console_unlock()`
-pouvait désactiver les interruptions locales pendant environ 10ms, provoquant
-des dépassements d'échéance pour les _timers_ haute résolution (_hrtimer_).
-
-=== Approche _PREEMPT_RT_ <linux_preempt_rt>
-
-Pour les systèmes temps réel, le projet _PREEMPT_RT_ transforme radicalement
-la gestion des interruptions dans _Linux_. L'objectif principal est de réduire
-au minimum le code s'exécutant en contexte d'interruption matérielle, en
-déplaçant la majeure partie du traitement vers le contexte de threads.
-
-_PREEMPT_RT_ introduit le concept d'_interruptions threadées_ (_threaded interrupts_).
-Dans ce modèle, le gestionnaire d'interruption matérielle réel exécuté par le
-CPU se limite à quelques dizaines de lignes par architecture et se contente de :
-- #box[Masquer la ligne d'interruption.]
-- #box[Acquitter le contrôleur d'interruptions.]
-- #box[Réveiller le thread correspondant.]
-
-Le traitement réel de l'interruption s'effectue ensuite dans un thread noyau
-normal, qui peut être préempté comme n'importe quel autre thread. Cette approche
-résout le problème d'_inversion d'interruptions_ où une tâche temps réel haute
-priorité peut être retardée par une cascade d'interruptions.
-
-De plus, _PREEMPT_RT_ remplace de nombreux appels à `local_irq_disable()` par
-des versions "douces" qui n'impactent pas la latence temps réel de la même
-manière que le masquage matériel des interruptions.
-
-=== Stratégies d'atténuation de la latence
-
-Pour minimiser l'impact du masquage des interruptions sur la latence des
-systèmes temps réel, plusieurs stratégies sont employées :
-- #box[_Isolation de CPUs_ : dédier certains cœurs au traitement des
-interruptions et d'autres aux processus temps réel. Cette technique est
-particulièrement efficace sur les architectures multi-cœurs.]
-- #box[_Minimisation des sections critiques_ : réduire au strict minimum
-la durée pendant laquelle les interruptions sont masquées.]
-- #box[_Profilage avec irqsoff_ : utiliser le traceur _irqsoff_ du noyau
-pour identifier et mesurer les sections où les interruptions sont désactivées
-trop longtemps. Ce traceur enregistre la trace avec la latence maximale la plus
-longue.]
-
-Ces techniques sont documentées dans la documentation _Red Hat_ pour les
-systèmes temps réel et sont largement utilisées dans l'industrie pour garantir
-des latences déterministes.
-
-=== Support KVM des interfaces VGIC sur ARM <linux_kvm_vgic>
-
-L'hyperviseur _KVM_ intégré au noyau _Linux_ fournit un support pour la
-virtualisation des interruptions sur l'architecture _ARM_ via l'émulation du
-_GIC_ (_Generic Interrupt Controller_). Ce support est implémenté à travers
-deux interfaces : _VGIC v2_ et _VGIC v3_.
-
-==== Interface VGIC v2
-
-L'interface _VGIC v2_ (`KVM_DEV_TYPE_ARM_VGIC_V2`) permet de créer un contrôleur
-d'interruptions virtuel compatible _GICv2_ pour les machines virtuelles
-@linux_kvm_vgic_v2. Une seule instance de _VGIC_ peut être instanciée par machine
-virtuelle et agit comme contrôleur d'interruptions principal.
-
-Cette interface expose deux régions mémoire :
-- #box[Le _Distributor_ : accessible via `KVM_VGIC_V2_ADDR_TYPE_DIST`, aligné sur 4 Ko et couvrant 4 Ko.]
-- #box[L'interface _CPU_ virtuelle : accessible via `KVM_VGIC_V2_ADDR_TYPE_CPU`, alignée sur 4 Ko et couvrant 8 Ko.]
-
-Le nombre d'interruptions configurables va de 64 à 1024, par incréments de 32.
-L'implémentation correspond à un _GICv2 sans extensions de sécurité_. La
-limitation principale de cette interface est le nombre maximal de 8 _CPUs_
-virtuels par machine virtuelle.
-
-Les systèmes hôtes disposant d'un _GICv3_ avec support de compatibilité
-matérielle peuvent également créer des invités _GICv2_ via cette interface.
-
-==== Interface VGIC v3
-
-L'interface _VGIC v3_ (`KVM_DEV_TYPE_ARM_VGIC_V3`) permet d'émuler un _GICv3_
-pour les machines virtuelles @linux_kvm_vgic_v3. La création d'un invité _GICv3_
-nécessite un hôte disposant d'un _GICv3_. Il n'est pas possible de créer à la
-fois un _GICv2_ et un _GICv3_ sur la même machine virtuelle.
-
-Cette interface expose les régions mémoire suivantes :
-- #box[Le _Distributor_ : aligné sur 64 Ko et couvrant 64 Ko.]
-- #box[Les _Redistributors_ : deux pages de 64 Ko par _VCPU_, contiguës en mémoire.]
-
-Par rapport à la version 2, le _VGIC v3_ apporte plusieurs améliorations :
-- #box[Support de l'_affinity routing_ permettant jusqu'à 512 _VCPUs_.]
-- #box[Accès via registres système au lieu de _MMIO_.]
-- #box[Support de l'_ITS_ (_Interrupt Translation Service_) pour les interruptions _MSI_.]
-
-==== Support de l'ITS
-
-L'_ITS_ (_Interrupt Translation Service_) est une extension optionnelle
-permettant l'injection d'interruptions _MSI(-X)_ dans les machines virtuelles
-@linux_kvm_vgic_its. Sa création nécessite un hôte _GICv3_ mais ne dépend pas
-de la présence de contrôleurs _ITS_ physiques.
-
-Plusieurs contrôleurs _ITS_ peuvent être créés par machine virtuelle, chacun
-avec une région _MMIO_ distincte. L'adresse de base doit être alignée sur 64 Ko
-et couvrir 128 Ko. L'_ITS_ virtuel permet de sauvegarder et restaurer l'état
-des tables d'interruptions depuis la _RAM_ de l'invité, facilitant la migration
-des machines virtuelles.
+via les interfaces _VGIC v2/v3_ @linux_kvm_vgic_v2 @linux_kvm_vgic_v3 sur _ARM_
+et _Intel APICv_/_AMD AVIC_ sur _x86_. Le _VGIC v3_ offre notamment le support
+de l'_affinity routing_ (jusqu'à 512 _VCPUs_) et de l'_ITS_ (_Interrupt Translation
+Service_) pour les interruptions _MSI_.
 
 == Watchdog <linux_watchdog>
 
