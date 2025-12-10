@@ -198,12 +198,121 @@
 ]
 
 #slide(title: "Critère - Partitionnement spatial")[
+#table(
+  columns: (1.3fr, 1fr, 1fr, 1fr),
+  align: (x, _) => { if x == 0 { left } else { center } },
+  table.header(
+    [OS],
+    [MMU],
+    [MPU],
+    [NOMMU]
+  ),
+
+  [Linux],
+  supported([]), supported([]), partiallysupported([]),
+
+  [MirageOS],
+  table.cell(colspan:3, [Non pertinent]),
+
+  [PikeOS],
+  supported([]), supported([PikeOS for MPU]), notsupported([]),
+
+  [ProvenVisor],
+  supported([]), unknown([?]), unknown([?]),
+
+  [RTEMS],
+  supported([]), supported([]), supported([]),
+
+  [seL4],
+  supported([Requis]), notsupported([]), notsupported([]),
+
+  [Xen],
+  supported([Requis]), notsupported([]), notsupported([]),
+
+  [XtratuM],
+  supported([]), unknown([?]), unknown([?]),
+)
+- Support relatif au BSP (Board Support Package)
+- MirageOS délègue la gestion mémoire à l'hyperviseur
 ]
 
 #slide(title: "Critère - Partitionnement temporel")[
+#set text(size: 13pt)
+#table(
+  columns: (1.3fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+  align: (x, _) => { if x == 0 { left } else { center } },
+  table.header(
+    [OS],
+    [Fixed-\ priority],
+    [Rate\ Monotonic],
+    [Deadline\ Monotonic],
+    [EDF],
+    [Round\ Robin]
+  ),
+
+  [Linux],
+  good([]), bad([]), bad([]), good([]), good([]),
+
+  [MirageOS],
+  bad([]), bad([]), bad([]), bad([]), bad([]),
+
+  [PikeOS],
+  good([]), bad([]), bad([]), good([]), bad([]),
+
+  [ProvenVisor],
+  unknown([?]), unknown([?]), unknown([?]), unknown([?]), unknown([?]),
+
+  [RTEMS],
+  good([]), good([]), bad([]), good([]), bad([]),
+
+  [seL4],
+  bad([]), bad([]), bad([]), bad([]), good([]),
+
+  [Xen],
+  bad([]), bad([]), bad([]), good([RTDS]), bad([]),
+
+  [XtratuM],
+  bad([]), bad([]), bad([]), bad([]), bad([]),
+)
+- MirageOS délègue l'ordonnancement à l'hyperviseur
+- XtratuM utilise un ordonnancement cyclique statique ARINC-653
 ]
 
 #slide(title: "Critère - Corruption mémoire")[
+#set text(size: 14pt)
+#table(
+  columns: (1.5fr, 1.5fr, 1.5fr),
+  align: (x, _) => { if x == 0 { left } else { center } },
+  table.header(
+    [OS],
+    [Support ECC / Journalisation],
+    [Support Scrubbing]
+  ),
+
+  [Linux],
+  supported([EDAC + rasdaemon]), supported([API sysfs]),
+
+  [MirageOS],
+  partiallysupported([Délégué à l'hyperviseur]), partiallysupported([Délégué à l'hyperviseur]),
+
+  [PikeOS],
+  partiallysupported([Via BSP ou GuestOS]), partiallysupported([Via BSP (ex: LEON)]),
+
+  [ProvenVisor],
+  unknown([Non documenté]), unknown([Non documenté]),
+
+  [RTEMS],
+  notsupported([Pas d'API unifié]), partiallysupported([Via BSP (ex: LEON)]),
+
+  [seL4],
+  notsupported([Pilote user-space]), notsupported([Pilote user-space]),
+
+  [Xen],
+  partiallysupported([Via Dom0]), partiallysupported([Via Dom0]),
+
+  [XtratuM],
+  partiallysupported([Health Monitor MCE]), unknown([Non documenté]),
+)
 ]
 
 #slide(title: "Critère - Perte du flux d'exécution")[
@@ -222,7 +331,7 @@
   partiallysupported([Partiel]), supported([Intel CET, ARM BTI]), notsupported([]),
 
   [MirageOS],
-  notsupported([]), notsupported([]), supported([Typechecker OCaml]),
+  table.cell(colspan:2, [Non pertinent]), supported([Typechecker OCaml]),
 
   [PikeOS],
   notsupported([]), notsupported([]), supported([Isolation + CC EAL 5+]),
