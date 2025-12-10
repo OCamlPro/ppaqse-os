@@ -388,7 +388,7 @@ comparés suivant les critères suivants:
 - Architectures supportées
 - Support multi-processeur
 - Partitionnement
-- Corruption de la mémoire
+- Corruption mémoire
 - Perte du flux d'exécution
 - Écosystème
 - Gestion des interruptions
@@ -716,10 +716,10 @@ tranche de temps d'une tâche de plus faible priorité. La latence du système
 d'exploitation est donc une mesure importante pour assurer le respect des
 échéances.
 
-== Corruption de la mémoire <memory_corruption_criteria>
+== Corruption mémoire <memory_corruption_criteria>
 
 Nous avons étudié le support logiciel des différents systèmes visant à prévenir
-la corruption de la mémoire. On distingue deux types d'erreurs:
+la corruption mémoire. On distingue deux types d'erreurs:
 - #box[Les @soft_error:pl sont dues à un événement exceptionnel et transitoire qui
 corrompt des données. Par exemple le rayonnement de fond peut produire un basculement
 de bits (_bit flips_). Ces erreurs peuvent être souvent corrigées à condition
@@ -1566,7 +1566,7 @@ d'avoir certains des privilèges du propriétaire du binaire plutôt que de
 l'utilisateur qui l'a lancé. Ainsi le binaire `passwd` appartient à _root_
 mais permet à n'importe qui de changer son propre mot de passe.
 
-== Corruption de la mémoire <linux_memory_corruption>
+== Corruption mémoire <linux_memory_corruption>
 
 Le noyau _Linux_ intègre un sous-système nommé _EDAC_ (_Error Detection and Correction_)
 @linux_edac qui permet la journalisation des erreurs mémoires. La journalisation s'effectue
@@ -2180,9 +2180,9 @@ conçue pour cet usage puisque les tâches doivent rendre la main volontairement
 parallèle d'un _unikernel_ _MirageOS_, il faudra avoir recours à un hyperviseur
 temps réel et exécuter cette tâche dans une partition distincte.
 
-== Corruption de la mémoire <mirageos_memory_corruption>
+== Corruption mémoire <mirageos_memory_corruption>
 
-La gestion de la corruption de la mémoire est généralement déléguée à
+La gestion de la corruption mémoire est généralement déléguée à
 l'environnement d'exécution de l'_unikernel_.
 
 Pour la journalisation des événements, il suffirait de se reposer sur le support
@@ -2575,7 +2575,7 @@ est en particulier possible de l'utiliser sur la plateforme _LEON_,]
 - #box[_Windows_ est supporté dans les partitions assistées par le matériel
 sur _x86_ @pikeos_windows.]
 
-== Corruption de la mémoire <pikeos_memory_corruption>
+== Corruption mémoire <pikeos_memory_corruption>
 
 _PikeOS_ ne semble pas fournir d'@api unifiée pour la gestion des erreurs mémoire
 @ecc au niveau du noyau de séparation. La documentation publique de _SYSGO_ ne
@@ -2583,7 +2583,7 @@ détaille pas de mécanisme centralisé de journalisation des erreurs mémoire
 comparable à _EDAC_ sous _Linux_ ou au _Health Monitor_ d'_XtratuM_ pour les
 erreurs mémoire.
 
-La gestion de la corruption de la mémoire dans _PikeOS_ s'effectue à plusieurs
+La gestion de la corruption mémoire dans _PikeOS_ s'effectue à plusieurs
 niveaux:
 - #box[Le @bsp (_Board Support Package_) peut intégrer un support pour les contrôleurs
 mémoire @ecc spécifiques à la plateforme. Par exemple, pour les processeurs _LEON_ _SPARC_
@@ -2898,9 +2898,9 @@ ou les garanties temps réel spécifiques de _ProvenVisor_ sont limitées. Pour 
 applications nécessitant des garanties temps réel strictes, il serait nécessaire de
 consulter la documentation technique détaillée de _ProvenRun_.
 
-== Corruption de la mémoire <provenvisor_memory_corruption>
+== Corruption mémoire <provenvisor_memory_corruption>
 
-_ProvenVisor_ intègre plusieurs mécanismes pour prévenir la corruption de la mémoire:
+_ProvenVisor_ intègre plusieurs mécanismes pour prévenir la corruption mémoire:
 
 La vérification formelle de _ProvenVisor_ est le premier rempart contre la corruption
 de la mémoire. En prouvant mathématiquement l'absence de certaines classes de bugs, on
@@ -3313,7 +3313,7 @@ inversement proportionnel à la période. Cette politique d'attribution
 des priorités peut être combiné avec les ordonnanceurs décrits dans la
 sous-section précédente.
 
-== Corruption de la mémoire <rtems_memory_corruption>
+== Corruption mémoire <rtems_memory_corruption>
 
 _RTEMS_ ne semble pas fournir d'@api unifié pour journaliser les erreurs
 mémoires ou gérer le _scrubbing_.
@@ -3329,7 +3329,7 @@ une telle mission.
 == Perte du flux d'exécution <rtems_hijacking_flow>
 
 _RTEMS_ étant principalement écrit en langage _C_, il est exposés aux
-vulnérabilités classiques par corruption de la mémoire afin de détourner le
+vulnérabilités classiques par corruption mémoire afin de détourner le
 flux d'exécution.
 
 Nous n'avons pas trouvé de mécanisme de protection face à ce type d'attaques
@@ -3710,140 +3710,27 @@ réel renforcées et sont en cours de vérification formelle @sel4_mcs_release.
 
 == Déterminisme <sel4_determinism>
 
-Le noyau _seL4_ se distingue par une approche originale pour garantir un bon niveau de
-déterminisme. Alors que la majorité des @rtos privilégient un noyau entièrement
-préémptible afin de minimiser la latence, _seL4_ adopte une approche
-événementielle largement non préemptible.
+_seL4_ se distingue par une approche originale pour garantir le déterminisme
+nécessaire aux systèmes temps réel. Alors que la plupart des @rtos privilégient
+un noyau entièrement préemptible pour minimiser la latence, _seL4_ adopte une
+approche événementielle largement non préemptible. Le noyau s'exécute avec les
+interruptions matérielles désactivées, ce qui simplifie sa conception et sa
+vérification formelle. Pour offrir de bonnes garanties temps réel malgré cette
+non-préemptibilité, tous les appels système ont un temps d'exécution borné:
+_seL4_ évite les boucles infinies, élimine l'allocation dynamique et introduit
+des points de préemption explicites dans les rares appels longs.
 
-Un autre aspect intéressant est que _seL4_ a fait l'objet d'une analyse
-approfondie du @wcet @blackham2011timing @sewell2016complete. Cette analyse
-fournit une estimation
-formellement vérifiée du temps d'exécution de l'ensemble des routines du
-micronoyau. Il semble que _seL4_ soit à ce jour le seul noyau en mode protégé
-disposant d'une analyse @wcet complète et vérifiée formellement.
+Le déterminisme de _seL4_ est renforcé par une analyse @wcet formellement
+vérifiée @blackham2011timing @sewell2016complete. C'est à ce jour le seul noyau
+en mode protégé disposant d'une telle analyse complète et rigoureuse, fournissant
+des bornes supérieures certifiées pour tous les appels système. Cette analyse
+permet d'estimer précisément le temps d'exécution des routines du noyau dans le
+pire cas, garantissant ainsi le respect des échéances temporelles critiques.
+Combiné aux extensions _MCS_ qui offrent une isolation temporelle stricte, _seL4_
+peut fournir des garanties de temps réel strict tout en maintenant l'isolation
+spatiale, ce qui n'est pas le cas de nombreux autres @rtos.
 
-Nous approfondissons ces deux aspects dans les sous-sections suivantes.
-
-=== Approche événementielle
-
-Le noyau _seL4_ s'exécute avec les interruptions matérielles désactivées. C'est
-une approche héritée de la famille des noyaux _L4_ qui simplifie à la fois la
-conception en éliminant la concurrence au sein du noyau et simplifie
-sa vérification formelle. La désactivation des interruptions implique que le
-noyau n'est pas préemptible puisque l'ordonnanceur de tâche ne peut être
-invoqué via une interruption matérielle programmée.
-
-Pour qu'un tel noyau fournisse de bonnes garanties temps réel, il est impératif
-que les appels systèmes aient un temps d'exécution borné. Pour que la latence
-soit faible, il faut que ces appels soient aussi court que possible. Le noyau
-_seL4_ fournit de telles garanties en évitant les boucles infinies et
-l'allocation dynamique. Lorsqu'il n'est pas possible de borner un appel système,
-des point d'interruption sont introduits manuellement afin de permettre au
-noyau de suspendre la tâche.
-
-=== Analyse du @wcet
-
-DRAFT
-
-=== Analyse @wcet formellement vérifiée
-
-En plus de disposer d'un ordonnanceur déterministe, _seL4_ a fait l'objet
-d'une analyse de son @wcet approfondie @blackham2011timing @sewell2016complete.
-Autrement dit, pour un certain nombre de configurations, on dispose d'une
-estimation vérifiée du temps d'exécution de toutes les routines du micronoyau.
-_seL4_ est à ce jour le seul noyau en mode protégé disposant d'une analyse
-@wcet complète et rigoureuse.
-
-Cette analyse a été réalisée sur l'architecture _ARM11_ et a produit des bornes
-supérieures certifiées pour tous les appels système. Les résultats montrent que
-la borne supérieure sûre est environ quatre fois le pire temps observé
-expérimentalement. Cette estimation conservative s'explique principalement par
-la modélisation des caches: le processeur _ARM11_ dispose d'un cache L1 à 4
-voies avec remplacement aléatoire, et une analyse sûre de la résidence en cache
-nécessite de le modéliser comme un cache à correspondance directe d'un quart de
-capacité.
-
-L'approche la plus aboutie exploite le cadre de validation de traduction de
-_seL4_ pour lier formellement le binaire (sujet de l'analyse @wcet) à
-l'environnement _C_ riche en sémantique et à tous les théorèmes et invariants
-prouvés sur le code _C_ dans le contexte de la preuve de correction
-fonctionnelle.
-
-Toutefois cette analyse a été faite sur ARMv6 et ARM ne fournit pas les
-informations nécessaires pour réitérer cette analyse sur les nouvelles
-architectures. Cette limitation est problématique car _ARM_ reste l'architecture
-de référence pour _seL4_ du fait de son omniprésence dans l'embarqué. Il semble
-qu'il y ait un projet pour une telle analyse sur _RISC-V_, dont les
-spécifications ouvertes facilitent ce type d'analyse.
-
-=== Approche événementielle non préemptible
-
-Le noyau tourne avec les interruptions matérielles désactivées. Ce choix
-simplifie grandement la conception et la vérification formelle. Cette décision
-de conception, héritée des premiers micronoyaux de la famille _L4_, offre
-plusieurs avantages significatifs:
-- #box[Simplification de l'implémentation du noyau en éliminant la nécessité de
-gérer la concurrence interne,]
-- #box[Facilitation de la vérification formelle en réduisant l'espace des états
-possibles,]
-- #box[Amélioration des performances en cas moyen en évitant les coûts liés à la
-sauvegarde et restauration de contexte lors d'interruptions imbriquées.]
-
-Le modèle événementiel évite également la complexité de la suspension d'exécution
-(_yielding_), qui rendrait le raisonnement formel sur la correction beaucoup
-plus difficile. C'est précisément pour cette raison que _seL4_ a adopté cette
-approche: simplifier le raisonnement sur la correction du système.
-
-=== Conception pour borner le temps d'exécution
-
-Les appels systèmes sont généralement courts. Ceux qui sont trop longs sont
-préemptibles à des points clés ajoutés par les développeurs. Pour qu'un noyau
-non préemptible puisse offrir de bonnes garanties temps réel, il est essentiel
-que tous les appels système aient un temps d'exécution borné. _seL4_ respecte
-ce principe de conception en:
-- #box[Évitant les boucles non bornées dans le noyau,]
-- #box[Éliminant toute allocation dynamique de mémoire,]
-- #box[Gardant la plupart des appels système courts par conception,]
-- #box[Introduisant des points de préemption explicites dans les rares appels
-système longs, permettant au noyau de suspendre l'opération et de traiter les
-interruptions en attente avant de reprendre.]
-
-Cette architecture garantit que même si les interruptions sont désactivées
-pendant l'exécution dans le noyau, le temps maximal pendant lequel une
-interruption peut être masquée reste borné et raisonnablement court.
-
-=== Garanties temps réel
-
-Les analyses @wcet de _seL4_ permettent d'obtenir des bornes supérieures
-déterministes pour les appels système et les latences d'interruption. Plus
-précisément, _seL4_ fournit un temps de réponse aux interruptions garanti
-d'environ 500 microsecondes sur une plateforme _BeagleBoard-xM_ équipée d'un
-processeur _ARM Cortex-A8_.
-
-Il semblerait qu'être préemptible ne soit pas un prérequis pour offrir de
-faibles latences. Des travaux de recherche ont démontré qu'un noyau largement
-non préemptible peut atteindre des latences d'interruption dans un facteur deux
-de celles d'un noyau entièrement préemptible, tout en offrant des garanties
-formellement vérifiées et une meilleure simplicité conceptuelle.
-
-Les extensions mcs (_Mixed-Criticality System_) décrites dans la sous-section
-sel4_mcs renforcent encore les capacités temps réel de _seL4_ en introduisant
-des contextes d'ordonnancement avec budgets et périodes. Ces extensions permettent
-une isolation temporelle stricte par l'algorithme de serveur sporadique, offrant
-ainsi des garanties de type temps réel strict (_hard real-time_).
-
-=== Temps réel avec isolation spatiale
-
-Il permet de faire du temps réel tout en ayant l'isolation spatiale, ce qui
-n'est pas le cas de nombreux @rtos comme _RTEMS_ (voir la sous-section
-@rtems_spatial_partitioning). Le système de capacités et le partitionnement spatial
-rigoureux de _seL4_ n'affectent pas ses capacités temps réel, permettant ainsi
-de concevoir des systèmes à criticité mixte avec de fortes garanties de sécurité
-et de sûreté. Cette combinaison unique de déterminisme temporel et d'isolation
-spatiale fait de _seL4_ un choix particulièrement adapté pour les systèmes
-critiques à criticité mixte.
-
-== Corruption de la mémoire <sel4_memory_corruption>
+== Corruption mémoire <sel4_memory_corruption>
 
 _seL4_ étant un micronoyau qui se concentre sur l'isolation, il ne semble pas
 proposer d'@api ou de logiciel de journalisation pour les erreurs mémoires.
@@ -3876,96 +3763,18 @@ registres @pmu.]
 
 == Gestion des interruptions <sel4_interrupt_managing>
 
-=== Masquage des interruptions <sel4_interrupt_masking>
+Les interruptions sont gérées en espace utilisateur via le système de _capabilities_
+@sel4_interrupts. La tâche racine reçoit `seL4_CapIRQControl` permettant de dériver
+des _capabilities_ `IRQHandler` pour des @irq spécifiques. Les applications reçoivent
+les interruptions via des objets notification associés aux `IRQHandler`. Le masquage
+est implicite : aucune interruption n'est livrée jusqu'à l'acquittement explicite via
+`seL4_IRQHandler_Ack`.
 
-Comme évoqué dans la sous-section @sel4_determinism, le noyau _seL4_
-adopte une approche radicalement différente de la plupart des systèmes
-d'exploitation : il s'exécute avec les interruptions matérielles désactivées
-@sel4_interrupts. Cette décision de conception, héritée de la famille des
-micronoyaux _L4_, simplifie drastiquement la vérification formelle du noyau
-en éliminant la concurrence au sein de l'espace noyau.
-
-Pour qu'un noyau non préemptible offre de bonnes garanties temps réel, tous
-les appels système doivent avoir un temps d'exécution borné. _seL4_ respecte
-cette contrainte en évitant les boucles non bornées et toute allocation
-dynamique de mémoire. Pour les rares appels système longs, des points de
-préemption explicites permettent au noyau de suspendre temporairement
-l'opération afin de traiter les interruptions en attente.
-
-Cette approche garantit que le temps maximal pendant lequel une interruption
-peut être masquée reste borné. Les analyses du @wcet de _seL4_ @blackham2011timing
-@sewell2016complete montrent qu'un temps de réponse aux interruptions d'environ
-500 microsecondes peut être atteint sur une plateforme _BeagleBoard-xM_
-équipée d'un processeur _ARM Cortex-A8_.
-
-=== Gestion des interruptions en espace utilisateur
-
-_seL4_ gère les interruptions via son système de _capabilities_ @sel4_interrupts.
-La tâche racine reçoit au démarrage la _capability_ `seL4_CapIRQControl`,
-une capacité unique et non duplicable permettant de dériver des _capabilities_
-pour tous les numéros d'@irq du système. Cette capacité peut toutefois être
-transférée entre espaces de capacités (_CSpace_).
-
-À partir de `seL4_CapIRQControl`, il est possible de créer des _capabilities_
-`IRQHandler` pour des numéros d'@irq spécifiques. Contrairement à
-`IRQControl`, les `IRQHandler` peuvent être dupliqués et déplacés selon
-la politique du système. Les invocations pour obtenir ces _capabilities_
-dépendent de l'architecture : _x86_ supporte `GetIOAPIC` et `GetMSI`,
-tandis qu'_ARM_ supporte `GetTrigger`.
-
-Les interruptions sont reçues par les applications en associant un objet de
-notification (_notification_) à un `IRQHandler` via l'invocation
-`seL4_IRQHandler_SetNotification`. Lors d'une interruption matérielle, _seL4_
-délivre un signal à l'objet notification associé. Pour différencier plusieurs
-sources d'interruptions, le système utilise le _badging_ : le badge de la
-_capability_ notification liée à chaque `IRQHandler` est combiné en OU logique
-avec le mot de données de la notification.
-
-_seL4_ implémente un mécanisme de masquage implicite : le micronoyau ne
-livrera aucune interruption supplémentaire après qu'une @irq soit levée
-jusqu'à ce que l'`IRQHandler` correspondant ait été acquitté via l'invocation
-`seL4_IRQHandler_Ack`. Ce mécanisme garantit qu'une même interruption ne peut
-être délivrée plusieurs fois avant d'avoir été traitée.
-
-Les applications peuvent attendre ou sonder les interruptions respectivement
-avec `seL4_Wait` ou `seL4_Poll`, qui délivrent le mot de données de l'objet
-notification comme badge du message.
-
-=== Virtualisation des interruptions
-
-Pour les scénarios de virtualisation, _seL4_ exploite les extensions matérielles
-de virtualisation des interruptions lorsqu'elles sont disponibles. Sur les
-architectures _ARM_ équipées de _KernelArmHypervisorSupport_, le micronoyau
-tire parti du _VGIC_ (_Virtual Generic Interrupt Controller_), qui permet
-l'injection d'interruptions virtuelles dans les machines virtuelles sans
-piégeage systématique vers l'hyperviseur.
-
-Actuellement, _seL4_ supporte le _GICv2_ virtuel. Le support du _GICv3_ virtuel
-est en cours de développement @sel4_interrupts. Le _VGIC_ matériel permet aux
-machines virtuelles d'acquitter et de compléter des interruptions virtuelles
-directement, sans intervention de l'hyperviseur, améliorant ainsi les
-performances.
-
-Pour les interruptions _PPI_ (_Private Peripheral Interrupts_) virtuelles,
-notamment les interruptions de timer virtuel, _seL4_ utilise un mécanisme
-de _fault_. Ces interruptions sont délivrées aux _VCPU_ via des faults de
-type `seL4_Fault_VPPIEvent` et doivent être acquittées par l'invocation
-`seL4_ARM_VCPU_AckVPPI` sur l'objet _VCPU_ concerné. Le noyau peut suivre
-l'état des @irq pour chaque _VCPU_ et délivrer les événements d'interruption
-comme des faults du _VCPU_.
-
-La bibliothèque `libsel4vm` fournit une interface de plus haut niveau pour
-la virtualisation des interruptions. Elle offre notamment les fonctions
-`vm_inject_irq` pour injecter une interruption dans le contrôleur d'une
-machine virtuelle, `vm_set_irq_level` pour ajuster le niveau du signal
-d'interruption, et `vm_register_irq` pour associer des callbacks
-d'acquittement à des interruptions spécifiques.
-
-Sur _x86_, les mécanismes diffèrent : les interruptions _MSI_ (_Message Signaled
-Interrupts_) peuvent être obtenues via `seL4_IRQControl_GetMSI`. Toutefois,
-contrairement à _ARM_, il n'est généralement pas possible d'obtenir deux
-gestionnaires _IOAPIC_ pour la même @irq, ce qui peut compliquer le partage
-d'interruptions entre machines virtuelles.
+Pour la virtualisation, _seL4_ exploite les extensions matérielles comme le _VGIC_
+sur _ARM_ (support _GICv2_, _GICv3_ en développement) permettant l'injection
+d'interruptions virtuelles sans piégeage systématique. La bibliothèque `libsel4vm`
+fournit une interface de haut niveau avec des fonctions comme `vm_inject_irq` et
+`vm_register_irq`.
 
 == Watchdog <sel4_watchdog>
 
@@ -3988,6 +3797,9 @@ Le langage _Rust_ bénéficie d'un support officiel et documenté pour _seL4_
 
 == Temps de démarrage <sel4_boot_time>
 
+Nous n'avons pas trouvé d'informations précises sur le temps de démarrage
+du noyau _seL4_.
+
 == Maintenabilité <sel4_maintainability>
 
 Le noyau _seL4_ est un logiciel libre distribué principalement sous licence
@@ -4007,29 +3819,6 @@ librement accessible facilite le développement de nouveaux logiciels.
 Le support commercial de _seL4_ est assuré par plusieurs organisations, dont
 la _seL4 Foundation_ et _Trustworthy Systems_.
 
-== Draft
-
-== Vérifications formelles <sel4_formal_verification>
-
-Le noyau _seL4_ a fait l'objet d'une vérification formelle profonde. L'approche
-suppose la correction du compilateur, du code assembleur et du matériel mais
-démontre la conformité du code C avec ses spécifications.
-
-== draft
-
-Il a l'avantage de supporté les partitions mixtes @vanderleest2016open.
-
-`seL4` a fait l'objet d'une spécification et d'une vérification formelle à
-l'aide de l'assistant de preuve _Isabelle/HOL_. La correction
-#footnote[La correction d'un algorithme signifie qu'il a été démontré que cet
-algorithme respecte sa spécification.] de l'implémentation
-a été démontrée pour plusieurs configurations et il a été également démontré
-que le code binaire est correct pour les architectures _ARM_ et _RISC-V_ @sel4_verification.
-Cette vérification formelle implique en particulier que `seL4` est dépourvu de
-certaines erreurs de programmation classiques @sel4_implication. Il est notamment
-dépourvu de débordements de tampon, de déréférencements de pointeurs nuls, de
-fuites mémoire et de dépassements d'entier.
-
 = Xen <xen>
 
 #showybox(
@@ -4043,8 +3832,10 @@ fuites mémoire et de dépassements d'entier.
   - *Type* : Hyperviseur type 1
   - *Langage* : C (majoritaire)
   - *Architectures* : x86 (32/64-bit), ARM (32/64-bit)
-  - *Usage principal* : Cloud computing, hébergement, data centers, virtualisation d'entreprise
-  - *Points forts* : Mature et éprouvé, paravirtualisation + HVM, largement adopté (AWS, Citrix), dom0less pour boot rapide, stub domains pour sécurité
+  - *Usage principal* : Cloud computing, hébergement, data centers,
+    virtualisation d'entreprise
+  - *Points forts* : Mature et éprouvé, paravirtualisation + HVM, largement
+    adopté (AWS, Citrix), dom0less pour boot rapide, stub domains pour sécurité
   - *Limitations* : TCB important, complexité, dépendance au dom0 (Linux)
   - *Licences* : GPL v2 (majoritaire) avec exceptions pour compatibilité
   - *Utilisateurs notables* : Amazon AWS, Citrix, OVH, Rackspace
@@ -4272,78 +4063,18 @@ basés sur _Linux_.
 
 === Partitionnement spatial <xen_partitioning_space>
 
-L'hyperviseur _Xen_ assure l'isolation mémoire entre les domaines en s'appuyant
-sur plusieurs techniques de gestion de la mémoire qui varient selon le type de
-virtualisation utilisé et les capacités matérielles disponibles. L'objectif
-principal est de garantir qu'aucun domaine ne puisse accéder à la mémoire d'un
-autre domaine sans autorisation explicite, tout en maintenant des performances
-acceptables.
-
-Pour les domaines paravirtualisés, _Xen_ a introduit une technique innovante
-baptisée _direct paging_ @xen_paravirt_memory. Dans ce modèle, le système
-d'exploitation invité est conscient de la distinction entre les adresses
-physiques (_machine addresses_) réelles et les adresses pseudo-physiques qu'il
-manipule. Les tables de pages du système invité mappent directement les adresses
-virtuelles vers les adresses machines physiques. Cependant, pour maintenir les
-invariants de sécurité, _Xen_ impose que toutes les mises à jour des tables de
-pages passent par des hypercalls tels que `HYPERVISOR_update_va_mapping` et
-`HYPERVISOR_mmuext_op`. Ces hypercalls permettent à _Xen_ de vérifier que chaque
-domaine ne modifie que les pages qui lui appartiennent et ne crée pas de
-mappages de pages de tables inscriptibles. Le système d'exploitation invité
-dispose d'un accès en lecture seule aux véritables tables de pages mais doit
-obligatoirement utiliser ces hypercalls pour toute modification.
-
-Pour les domaines HVM (_Hardware Virtual Machine_) qui exécutent des systèmes
-d'exploitation non modifiés, _Xen_ peut utiliser deux approches selon les
-capacités du processeur. Sur les processeurs plus anciens sans support matériel
-de virtualisation mémoire, _Xen_ utilise des _shadow page tables_. Cette
-technique consiste à maintenir dans l'hyperviseur des copies des tables de pages
-des invités qui traduisent directement les adresses virtuelles invitées vers les
-adresses machines physiques. Chaque modification des tables de pages par
-l'invité provoque une interception par l'hyperviseur qui met à jour les tables
-fantômes correspondantes. Cette approche impose un coût de performance
-significatif en raison du nombre élevé de sorties _VM_ (_VM exits_) générées.
-
-Sur les processeurs récents équipés de support matériel pour la virtualisation
-mémoire, _Xen_ exploite les fonctionnalités _EPT_ (_Extended Page Tables_) sur
-_Intel_ ou _NPT_ (_Nested Page Tables_) sur _AMD_. Ces technologies implémentent
-une traduction d'adresses en deux étapes : le système invité maintient ses
-propres tables de pages qui traduisent les adresses virtuelles vers les adresses
-pseudo-physiques, puis le matériel utilise une seconde table gérée par
-l'hyperviseur pour traduire les adresses pseudo-physiques vers les adresses
-machines réelles. Cette approche élimine le besoin de maintenir des tables
-fantômes et réduit drastiquement le nombre d'interventions de l'hyperviseur,
-améliorant les performances jusqu'à 48% pour les charges de travail intensives
-en gestion mémoire selon certaines études.
-
-Sur l'architecture _ARM_, _Xen_ s'appuie sur la traduction d'adresses en deux
-étapes (_2-stage translation_) fournie par le matériel depuis _ARMv7_ avec les
-extensions de virtualisation @xen_arm_mmu. Cette fonctionnalité permet à
-l'hyperviseur de contrôler la vue mémoire de chaque invité tout en laissant le
-système d'exploitation invité gérer librement son propre espace d'adressage
-virtuel.
-
-Pour les systèmes critiques nécessitant un partitionnement spatial strict, _Xen_
-propose depuis sa version _4.12_ un mode _dom0less_ qui permet de démarrer
-plusieurs domaines en parallèle directement depuis l'hyperviseur au moment du
-boot, sans intervention du domaine privilégié _dom0_ @xen_dom0less_doc. Cette
-approche facilite la mise en œuvre d'un partitionnement statique où l'ensemble
-du système (invités et communications) est défini statiquement, garantissant un
-comportement déterministe et une cohérence après redémarrage. Chaque domaine
-dispose d'un accès direct au matériel protégé par l'iommu et bénéficie d'une
-isolation stricte vis-à-vis des autres domaines. Des fonctionnalités avancées
-comme le _cache coloring_ peuvent être activées pour assurer un partitionnement
-complet du cache, où chaque machine virtuelle se voit allouer ses propres
-entrées de cache sans partage, permettant ainsi aux applications temps réel
-d'atteindre une latence d'interruption déterministe.
-
-L'isolation mémoire de _Xen_ a été conçue avec une architecture en micronoyau où
-l'hyperviseur lui-même reste minimal et délègue la gestion des pilotes et l'accès
-matériel au domaine privilégié _dom0_. Cette séparation des préoccupations
-renforce la surface d'attaque réduite de l'hyperviseur. Le projet _Xen_ a
-également entrepris un effort de conformité avec les règles _MISRA C_ pour
-faciliter la certification dans les environnements critiques où la sûreté et la
-sécurité sont primordiales @xen_project_4_17_safety.
+_Xen_ assure l'isolation mémoire entre les domaines en utilisant différentes
+techniques selon le type de virtualisation. Pour les domaines paravirtualisés,
+le système _direct paging_ impose que les mises à jour des tables de pages
+passent par des hypercalls vérifiés par l'hyperviseur @xen_paravirt_memory. Pour
+les domaines HVM, _Xen_ utilise soit des _shadow page tables_ sur les
+processeurs anciens, soit une traduction en deux étapes (_EPT_/_NPT_) sur les
+processeurs récents, offrant de meilleures performances. Sur _ARM_, _Xen_
+s'appuie sur la traduction d'adresses en deux étapes du matériel @xen_arm_mmu.
+Pour les systèmes critiques, le mode _dom0less_ permet un partitionnement
+statique et une isolation stricte @xen_dom0less_doc. L'hyperviseur suit une
+architecture minimale et poursuit une conformité _MISRA C_ pour la certification
+@xen_project_4_17_safety.
 
 === Partitionnement temporel <xen_partitioning_time>
 
@@ -4409,7 +4140,7 @@ Plus d'informations sont disponibles. Pour le domaine _domU_,
 _Xen_ offre aussi un large support pour les OS invités.
 
 
-== Corruption de la mémoire <xen_memory_corruption>
+== Corruption mémoire <xen_memory_corruption>
 
 L'hyperviseur _Xen_ ne dispose pas d'un système de journalisation des erreurs
 mémoires. En revanche, il transmet ces erreurs au système d'exploitation
@@ -4779,7 +4510,7 @@ de programmation pour l'@api de _Xtratum_. Il est possible de programmer en
 - #box[_Rust_ peut être utilisé en @baremetal en interfaçant avec l'@abi _C_
 de _XtratuM_. Une _crate_ est disponible @xtratum_xng_rs.]
 
-== Corruption de la mémoire <xtratum_memory_corruption>
+== Corruption mémoire <xtratum_memory_corruption>
 Le _Health Monitor_ d'_XtratuM_ est capable de journaliser les @mce en cas
 d'erreur de mémoire non corrigible. Comme pour les autres erreurs, il est possible
 de configurer un paliatif.

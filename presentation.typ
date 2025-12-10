@@ -17,23 +17,39 @@
 #front-slide(
   title: "PPAQSE-OS",
   subtitle: "Étude comparative d'OS pour les systèmes critiques temps-réel",
-  authors: "OCamlPro"
+  authors:
+    grid(
+      columns: (auto, 3cm, auto),
+      align: (center + horizon, center, center + horizon),
+      image("imgs/Logo_OCamlPro_officiel_transparent (Bleu).png", height: 2cm, fit: "contain"),
+      [],
+      image("imgs/Logo carré bleu - fond transparent.png", height: 2cm, fit: "contain")
+    ),
 )
 
 #slide(title: "Plan")[
-  - Systèmes et définitions
-  - Organisation de l'étude
+  - Contexte et définitions
+  - Systèmes étudiés
+  - Critères d'évaluation:
+    - Type et architecture
+    - Partitionnement spatial
+    - Partitionnement temporel
+    - Gestion des erreurs
+    - Maintenabilité
+  - Synthèse et recommandations
 ]
 
-#slide(title: "Système critique")[
-  Système dont la défaillance entraîne des dégâts indésirables:
-  - Pertes de données dans une BDD,
-  - Destructions matérielles,
-  - Pertes humaines,
-  - ...
+#slide(title: "Introduction - système critique")[
+  #framed(title: "Définition")[
+    Système dont la défaillance entraîne des dégâts indésirables:
+    - Pertes de données dans une BDD,
+    - Destructions matérielles,
+    - Pertes humaines,
+    - ...
+  ]
 ]
 
-#slide(title: "Système/Programme temps réel", outlined: true)[
+#slide(title: "Introduction - système temps réel", outlined: true)[
   #framed(title: "Système temps réel")[
     Système capable de piloter un phénomène physique à une vitesse
     adaptée à son évolution.
@@ -48,17 +64,17 @@
   ]
 ]
 
-#slide(title: "Déterminisme et temps réel")[
+#slide(title: "Introduction - Déterminisme et temps réel")[
 
 ]
 
-#slide(title: "OS / critères")[
+#slide(title: "Organisation - OS / critères")[
 #grid(
   columns: (1fr, 1fr),
   rows: (auto),
   column-gutter: -300pt,
   align: left + top,
-  [ 7 systèmes étudiés:
+  [ 8 systèmes étudiés:
     - Linux
     - MirageOS
     - PikeOS
@@ -72,7 +88,7 @@
     - Type de système d'exploitation
     - Architectures supportées + multi-cœur
     - Partitionnement (spatial/temporel/déterminisme)
-    - Corruption de la mémoire
+    - Corruption mémoire
     - Perte du flux d'exécution
     - Écosystème
     - Gestion des interruptions
@@ -197,7 +213,24 @@
 - Extension de virtualisation nécessaire
 ]
 
-#slide(title: "Critère - Partitionnement spatial")[
+#slide(title: "Partitionnement spatial - critère")[
+  #framed(title: "Objectif")[
+    Garantir l'isolation de l'état mémoire des différentes tâches
+  ]
+
+  - Support essentiellement matériel de nos jours
+  - Compromis isolation / complexité
+]
+
+#slide(title: "Partitionnement spatial - solution matérielle")[
+  #framed(title: "Type de protection")[
+    - MMU (Memory Management Unit),
+    - MPU (Memory Protection Unit),
+    - Protection purement logicielle.
+  ]
+]
+
+#slide(title: "Partitionnement spatial - tableau comparatif")[
 #table(
   columns: (1.3fr, 1fr, 1fr, 1fr),
   align: (x, _) => { if x == 0 { left } else { center } },
@@ -237,7 +270,6 @@
 ]
 
 #slide(title: "Critère - Partitionnement temporel")[
-#set text(size: 13pt)
 #table(
   columns: (1.3fr, 1fr, 1fr, 1fr, 1fr),
   align: (x, _) => { if x == 0 { left } else { center } },
@@ -277,8 +309,38 @@
 - XtratuM utilise un ordonnancement cyclique statique ARINC-653
 ]
 
-#slide(title: "Critère - Corruption mémoire")[
-#set text(size: 14pt)
+#slide(title: "Corruption mémoire - critère")[
+
+  #framed(title: "Corruption mémoire")[
+    Modification non intentionnelle de l'état mémoire.
+
+    Causes:
+    - #text(fill: blue, [Rayonnement ambiant])
+    - #text(fill: blue, [Défaillance matérielle])
+    - Erreur de programmation
+    - Attaque informatique
+  ]
+]
+
+#slide(title: "Corruption mémoire - incident")[
+  #figure(
+    image("./imgs/a320.png", width: 50%),
+    caption: [A320 immobilisé en novembre 2025],
+    supplement: none
+  )
+]
+
+#slide(title: "Corruption mémoire - protection")[
+  #figure(
+    image("./imgs/ecc_memory.webp", width: 45%)
+  )
+  #framed(title: "Protection matérielle")[
+    - Code correcteur dans des mémoires ECC (soft error/ hard error),
+    - Technique de _scrubbing_.
+  ]
+]
+
+#slide(title: "Corruption mémoire - Tableau")[
 #table(
   columns: (1.5fr, 1.5fr, 1.5fr),
   align: (x, _) => { if x == 0 { left } else { center } },
@@ -315,7 +377,6 @@
 ]
 
 #slide(title: "Critère - Perte du flux d'exécution")[
-#set text(size: 13pt)
 #table(
   columns: (1.3fr, 1.2fr, 1.2fr, 1.5fr),
   align: (x, _) => { if x == 0 { left } else { center } },
@@ -383,7 +444,6 @@
 ]
 
 #slide(title: "Critère - Programmation baremetal")[
-#set text(size: 15pt)
 #table(
   columns: (1.5fr, 1fr, 1fr, 1fr, 1fr),
   align: (x, _) => { if x == 0 { left } else { center } },
@@ -402,7 +462,7 @@
   good([Ravenscar]), good([]), bad([]), good([]),
 
   [ProvenVisor],
-  unknown([]), unknown([]), unknown([]), unknown([]),
+  unknown([]), good([?]), unknown([]), unknown([]),
 
   [seL4],
   bad([]), good([]), bad([]), good([]),
@@ -443,7 +503,7 @@
   bad([Propriétaire]), bad([Limité]), unknown([]), unknown([]), [ProvenRun], [~10],
 
   [RTEMS],
-  good([BSD 2-Clause]), good([Large]), bad([~2M]), mediocre([limitée]), [OAR], [~32],
+  good([BSD 2-Clause]), good([Large]), bad([~2M]), mediocre([Limitée]), [OAR], [~32],
 
   [seL4],
   good([GPLv2]), (mediocre[Moyen]), good([~70k]), mediocre([Technique]), [seL4], [~19],
@@ -458,4 +518,54 @@
 - Ancienneté $arrow.r.double.long$ grand écosystème,
 - Ancienneté $arrow.r.double.long$ grande dette technique et grande base de code,
 - Libre $arrow.r.double.long$ plus grand écosystème.
+]
+
+#slide(title: "Synthèse - Cas d'usage recommandés")[
+  #table(
+    columns: (1.5fr, 2fr),
+    align: (left, left),
+    table.header([Cas d'usage], [Systèmes recommandés]),
+
+    [Système critique certifiable],
+    [seL4, ProvenVisor (vérification formelle)\ PikeOS (CC EAL 5+)],
+
+    [RTOS haute performance],
+    [RTEMS, Linux RT-PREEMPT],
+
+    [Virtualisation temps réel],
+    [PikeOS, XtratuM (ARINC-653)\ Xen (avec RTDS)],
+
+    [Systèmes embarqués légers],
+    [MirageOS (unikernel)\ RTEMS],
+
+    [Écosystème riche requis],
+    [Linux (avec RT-PREEMPT ou Xenomai)],
+  )
+]
+
+#slide(title: "Conclusion")[
+  - Diversité des solutions selon les contraintes:
+    - Certification vs. flexibilité
+    - Performance vs. garanties formelles
+    - Écosystème vs. taille du code
+
+  - Tendances émergentes:
+    - Vérification formelle (seL4, ProvenVisor)
+    - Unikernels pour l'embarqué (MirageOS)
+    - Amélioration continue de Linux RT
+
+  - Choix guidé par:
+    - Exigences de certification
+    - Contraintes matérielles
+    - Écosystème et support disponible
+]
+
+#slide(title: "Questions ?")[
+  #align(center + horizon)[
+    #text(size: 2em)[Merci]
+
+    #v(2em)
+
+    Questions ?
+  ]
 ]
