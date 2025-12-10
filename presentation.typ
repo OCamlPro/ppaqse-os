@@ -239,40 +239,39 @@
 #slide(title: "Critère - Partitionnement temporel")[
 #set text(size: 13pt)
 #table(
-  columns: (1.3fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+  columns: (1.3fr, 1fr, 1fr, 1fr, 1fr),
   align: (x, _) => { if x == 0 { left } else { center } },
   table.header(
     [OS],
     [Fixed-\ priority],
     [Rate\ Monotonic],
-    [Deadline\ Monotonic],
     [EDF],
     [Round\ Robin]
   ),
 
   [Linux],
-  good([]), bad([]), bad([]), good([]), good([]),
+  good([]), bad([]), good([]), good([]),
 
   [MirageOS],
-  bad([]), bad([]), bad([]), bad([]), bad([]),
+  table.cell(colspan: 4, [Non pertinent]),
 
   [PikeOS],
-  good([]), bad([]), bad([]), good([]), bad([]),
+  good([]), bad([]), good([]), bad([]),
 
   [ProvenVisor],
-  unknown([?]), unknown([?]), unknown([?]), unknown([?]), unknown([?]),
+  unknown([?]), unknown([?]), unknown([?]), unknown([?]),
 
   [RTEMS],
-  good([]), good([]), bad([]), good([]), bad([]),
+  good([]), good([]), good([]), bad([]),
 
   [seL4],
-  bad([]), bad([]), bad([]), bad([]), good([]),
+  bad([]), bad([]), bad([]), good([]),
 
   [Xen],
-  bad([]), bad([]), bad([]), good([RTDS]), bad([]),
+  bad([]), bad([]), good([RTDS]), bad([]),
 
   [XtratuM],
-  bad([]), bad([]), bad([]), bad([]), bad([]),
+  bad([]), bad([]), bad([]), bad([]),
 )
 - MirageOS délègue l'ordonnancement à l'hyperviseur
 - XtratuM utilise un ordonnancement cyclique statique ARINC-653

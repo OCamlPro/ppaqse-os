@@ -686,12 +686,10 @@ disponibles. On examinera en particulier la présence de politiques
 d'ordonnancement temps réel parmi la liste suivante:
 - _Fixed-priority_
 - _Rate Monotonic_
-- _Deadline Monotonic_
 - _Earliest Deadline First_
 - _Round Robin_
 
 ==== Déterminisme <determinism_criteria>
-
 Comme nous l'avons expliqué dans la sous-section @criticity_real_time, les
 logiciels, et en particulier le système d'exploitation, d'un système critique
 doivent fournir des garanties sur le temps d'exécution de leurs routines. En
@@ -3691,106 +3689,24 @@ virtualiser la mémoire physique.
 
 == Partitionnement temporel <sel4_time_partitioning>
 
-_seL4_ implémente une approche à deux niveaux pour le partitionnement temporel,
-combinant un ordonnanceur hiérarchique basé sur les domaines avec un ordonnanceur
-de threads à priorités @sel4_whitepaper. Cette architecture permet d'obtenir à la
-fois un partitionnement temporel strict au niveau supérieur et de la flexibilité
-au niveau des threads.
+_seL4_ propose deux modes de partitionnement temporel: un mode standard et des
+extensions _MCS_ (_Mixed-Criticality System_).
 
-=== Ordonnanceur standard
+L'ordonnanceur standard de _seL4_ combine deux niveaux d'ordonnancement
+@sel4_whitepaper:
+- #box[Un ordonnanceur hiérarchique de haut niveau basé sur des _domaines_:
+les domaines sont ordonnancés de manière cyclique et déterministe selon un
+planning statique configuré à la compilation. Chaque domaine reçoit une tranche
+de temps fixe et les communications @ipc entre domaines sont différées.]
+- #box[Un ordonnanceur de _threads_ au sein de chaque domaine: ordonnanceur
+préemptif à priorités fixes (256 niveaux) avec _round-robin_ pour les threads
+de même priorité.]
 
-L'ordonnanceur de base de _seL4_ est un ordonnanceur préemptif basé sur les
-priorités avec une politique _round-robin_ pour les threads de même priorité.
-Le noyau supporte 256 niveaux de priorités, allant de 0 à 255, où 255 représente
-la priorité maximale. À chaque tick d'horloge, le noyau sélectionne le _thread_
-de plus haute priorité parmi ceux qui sont prêts à s'exécuter. Lorsque plusieurs
-_threads_ de même priorité sont prêts, ils sont ordonnancés selon une politique
-_round-robin_ avec des tranches de temps (_timeslices_) configurables
-@sel4_whitepaper @sel4_threads_tutorial.
-
-Le noyau alloue le temps _CPU_ en quanta de temps fixes appelés _ticks_. Chaque
-_thread_ possède un champ _timeslice_ qui représente le nombre de _ticks_ durant
-lesquels le _thread_ peut s'exécuter avant d'être préempté. Le pilote de timer
-du noyau est configuré pour générer des interruptions périodiques qui marquent
-chaque _tick_.
-
-=== Ordonnancement hiérarchique par domaines
-
-_seL4_ fournit un ordonnanceur hiérarchique de haut niveau qui permet
-l'ordonnancement statique et cyclique de partitions d'ordonnancement appelées
-_domaines_. Les domaines sont configurés statiquement lors de la compilation
-avec un ordonnancement cyclique et sont non préemptibles, ce qui garantit un
-ordonnancement entièrement déterministe des domaines @sel4_whitepaper.
-
-Cette approche à deux niveaux fonctionne de la façon suivante:
-- #box[Au niveau supérieur, les domaines sont ordonnancés de manière cyclique
-selon un planning déterministe et fixe. Chaque domaine reçoit une tranche de
-temps allouée durant laquelle tous ses _threads_ peuvent s'exécuter.]
-- #box[Au sein d'un domaine, les _threads_ sont ordonnancés selon le mécanisme
-de priorités décrit précédemment.]
-
-Les _threads_ ne peuvent être ordonnancés que lorsque leur domaine est actif.
-Les communications @ipc entre domaines sont différées jusqu'au prochain
-basculement de domaine, et l'appel système `seL4_Yield` n'est pas possible
-entre domaines différents.
-
-=== Extensions mcs (_Mixed-Criticality System_) <sel4_mcs>
-
-Les extensions mcs (_Mixed-Criticality System_) de _seL4_ introduisent le
-concept de contexte d'ordonnancement (_scheduling context_) qui offre une
-isolation temporelle renforcée et des garanties temps réel plus strictes
-@lyons2018scheduling. Ces extensions sont actuellement en cours de vérification
-formelle @sel4_mcs_release.
-
-==== Contextes d'ordonnancement
-
-Un contexte d'ordonnancement est un nouvel objet noyau qui contient les
-paramètres d'ordonnancement, notamment un budget et une période. Ces paramètres
-représentent une borne supérieure sur le temps d'exécution alloué: le noyau
-garantit qu'un _thread_ ne peut pas s'exécuter plus de _budget_ microsecondes
-sur une période de _period_ microsecondes @sel4_mcs_tutorial.
-
-Il existe deux types de contextes d'ordonnancement:
-- #box[_Contextes complets_ (_Full scheduling contexts_): lorsque le budget
-est égal à la période, le contexte accorde un accès à 100% du temps _CPU_.
-Le contexte agit alors comme une simple tranche de temps et le _thread_ auquel
-il est lié est traité en _round-robin_.]
-- #box[_Contextes partiels_ (_Partial scheduling contexts_): lorsque le budget
-est inférieur à la période, le contexte limite l'accès au _CPU_
-proportionnellement au ratio budget/période. Par exemple, un contexte avec un
-budget de 900 000 microsecondes et une période de 1 000 000 microsecondes accorde
-environ 90% du temps processeur.]
-
-==== Isolation temporelle par serveur sporadique
-
-L'isolation temporelle est assurée par une implémentation de l'algorithme de
-serveur sporadique (_sporadic server_) @lyons2018scheduling. Pour les contextes
-partiels, _seL4_ impose la borne supérieure d'exécution en garantissant la
-contrainte de fenêtre glissante: durant toute période, le budget ne peut pas
-être dépassé.
-
-Le suivi du budget est réalisé en suivant le budget éligible en morceaux appelés
-_replenishments_ (ou _refills_ dans l'@api). Un _replenishment_ est simplement
-une quantité de temps accompagnée d'un horodatage à partir duquel ce temps peut
-être consommé @sel4_mcs_tutorial. Lorsqu'un _thread_ se bloque ou cède
-volontairement le processeur, le noyau programme de nouveaux _replenishments_
-pour les périodes futures tout en déduisant le temps consommé des allocations
-actuelles.
-
-==== Comportement de l'ordonnanceur
-
-L'ordonnanceur mcs sélectionne le _thread_ de plus haute priorité, non bloqué,
-avec un contexte d'ordonnancement configuré disposant d'un budget disponible.
-Le comportement de base de l'ordonnanceur reste similaire à la version standard:
-l'ordonnancement basé sur les priorités est conservé tout en imposant des
-contraintes temporelles strictes.
-
-==== Serveurs passifs et donation de contexte
-
-Les extensions mcs permettent également le partage de ressources à la manière
-des rpc. Les serveurs peuvent devenir "passifs" en se déliant de leur contexte
-d'ordonnancement, ce qui permet aux _threads_ clients de donner (_donate_) leur
-contexte d'ordonnancement durant les appels de procédure à distance.
+Les extensions _MCS_ @lyons2018scheduling introduisent les _contextes
+d'ordonnancement_ qui permettent d'allouer un budget de temps _CPU_ à chaque
+_thread_ sur une période donnée. L'isolation temporelle est assurée par un
+algorithme de serveur sporadique. Ces extensions offrent des garanties temps
+réel renforcées et sont en cours de vérification formelle @sel4_mcs_release.
 
 == Déterminisme <sel4_determinism>
 
@@ -3911,7 +3827,7 @@ de celles d'un noyau entièrement préemptible, tout en offrant des garanties
 formellement vérifiées et une meilleure simplicité conceptuelle.
 
 Les extensions mcs (_Mixed-Criticality System_) décrites dans la sous-section
-@sel4_mcs renforcent encore les capacités temps réel de _seL4_ en introduisant
+sel4_mcs renforcent encore les capacités temps réel de _seL4_ en introduisant
 des contextes d'ordonnancement avec budgets et périodes. Ces extensions permettent
 une isolation temporelle stricte par l'algorithme de serveur sporadique, offrant
 ainsi des garanties de type temps réel strict (_hard real-time_).
