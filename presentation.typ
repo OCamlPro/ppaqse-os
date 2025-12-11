@@ -393,7 +393,12 @@
 )
 ]
 
-#slide(title: "Critère - Support watchdog")[
+#slide(title: "Support watchdog - critère")[
+  #framed(title: "Definition")[
+  ]
+]
+
+#slide(title: "Support watchdog - tableau comparatif")[
 #table(
   columns: (1.3fr, 1fr, 1fr, 1fr),
   align: (x, _) => { if x == 0 { left } else { center } },
@@ -406,21 +411,21 @@
 
   [Linux], supported([]), supported([]), supported([]),
 
-  [MirageOS], partiallysupported([]), notsupported([]), partiallysupported([]),
+  [MirageOS], table.cell(colspan: 3, [Non pertinent]),
 
-  [PikeOS], [?], [?], [?],
+  [PikeOS], unknown([probable]), unknown([?]), unknown([?]),
 
-  [ProvenVisor], [Probable], [Probable], [],
+  [ProvenVisor], unknown([Probable]), unknown([?]), unknown[?],
 
-  [RTEMS], supported([]), supported([]), notsupported([]),
+  [RTEMS], supported([BSP]), supported([]), notsupported([]),
 
-  [seL4], [Partiel], [Oui], [],
+  [seL4], supported([BSP]), supported([]), notsupported([]),
 
   [Xen], supported([]), supported([]), supported([]),
 
-  [XtratuM], [?], [?], [?],
+  [XtratuM], unknown([probable]), unknown([?]), unknown([?]),
 )
-
+- _MirageOS_: support watchdog dans l'hyperviseur sous-jacent.
 ]
 
 #slide(title: "Programmation baremetal - Critère")[
@@ -516,23 +521,6 @@
 - Ancienneté $arrow.r.double.long$ grande dette technique et grande base de code,
 - Libre $arrow.r.double.long$ plus grand écosystème,
 - Maintenance des preuves de seL4.
-]
-
-#slide(title: "Conclusion")[
-  - Diversité des solutions selon les contraintes:
-    - Certification vs. flexibilité
-    - Performance vs. garanties formelles
-    - Écosystème vs. taille du code
-
-  - Tendances émergentes:
-    - Vérification formelle (seL4, ProvenVisor)
-    - Unikernels pour l'embarqué (MirageOS)
-    - Amélioration continue de Linux RT
-
-  - Choix guidé par:
-    - Exigences de certification
-    - Contraintes matérielles
-    - Écosystème et support disponible
 ]
 
 #slide(title: "Questions ?")[
