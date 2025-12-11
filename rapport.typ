@@ -4131,61 +4131,45 @@ attaquants. Une compromission du flux d'exécution au niveau de l'hyperviseur pe
 potentiellement affecter tous les domaines hébergés, d'où l'importance cruciale
 de ces mécanismes de protection @cfi_survey_embedded.
 
-== Monitoring et profilage <xen_monitoring_profiling>
+== Écosystème <xen_ecosystem>
 
 _Xen_ propose plusieurs outils pour le monitoring des performances et de l'état
 du système @xen_monitoring_tools @xenserver_monitor_performance:
 
-- *xentop*: Utilitaire similaire à _top_ pour afficher des informations sur tous
+- _xentop_ @xentop_documentation: Utilitaire similaire à _top_ pour afficher des informations sur tous
   les domaines s'exécutant sur un système _Xen_. Il permet d'identifier les domaines
   responsables des charges les plus élevées en I/O ou en traitement.
 
-- *xenmon*: Outil utile pour surveiller les performances des domaines _Xen_,
+- _xenmon_ @xenmon_documentation: Outil utile pour surveiller les performances des domaines _Xen_,
   particulièrement pour identifier les domaines responsables des charges I/O ou
   processeur les plus importantes.
 
-- *RRD (_Round Robin Databases_)*: _Xen_ expose des métriques de performance via
+- _RRD (_Round Robin Databases_)_: _Xen_ expose des métriques de performance via
   des bases de données RRD. Ces métriques peuvent être interrogées via HTTP ou
   à travers l'outil _RRD2CSV_. _XenCenter_ utilise ces données pour produire des
   graphes de performance système affichant l'utilisation du CPU, de la mémoire,
   du réseau et des I/O disque.
 
-- *Intégration avec des outils tiers*: _Xen_ supporte l'intégration avec des outils
+- _Intégration avec des outils tiers_: _Xen_ supporte l'intégration avec des outils
   de monitoring via _NRPE_ (_Nagios Remote Plugin Executor_) et _SNMP_ (_Simple
   Network Management Protocol_), permettant l'utilisation de solutions de monitoring
   tierces.
+
+- _xl_ @xl_documentation: Outil livré avec _Xen_ qui offre des fonctionnalités basiques pour
+  observer l'état des domaines en cours d'exécution.
+
+- _xentrace_ @xentrace_documentation: Outil distribué dans _Xen_ qui permet de tracer l'activité des CPU
+  virtuels et ainsi de savoir ce que fait une machine virtuelle sur un CPU donné.
+  Ces données sont collectées grâce à des _tracepoints_ positionnés à des endroits
+  clés du code de _Xen_. Ils sont activés via _xentrace_ lorsqu'il est exécuté
+  dans le domaine _dom0_. Ce dernier produit alors un fichier binaire qui peut
+  ensuite être analysé par _xenanalyze_#footnote[Contrairement à _xentrace_,
+  _xenanalyze_ n'est pas distribué avec _Xen_.].
 
 - #box[_Xen Orchestra_ est un solution de monitoring pour l'écosystème XenServer
 et _XCP-ng_.]
 - #box[_Zabbix_ est un système de monitoring open source qui peut surveiller
 les performances des domaines.]
-
-L'écosystème libre et gratuit pour monitorer _Xen_ semble assez limité. Il est possible
-que les grands acteurs du _cloud computing_ aient développé leurs propres outils en
-interne.
-
-=== L'outil _xl_
-
-L'outil _xl_ est livré avec _Xen_ et offre des fonctionnalités basiques pour
-observer l'état des domaines en cours d'exécution.
-
-La couche logicielle introduite par la virtualisation peut introduire des
-régressions de performance dans les logiciels applicatifs par rapport à
-une exécution directement sur un OS _bare-metal_. Dans ce contexte, il est
-nécessaire d'utiliser des outils de profilage dédiés à l'hyperviseur. Dans cette
-section, on présente trois outils de profilage pour _Xen_: _Xenprof_,
-_XenTune_ et _xentrace_.
-
-=== Le traceur _xentrace_ <xentrace>
-
-Le logiciel _xentrace_ @xentrace_documentation est un outil distribué dans _Xen_.
-Il permet de tracer l'activité des CPU virtuels et ainsi de savoir ce que fait
-une  machine virtuelle sur un CPU donné.
-Ces données sont collectées grâce à des _tracepoints_ positionnés à des endroits
-clés du code de _Xen_. Ils sont activés via  _xentrace_ lorsqu'il est exécuté
-dans le domaine _dom0_. Ce dernier produit alors un fichier binaire qui peut
-ensuite être analysé par _xenanalyze_#footnote[Contrairement à _xentrace_,
-_xenanalyze_ n'est pas distribué avec _Xen_.].
 
 == Programmation @baremetal <xen_baremetal>
 
@@ -4829,412 +4813,7 @@ Quelques remarques pour l'interprétation de ces données:
   sont également ceux ayant la base de code la plus volumineuse. En
   contrepartie, ils sont un écosystème plus développé et mature.
 
-== Draft
-
-#table(
-  columns: 3,
-  table.header[Type d'OS][Avantages][Inconvénients],
-  [Unikernel], [
-    - Petite surface d'attaque
-    - Petite empreinte mémoire
-    - Faible temps de démarrage
-  ], [
-    - Débogage difficile
-    - Recompilation & déploiement pour chaque changement
-  ],
-  [Hyperviseur], [
-    - Optimisation des resources
-    - Isolation
-  ], [
-  ],
-  [Classique], [
-    - Support matériel
-    - Outil de débogage
-  ], [
-  ],
-)
-
-
-== Politiques d'ordonnancement
-
-Le tableau suivant présente les politiques d'ordonnancement disponibles pour chaque système d'exploitation étudié,
-en se basant sur les six politiques d'ordonnancement implémentées par Linux (_SCHED_FIFO_, _SCHED_RR_,
-_SCHED_DEADLINE_, _SCHED_OTHER_, _SCHED_BATCH_, _SCHED_IDLE_). Le tableau indique également le support
-du mode tick-less et la capacité à exécuter simultanément des tâches temps réel et normales.
-
-#table(
-  columns: 9,
-  align: (center, center, center, center, center, center, center, center, center),
-  table.header(
-    [OS],
-    [FIFO],
-    [Round-\ Robin],
-    [Dead-\ line],
-    [CFS/\ Équitable],
-    [Batch],
-    [Idle],
-    [Tick-\ less],
-    [Mixte\ TR/\ Normal]
-  ),
-  [Linux],
-        [Oui#footnote[_SCHED\_FIFO_]],
-        [Oui#footnote[_SCHED\_RR_]],
-        [Oui#footnote[_SCHED\_DEADLINE_]],
-        [Oui#footnote[_SCHED\_OTHER_ via _CFS_]],
-        [Oui#footnote[_SCHED\_BATCH_]],
-        [Oui#footnote[_SCHED\_IDLE_]],
-        [Oui#footnote[Support via `CONFIG_NO_HZ`]],
-        [Oui],
-  [MirageOS],
-        [Non],
-        [Non],
-        [Non],
-        [Non],
-        [Non],
-        [Non],
-        [N/A#footnote[Pas d'ordonnancement préemptif, uniquement coopératif via _Lwt_]],
-        [Non],
-  [PikeOS],
-        [Non],
-        [Non],
-        [Non],
-        [Non],
-        [Non],
-        [Non],
-        [?],
-        [Oui#footnote[Partitionnement temporel adaptatif breveté]],
-  [ProvenVisor],
-        [?],
-        [?],
-        [?],
-        [?],
-        [?],
-        [?],
-        [?],
-        [?],
-  [RTEMS],
-        [Non],
-        [Non],
-        [Oui#footnote[_EDF_ (_Earliest Deadline First_)]],
-        [Non],
-        [Non],
-        [Non],
-        [Non],
-        [Oui#footnote[Priorité fixe + _EDF_ + _CBS_]],
-  [seL4],
-        [Non],
-        [Oui#footnote[Pour tâches de même priorité]],
-        [Non],
-        [Non],
-        [Non],
-        [Non],
-        [Non#footnote[Utilise des ticks périodiques]],
-        [Limité#footnote[Domaines temporels isolés]],
-  [Xen],
-        [Non],
-        [Non],
-        [Oui#footnote[_RTDS_ (_Real-Time Deferrable Server_)]],
-        [Oui#footnote[_Credit_ et _Credit2_]],
-        [Non],
-        [Non],
-        [Oui#footnote[Support pour VMs invitées]],
-        [Oui#footnote[Peut mixer VMs temps réel et best-effort]],
-  [XtratuM],
-        [Non],
-        [Non],
-        [Non],
-        [Non],
-        [Non],
-        [Non],
-        [Non#footnote[Ordonnancement cyclique statique _ARINC-653_]],
-        [Limité#footnote[Possible au sein de chaque partition]],
-)
-
 == Support _watchdog_
-
-Le tableau suivant résume le support des mécanismes _watchdog_ pour chaque système
-d'exploitation étudié. Les _watchdogs_ matériels désignent la capacité d'interagir
-avec des périphériques _watchdog_ physiques, tandis que les _watchdogs_ logiciels
-permettent de surveiller l'état des processus ou services sans matériel dédié.
-
-#table(
-  columns: 4,
-  align: (left, center, center, left),
-  table.header(
-    [OS],
-    [Watchdog\ matériel],
-    [Watchdog\ logiciel],
-    [Notes]
-  ),
-  [Linux],
-        [Oui],
-        [Oui],
-        [API unifiée via `/dev/watchdog`. Support logiciel via _systemd_.],
-  [MirageOS],
-        [Indirect],
-        [Non],
-        [Pas d'API native. Dépend de l'environnement (ex: _xencontrol_ pour Xen).],
-  [PikeOS],
-        [?],
-        [?],
-        [Information non disponible publiquement.],
-  [ProvenVisor],
-        [Probable],
-        [Probable],
-        [Support non documenté publiquement. Watchdog matériel ARM, virtualisation possible, surveillance par hyperviseur.],
-  [RTEMS],
-        [Oui],
-        [Oui],
-        [Support au niveau BSP. Watchdog logiciel via _Timer Manager_.],
-  [seL4],
-        [Partiel],
-        [Oui],
-        [Pas d'API unifiée. Support dans certains BSP. Watchdog logiciel via _Timer Manager_.],
-  [Xen],
-        [Oui],
-        [Oui],
-        [Support dans _dom0_ et domaines utilisateurs. Service _xenwatchdogd_ disponible. API compatible Linux via _xen\_wdt_.],
-  [XtratuM],
-        [?],
-        [?],
-        [Information non disponible publiquement.],
-)
-
-// = Conceptions générales
-//
-// Cette section regroupe davantage d'informations sur les designs généraux des
-// systèmes d'exploitations. À ce titre cet exposé peut être pertinent quant au
-// choix du design dans un projet.
-//
-// == Noyau monolithique versus micronoyau <monolithic_vs_microkernel>
-//
-// La notion de système d'exploitation est complexe à délimiter car
-// les tâches exécutées en mode noyau peuvent varier considérablement d'un système
-// à l'autre. Toutefois, les systèmes d'exploitation modernes partagent un ensemble
-// de services fondamentaux et notamment:
-// - La gestion de la mémoire principale.
-// - La gestion des _threads_ et des processus.
-// - #box[La communication inter-processus
-// #footnote[En anglais _Inter Process Communication_, abrégé _IPC_.].]
-// - La gestion des périphériques d'entrée/sortie.
-// - La pile réseau.
-// - Le système fichiers.
-// - La gestion des droits d'accès.
-//
-// Deux approches extrêmes s'opposent dans la conception des noyaux:
-// - #box[Les noyaux #definition[monolithiques] intègrent un grand nombres de
-// services exécutés en mode noyau. Par exemple, le noyau _Linux_ gère
-// tous les services mentionnés ci-dessus dans ce mode.]
-// - #box[Les #definition[micronoyaux], au contraire, cherchent à minimiser la
-// quantité de code exécuter en mode noyau. La gestion de la mémoire, des
-// _threads_ et l'_IPC_ sont assurés par le micronoyau, tandis que les autres
-// services peuvent être exécutés en mode utilisateur.]
-//
-// Les deux approches ont des avantages et inconvénients:
-// - #box[L'approche monolithique
-// est souvent de conception plus simple. Elle offre de très bonnes performances
-// en permettant une communication rapide entre les différents services, évitant
-// notamment les coûteuses commutations de contexte nécessaires lorsqu'on passe
-// d'un mode d'exécution à un autre. Cependant les noyaux monolithiques sont
-// souvent de maintenance plus difficile que les micronoyaux. Cela est notamment dû
-// à la taille nettement plus importante de leur base de code. Leur vérification et
-// certification est également plus complexe, tandis que la fiabilité du système
-// est compromise dès lors que l'un de ses services fait défaut.]
-// - #box[L'approche micronoyau est conceptuellement plus complexe. L'efficacité
-// de la communication _IPC_ est cruciale pour les performances étant donné qu'un
-// grand nombres de services tournent en mode utilisateur. En contrepartie, cette
-// approche offre une plus grande fiabilité et robustesse face aux pannes. La vérification
-// et la certification est facilité par la base de code plus réduite.]
-//
-// On peut également citer une dernière conception qui est une variante de l'approche
-// monolithique. Il s'agit des noyaux #definition[modulaires].
-//
-// === Le noyau L4 <l4_kernel>
-// Un exemple notable de tel système est le micronoyau _L4_
-// développé au sein de l'université Karlsruhe. Ce projet visait à réduire les
-// écarts de performances entre les micronoyaux et les architectures monolithiques
-// de l'époque. Ce projet a servi de base à deux systèmes d'exploitations étudiés
-// dans ce rapport: _seL4_ et _PikeOS_.
-//
-// Les _GPOS_ peuvent d'être divisé en trois grandes catégories:
-// - Les noyaux monolithique.
-// - #box[Les micronoyaux: au contraire du noyau monolithique, le micronoyau se
-// concentre sur les opérations fondamentales qui ne peuvent être effectuée que
-// dans le _kernel space_. Il s'agit généralement de la gestion de la mémoire
-// et des processus. Toutes les autres tâches sont déléguées à des services s'exécutant
-// dans le _user space_. ]
-// - #box[Les noyaux modulaires: ils constituent un intermédiaire entre les deux
-// designs précédents. Le noyau a la possibilité de charger ou décharger certaines
-// sous-systèmes de façon dynamique. C'est notamment le cas des pilotes.]
-//
-// == Hyperviseur <type_hypervisor>
-//
-// Avant de dresser une vue d'ensemble des hyperviseurs, rappelons brièvement leur
-// raison d'être. Lorsque l'on souhaite héberger plusieurs services  de façon fiable
-// et sûre, une première solution consiste
-// à héberger chaque service sur une machine individuelle. On obtient ainsi une
-// isolation totale des différents services. Cette solution présente
-// toutefois deux inconvénients majeurs, à savoir le coût prohibitif et une
-// maintenance plus complexe. Les _hyperviseurs_ ont été créés pour répondre à ces
-// besoins à moindre frais.
-//
-// Les _hyperviseurs_ se divisent généralement en deux catégories:
-// - #box[Les _hyperviseurs de type 1_ s'installent directement sur la couche
-// matérielle. On parle aussi parfois d'_hyperviseurs bare-metal_.]
-// - #box[Les _hyperviseurs de type 2_ nécessitent une couche logicielle
-// intermédiaire entre eux et la couche matérielle. Nous n'étudions pas de tels
-// OS dans ce document.]
-//
-// Un autre axe d'attaque pour comparer les _hyperviseurs_ est:
-// - #box[La _virtualisation total_: le comportement de la couche matérielle]
-// - #box[La _virtualisation partielle_]
-// - #box[La _paravirtualisation_]
-//
-// La _virtualisation totale_ (_full virtualization_ en anglais) consiste à émuler
-// le comportement de la couche matérielle en exposant la même interface aux systèmes
-// invités. Cette méthode permet d'exécuter n'importe quel logiciel qui aurait pu être
-// lancé sur cette couche matérielle. On distingue deux sous-types de virtualisation
-// totale:
-// - la translation binaire (_binary translation_ en anglais)
-// - la virtualisation assistée par le matériel (_hardware-assisted virtualization_)
-//
-// La _paravirtualisation_ est une technique de virtualisation qui consiste à
-// présenter une interface logicielle similaire au matériel mais optimisée pour
-// la virtualisation. Cette technique nécessite à la fois un support de l'hyperviseur
-// et du système d'exploitation invité. En contre partie, la paravirtualisation
-// permet généralement d'obtenir de meilleures performances.
-//
-// == RTOS <type_rtos>
-//
-// Un _RTOS_ est un système d'exploitation offrant des garanties sur le temps
-// d'exécution de ses tâches. Les contraintes temporelles sont d'autant plus
-// difficiles à garantir que le système est multi-tâche. On distingue
-// trois classes de contraintes temporelles suivant leur criticité:
-// - #box[Les contraintes _soft real time_ sont des contraintes nécessaires pour
-// offrir une certaine qualité de service. Par exemple le visionnage d'une vidéo
-// nécessite un _frame rate_ minimal. La violation de ces contraintes
-// n'occasionne qu'une dégradation de la qualité du service rendu.]
-// - #box[Les contraintes _firm real time_ sont similaires au cas précédent mais
-// leur violation peut conduire à un résultat invalide.]
-// - #box[Les contraintes _hard real time_ sont les plus strictes et leur violation
-// a généralement des conséquences indésirables. Ces contraintes sont typiques dans
-// les systèmes critiques.]
-//
-// Le _WCET_ (_Worst-Case Execution Time_) désigne le temps d'exécution maximal
-// d'un programme informatique sur une plateforme matérielle donnée.
-//
-// = Notions générales <general_notions>
-//
-// Cette section contient des notions générales autour des systèmes
-// d'exploitation et des interfaces matérielles pertinentes pour ce rapport. Ces
-// notions ne sont qu'effleurées étant donné d'une part la complexité des
-// architectures et des OS actuels, et d'autre part le foisonnement des solutions
-// existantes. Le lecteur intéressé par plus détails pourra lire les sources citées
-// au fil de la section.
-//
-// == Corruption de la mémoire
-//
-// Dans cette section, on s'intéresse à la corruption de la mémoire et plus
-// précisément à la détection et la correction de ces erreurs.
-// Une méthode communément utilisée pour détecter et corriger les erreurs consiste
-// à recourir à un code correcteur d'erreurs (en anglais _Error Correcting Code_, abrégé _ECC_).
-// Cette méthode permet de corriger la majorité des _soft errors_.
-//
-// === Mémoire ECC <ecc_memory>
-//
-// De nos jours, les mémoires de type _DRAM_ (_Dynamic Random Access Memory_) sont
-// massivement utilisées comme mémoire principale aussi bien sur les serveurs que
-// les ordinateurs personnels. Certaines barrettes sont dotées d'une puce
-// mémoire supplémentaire permettant l'utilisation d'un code correcteur.
-// Ce type de mémoire nécessite une prise en charge par le contrôleur mémoire, le
-// CPU et le BIOS. Si cette prise en charge est rare sur le matériel grand public,
-// elle est en revanche commune sur celui dédié aux serveurs.
-//
-// === Scrubbing <scrubbing>
-//
-// Les mémoires _ECC_ décrites en @ecc_memory permettent de corriger automatiquement
-// les erreurs à la lecture. Toutefois certaines données peuvent restées en
-// mémoire longtemps sans être accédées. On peut par exemple penser aux
-// enregistrements d'une base de donnée que l'on souhaite maintenir dans la
-// mémoire principale pour en accélérer l'accès. Les _soft errors_ peuvent
-// alors s'y accumuler au point que le code correcteur ne permette plus leur correction.
-// Pour pallier ce problème, on a recours au _scrubbing_. Il en existe de deux types:
-// - #box[Le _demand scrubbing_ permet à l'utilisateur de déclencher manuellement le
-// nettoyage d'une plage mémoire.]
-// - #box[Le _patrol scrubbing_ qui consiste à scanner périodiquement la mémoire
-// pour détecter et corriger les erreurs régulièrement.]
-//
-// === Interfaces matérielles
-//
-// Bien qu'aucun pilote spécifique ne soit requis pour les mémoires _ECC_, certains
-// systèmes d'exploitation permettent de les piloter via des interfaces matérielles
-// spécifiques. Ces interfaces permettent notamment de:
-// - #box[Désactiver le _scrubbing_ lorsque cela pose des soucis de performance,]
-// - #box[Changer le taux de balayage du _patrol scrubbing_,]
-// - #box[Notifier et journaliser les _soft errors_ et les _hard errors_,
-// permettant ainsi aux logiciels de réagir,]
-// - #box[Spécifier une plage d'adresses pour le _demand scrubbing_.]
-// Il existent de nombreuses interfaces matérielles. Le tableau comparatif suivant liste
-// quelques unes d'entre elles ainsi que leurs caractéristiques clés.
-//
-// #figure(
-//   table(
-//     columns: (auto, auto, auto, auto, auto),
-//     align: (left, left, left, left, left),
-//     [Nom], [Demand scrubbing],[Plage d'adresses],  [Patrol scrubbing], [Taux de balayage],
-//     [ACPI ARS], [Oui], [Oui], [Non], [Non],
-//     [ACPI RAS2], [Oui], [Oui], [Oui], [Oui],
-//     [CXL Patrol Scrub], [Non], [Non], [Oui], [Oui],
-//     [CXL ECS], [Non], [Non], [Oui], [Non],
-//   ),
-//   caption: [Interfaces de pilotage pour le _scrubbing_],
-// ) <scrubbing_interfaces>
-
-== OS invités supportés par hyperviseur <guest_os_support>
-
-Le tableau @guest_os_by_hypervisor récapitule les systèmes d'exploitation
-invités supportés par les différents hyperviseurs étudiés dans ce document.
-
-#figure(
-  table(
-    columns: (auto, auto),
-    align: (left, left),
-    [*Hyperviseur*], [*OS invités supportés*],
-    [KVM],
-    [
-      - GNU/Linux (toutes distributions majeures)
-      - Windows
-      - BSD (FreeBSD, OpenBSD, NetBSD)
-      - Solaris
-    ],
-    [PikeOS],
-    [
-      - ELinOS (distribution Linux embarqué temps réel de SYSGO)
-      - RTEMS
-      - Systèmes conformes POSIX (Linux, Android)
-      - Windows (dans partitions HVM sur x86)
-    ],
-    [ProvenVisor],
-    [
-      - Information non disponible dans la documentation consultée
-    ],
-    [Xen],
-    [
-      - GNU/Linux (nombreuses distributions)
-      - Noyaux de type UNIX
-      - Windows (via HVM)
-      - BSD
-    ],
-    [XtratuM],
-    [
-      - LithOS (RTOS conforme ARINC-653, développé par fentISS)
-      - RTEMS
-      - Linux
-      - ORK+ (Open Ravenscar Kernel, micronoyau temps réel pour Ada)
-    ],
-  ),
-  caption: [OS invités supportés par hyperviseur]
-) <guest_os_by_hypervisor>
 
 #glossary(
   title: "Glossaire",

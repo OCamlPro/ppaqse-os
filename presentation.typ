@@ -28,9 +28,9 @@
 )
 
 #slide(title: "Plan")[
-  - Contexte et définitions
-  - Systèmes étudiés
-  - Critères d'évaluation:
+  - Contexte
+  - Organisation de l'étude
+  - Critères de comparaison:
     - Type et architecture
     - Partitionnement spatial
     - Partitionnement temporel
@@ -39,14 +39,18 @@
   - Synthèse et recommandations
 ]
 
+#focus-slide[
+  Introduction
+]
+
 #slide(title: "Introduction - système critique")[
   #framed(title: "Définition")[
     Système dont la défaillance entraîne des dégâts indésirables.
 
     Exemples:
-    - Pertes de données dans une BDD,
-    - Destructions matérielles,
-    - Pertes humaines,
+    - Pertes de données dans une BDD (banque, ...),
+    - Destructions matérielles (usine, ...),
+    - Pertes humaines (avion, automobile, ...),
     - ...
   ]
 ]
@@ -66,8 +70,8 @@
   ]
 ]
 
-#slide(title: "Introduction - Déterminisme et temps réel")[
-
+#focus-slide[
+  Organisation de l'étude
 ]
 
 #slide(title: "Organisation - OS / critères")[
@@ -87,19 +91,24 @@
     - XtratuM
   ],[
     Critères:
-    - Type de système d'exploitation
-    - Architectures supportées + multi-cœur
-    - Partitionnement (spatial/temporel/déterminisme)
-    - Corruption mémoire
+    - #text(fill: blue, [Type de système d'exploitation])
+    - #text(fill: blue, [Architectures supportées + multi-cœur])
+    - #text(fill: blue, [Partitionnement (spatial/temporel/déterminisme)])
+    - #text(fill: blue, [Corruption mémoire])
     - Perte du flux d'exécution
     - Écosystème
     - Gestion des interruptions
-    - Support _watchdog_
-    - Programmation baremetal
+    - #text(fill: blue, [Support _watchdog_])
+    - #text(fill: blue, [Programmation baremetal])
     - Temps de démarrage
-    - Maintenabilité
+    - #text(fill: blue, [Maintenabilité])
+    - [Rayonnement ambiant])
   ]
 )
+]
+
+#focus-slide[
+  Critères de comparaison
 ]
 
 #let scell(color: white, txt) = table.cell(fill: color.lighten(40%), [#txt])
@@ -211,8 +220,9 @@
   good([]), bad([]), good([]), good([]),
   good([]),
 )
-- Support relatif à la carte (BSP)
-- Extension de virtualisation nécessaire
+- Support relatif à la carte (BSP),
+- Extension de virtualisation nécessaire,
+- Support SMP récent dans le critique
 ]
 
 #slide(title: "Partitionnement spatial - critère")[
@@ -225,11 +235,14 @@
 ]
 
 #slide(title: "Partitionnement spatial - solution matérielle")[
-  #framed(title: "Type de protection")[
+  #grid(
+      columns: (auto, auto),
+  image("./imgs/MMU.webp"),
+  framed(title: "Type de protection")[
     - MMU (Memory Management Unit),
     - MPU (Memory Protection Unit),
     - Protection purement logicielle.
-  ]
+  ])
 ]
 
 #slide(title: "Partitionnement spatial - tableau comparatif")[
@@ -262,13 +275,15 @@
   supported([Requis]), notsupported([]), notsupported([]),
 
   [Xen],
-  supported([Requis]), notsupported([]), notsupported([]),
+  supported([]), partiallysupported([]), notsupported([]),
 
   [XtratuM],
   supported([]), unknown([?]), unknown([?]),
 )
-- Support relatif au BSP (Board Support Package)
-- MirageOS délègue la gestion mémoire à l'hyperviseur
+- Support relatif au BSP (Board Support Package),
+- MirageOS délègue la gestion mémoire à l'hyperviseur,
+- Support MPU en développement pour _Xen_ sur _ARM_,
+- RTEMS en flat memory $arrow.r.double.long$ exécuté dans un hyperviseur (ARINC 653).
 ]
 
 #slide(title: "Critère - Partitionnement temporel")[
@@ -307,8 +322,8 @@
   [XtratuM],
   bad([]), bad([]), bad([]), bad([]),
 )
-- MirageOS délègue l'ordonnancement à l'hyperviseur
-- XtratuM utilise un ordonnancement cyclique statique ARINC-653
+- MirageOS délègue l'ordonnancement à l'hyperviseur + multi-tâche coopératif (non temps réel),
+- XtratuM utilise un ordonnancement cyclique statique ARINC-653.
 ]
 
 #slide(title: "Corruption mémoire - critère")[
@@ -378,43 +393,6 @@
 )
 ]
 
-#slide(title: "Critère - Perte du flux d'exécution")[
-#table(
-  columns: (1.3fr, 1.2fr, 1.2fr, 1.5fr),
-  align: (x, _) => { if x == 0 { left } else { center } },
-  table.header(
-    [OS],
-    [CFI / ASLR / Canaris],
-    [Extensions matérielles],
-    [Autres protections]
-  ),
-
-  [Linux],
-  partiallysupported([Partiel]), supported([Intel CET, ARM BTI]), notsupported([]),
-
-  [MirageOS],
-  table.cell(colspan:2, [Non pertinent]), supported([Typechecker OCaml]),
-
-  [PikeOS],
-  notsupported([]), notsupported([]), supported([Isolation + CC EAL 5+]),
-
-  [ProvenVisor],
-  notsupported([]), supported([NX, PAN, PAC]), supported([Vérification formelle]),
-
-  [RTEMS],
-  notsupported([]), notsupported([]), notsupported([Applications de confiance]),
-
-  [seL4],
-  notsupported([]), notsupported([]), supported([Vérification formelle]),
-
-  [Xen],
-  partiallysupported([Partiel]), supported([Intel CET, ARM BTI]), partiallysupported([Dev sécurisé]),
-
-  [XtratuM],
-  [?], [?], [?],
-)
-]
-
 #slide(title: "Critère - Support watchdog")[
 #table(
   columns: (1.3fr, 1fr, 1fr, 1fr),
@@ -445,7 +423,21 @@
 
 ]
 
-#slide(title: "Critère - Programmation baremetal")[
+#slide(title: "Programmation baremetal - Critère")[
+  #framed(title: "Définition baremetal")[
+    Programmation sans un système d'exploitation complet.
+
+  ]
+
+  #framed(title: "Question")[
+    Pour les hyperviseur, facilité à porter une application baremetal dans une
+    partition?
+
+    Langage considéré: Ada, C, OCaml, Rust.
+  ]
+]
+
+#slide(title: "Programmation baremetal - Tableau comparatif")[
 #table(
   columns: (1.5fr, 1fr, 1fr, 1fr, 1fr),
   align: (x, _) => { if x == 0 { left } else { center } },
@@ -475,6 +467,9 @@
   [XtratuM],
   good([Ravenscar]), good([]), bad([]), good([]),
 )
+- OCaml est peu utilisé en baremetal,
+- C toujours supporté (langage système),
+- Rust de plus en plus supporté.
 ]
 
 #slide(title: "Critère - Maintenabilité")[
@@ -519,30 +514,8 @@
 
 - Ancienneté $arrow.r.double.long$ grand écosystème,
 - Ancienneté $arrow.r.double.long$ grande dette technique et grande base de code,
-- Libre $arrow.r.double.long$ plus grand écosystème.
-]
-
-#slide(title: "Synthèse - Cas d'usage recommandés")[
-  #table(
-    columns: (1.5fr, 2fr),
-    align: (left, left),
-    table.header([Cas d'usage], [Systèmes recommandés]),
-
-    [Système critique certifiable],
-    [seL4, ProvenVisor (vérification formelle)\ PikeOS (CC EAL 5+)],
-
-    [RTOS haute performance],
-    [RTEMS, Linux RT-PREEMPT],
-
-    [Virtualisation temps réel],
-    [PikeOS, XtratuM (ARINC-653)\ Xen (avec RTDS)],
-
-    [Systèmes embarqués légers],
-    [MirageOS (unikernel)\ RTEMS],
-
-    [Écosystème riche requis],
-    [Linux (avec RT-PREEMPT ou Xenomai)],
-  )
+- Libre $arrow.r.double.long$ plus grand écosystème,
+- Maintenance des preuves de seL4.
 ]
 
 #slide(title: "Conclusion")[
