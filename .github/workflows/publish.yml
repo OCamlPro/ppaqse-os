@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install fonts
-        uses: sudo apt-get install fonts-FiraCode
+        run: sudo apt-get install fonts-FiraCode
       - name: Checkout
         uses: actions/checkout@v4
       - name: Typst setup
