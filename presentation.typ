@@ -290,7 +290,7 @@
 - Support relatif au BSP (Board Support Package),
 - MirageOS délègue la gestion mémoire à l'hyperviseur,
 - Support MPU en développement pour _Xen_ sur _ARM_,
-- RTEMS en flat memory $arrow.r.double.long$ exécuté dans un hyperviseur (ARINC 653).
+- RTEMS en flat memory $arrow.r.double.long$ exécuté dans un hyperviseur (ARINC-653).
 ]
 
 #slide(title: "Critère - Partitionnement temporel")[
@@ -359,7 +359,7 @@
     image("./imgs/ecc_memory.webp", width: 45%)
   )
   #framed(title: "Protection matérielle")[
-    - Code correcteur dans des mémoires ECC (soft error/ hard error),
+    - Code correcteur dans des mémoires ECC (soft error / hard error),
     - Technique de _scrubbing_.
   ]
 ]
@@ -402,7 +402,7 @@
 ]
 
 #slide(title: "Support watchdog - critère")[
-  #framed(title: "Definition")[
+  #framed(title: "Définition")[
     Mécanisme de surveillance qui réinitialise le système si celui-ci ne répond plus dans un délai imparti.
   ]
 ]
@@ -424,7 +424,7 @@
 
   [PikeOS], unknown([probable]), unknown([?]), unknown([?]),
 
-  [ProvenVisor], unknown([Probable]), unknown([?]), unknown[?],
+  [ProvenVisor], unknown([Probable]), unknown([?]), unknown([?]),
 
   [RTEMS], supported([BSP]), supported([]), notsupported([]),
 
@@ -444,10 +444,10 @@
   ]
 
   #framed(title: "Question")[
-    Pour les hyperviseur, facilité à porter une application baremetal dans une
-    partition?
+    Pour les hyperviseurs, facilité à porter une application baremetal dans une
+    partition ?
 
-    Langage considéré: Ada, C, OCaml, Rust.
+    Langages considérés : Ada, C, OCaml, Rust.
   ]
 ]
 
@@ -517,13 +517,13 @@
   good([BSD 2-Clause]), good([Large]), bad([~2M]), mediocre([Limitée]), [OAR], [~32],
 
   [seL4],
-  good([GPLv2]), (mediocre[Moyen]), good([~70k]), mediocre([Technique]), [seL4], [~19],
+  good([GPLv2]), mediocre([Moyen]), good([~70k]), mediocre([Technique]), [seL4], [~19],
 
   [Xen],
   good([GPLv2]), good([Large]), bad([~500k]), mediocre([Datée]), [Citrix, Xen Project], [~22],
 
   [XtratuM],
-  bad([Propriétaire]), bad([Limité]), unknown[], unknown([]), [fentISS], [~21]
+  bad([Propriétaire]), bad([Limité]), unknown([]), unknown([]), [fentISS], [~21]
 )
 
 - Ancienneté $arrow.r.double.long$ grand écosystème,
