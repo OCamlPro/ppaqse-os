@@ -13,8 +13,6 @@ jobs:
     name: Build artifact
     runs-on: ubuntu-latest
     steps:
-      - name: Install fonts
-        run: sudo apt-get install fonts-firacode
       - name: Checkout
         uses: actions/checkout@v4
       - name: Typst setup

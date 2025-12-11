@@ -64,7 +64,7 @@
   text(style: "oblique")[#t]
 }
 
-#show raw.where(block: true): set text(font: "FiraCode Nerd Font Mono")
+// #show raw.where(block: true): set text(font: "FiraCode Nerd Font Mono")
 
 #show raw.where(block: true, lang: "console"): set block(fill: luma(240), inset: 1em, radius: 0.5em, width: 100%)
 
@@ -225,7 +225,7 @@
 // Figures
 
 #let blob(pos, label, tint: white, width: 45mm, ..args) = node(
-	pos, align(center)[#text(font: "Fira Sans", size: 11pt)[#label]],
+	pos, align(center)[#text(size: 11pt)[#label]],
 	width: width,
 	fill: gradient.radial(white, tint, center: (40%, 20%), radius: 150%),
 	corner-radius: 3pt,
@@ -1188,7 +1188,7 @@ d'architecture _cokernel_ ou _dual kernel_, voir la figure @architecture_cokerne
 
     node(
       [#align(left)[#pad(-1.8em)[#rotate(-90deg)[
-        #text(font: "Fira Sans", size: 11pt)[Linux]]]]],
+        #text(size: 11pt)[Linux]]]]],
       inset:15pt,
       corner-radius: 3pt,
       enclose: (<proc1>, <proc2>, <proc3>),
@@ -1213,7 +1213,7 @@ d'architecture _cokernel_ ou _dual kernel_, voir la figure @architecture_cokerne
 #let cell(x, y, body, color: white) = cetz.draw.content(
   x, y,
   box(
-    align(center)[#text(font: "Fira Sans")[#body]],
+    align(center)[#body],
     stroke: 1pt + black,
     radius: 3pt,
     fill: gradient.radial(white, color, center: (40%, 20%), radius: 150%),
@@ -1252,7 +1252,7 @@ _Linux_ est ainsi devenu un _RTOS_ complet à partir de sa version _6.12_.
     cell((0.5, 0.5), (2.5, 2), color: red, [Proc RT])
     cell((3, 0.5), (5, 2), color: green, [...])
     content((-2, 0.8), (10, 2.8),
-      text(font: "Fira Sans")[Noyau Linux + _PREEMPT_RT_])
+      [Noyau Linux + _PREEMPT_RT_])
   })
   ,
   caption: [Architecture de _Linux_ avec _PREEMPT_RT_]
@@ -1924,7 +1924,7 @@ grid(
       edge(<runtime>, <gpos>, "-|>"),
       node(
         [#align(left)[#pad(-1.8em)[#rotate(-90deg)[
-          #text(font: "Fira Sans", size: 11pt)[GPOS]]]]],
+          #text(size: 11pt)[GPOS]]]]],
         inset:15pt,
         corner-radius: 3pt,
         enclose: (<bib>, <kernel>),
@@ -1949,7 +1949,7 @@ grid(
       blob((2,1), [Environnement d'exécution du langage], tint: blue, name: <runtime>),
       node(
         [#align(left)[#pad(-2.7em)[#rotate(-90deg)[
-          #text(font: "Fira Sans", size: 11pt)[Unikernel]]]]],
+          #text(size: 11pt)[Unikernel]]]]],
         inset:15pt,
         corner-radius: 3pt,
         enclose: (<app>, <runtime>),
@@ -4812,8 +4812,6 @@ Quelques remarques pour l'interprétation de ces données:
   dette technique plus importante. On constate que les systèmes les plus anciens
   sont également ceux ayant la base de code la plus volumineuse. En
   contrepartie, ils sont un écosystème plus développé et mature.
-
-== Support _watchdog_
 
 #glossary(
   title: "Glossaire",
