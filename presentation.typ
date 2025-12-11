@@ -27,6 +27,14 @@
     ),
 )
 
+#slide(title: "Dépôt")[
+  #align(center, block[
+    #link("https://github.com/OCamlPro/ppaqse-os")
+
+    #link("https://ocamlpro.github.io/ppaqse-os/rapport.pdf")
+  ])
+]
+
 #slide(title: "Plan")[
   - Contexte
   - Organisation de l'étude
@@ -102,7 +110,6 @@
     - #text(fill: blue, [Programmation baremetal])
     - Temps de démarrage
     - #text(fill: blue, [Maintenabilité])
-    - [Rayonnement ambiant])
   ]
 )
 ]
@@ -154,7 +161,7 @@
   good([]), good([]), bad([]), bad([]), bad([]), good([]),
 )
 - Classification imparfaite,
-- Tous les hyperviseurs étudiés sont baremetal (type 1),
+- Tous les hyperviseurs étudiés sont baremetal (type 1).
 
 ]
 
@@ -371,16 +378,16 @@
   supported([EDAC + rasdaemon]), supported([API sysfs]),
 
   [MirageOS],
-  partiallysupported([Délégué à l'hyperviseur]), partiallysupported([Délégué à l'hyperviseur]),
+  table.cell(colspan: 2, [Non pertinent]),
 
   [PikeOS],
-  partiallysupported([Via BSP ou GuestOS]), partiallysupported([Via BSP (ex: LEON)]),
+  partiallysupported([BSP]), partiallysupported([BSP]),
 
   [ProvenVisor],
-  unknown([Non documenté]), unknown([Non documenté]),
+  unknown([?]), unknown([?]),
 
   [RTEMS],
-  notsupported([Pas d'API unifié]), partiallysupported([Via BSP (ex: LEON)]),
+  partiallysupported([BSP]), partiallysupported([BSP]),
 
   [seL4],
   notsupported([Pilote user-space]), notsupported([Pilote user-space]),
@@ -389,12 +396,14 @@
   partiallysupported([Via Dom0]), partiallysupported([Via Dom0]),
 
   [XtratuM],
-  partiallysupported([Health Monitor MCE]), unknown([Non documenté]),
+  partiallysupported([Health Monitor MCE]), unknown([?]),
 )
+- MirageOS délègue à l'hyperviseur
 ]
 
 #slide(title: "Support watchdog - critère")[
   #framed(title: "Definition")[
+    Mécanisme de surveillance qui réinitialise le système si celui-ci ne répond plus dans un délai imparti.
   ]
 ]
 
