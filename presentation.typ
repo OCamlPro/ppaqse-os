@@ -27,6 +27,14 @@
     ),
 )
 
+#slide(title: "Dépôt")[
+  #align(center, block[
+    #link("https://github.com/OCamlPro/ppaqse-os")
+
+    #link("https://ocamlpro.github.io/ppaqse-os/rapport.pdf")
+  ])
+]
+
 #slide(title: "Plan")[
   - Contexte
   - Organisation de l'étude
@@ -395,6 +403,7 @@
 
 #slide(title: "Support watchdog - critère")[
   #framed(title: "Definition")[
+    Mécanisme de surveillance qui réinitialise le système si celui-ci ne répond plus dans un délai imparti.
   ]
 ]
 
