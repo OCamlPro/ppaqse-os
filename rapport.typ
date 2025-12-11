@@ -3933,17 +3933,10 @@ la VM, tapez `CTRL-]`.
 À l'origine _Xen_ ne supportait que l'architecture _x86_ pour des partitions de
 type _PV_. Par la suite, la virtualisation assistée par le matériel a été ajoutée
 pour les technologies _Intel VT-X_ puis _AMD V_ sous la forme de partitions de
-type _HVM_.
-
-L'hyperviseur _Xen_ supporte les architectures suivantes: _x86-32_ à partir de
-la version P6#footnote[Cette version correspond à l'introduction des processeurs
-_Intel Pro_ en 1995.], _x86-64_, _ARM v7_ et _ARM v8_. _Xen_ a également
-supporté l'architecture _IA64_ jusqu'à la version 4.2. Il existe des travaux en
-cours pour supporter les architectures _PowerPC_ et _RISC-V_. Un support
-préliminaire de ces architectures est disponibles depuis _Xen 4.20_ @xen_project_4_20.
-Quant à la virtualisation assistée par le matériel de type @hvm, elle nécessite les
-extensions de virtualisation _Intel VT-X_ ou _AMD-V_ sur _x86_ et les
-_Virtualization Extensions_ sur _ARM_ @xen_arm_hvm.
+type _HVM_. Aujourd'hui _Xen_ supporte les architectures suivantes: _x86-32_,
+_x86-64_, _ARM v7_, _ARM v8_. Il existe aussi un support préliminaire pour les
+architectures _PowerPC_ et _RISC-V_ @xen_project_4_20. _Xen_ supporte
+également la virtualisation assistée par le matériel sur _ARM_ @xen_arm_hvm.
 
 #let scell(color: white, txt) = table.cell(fill: color.lighten(40%), [#txt])
 
@@ -3951,21 +3944,6 @@ _Virtualization Extensions_ sur _ARM_ @xen_arm_hvm.
 #let notsupported(txt) = scell(color:red, txt)
 #let partiallysupported(txt) = scell(color:yellow, txt)
 #let deprecated(txt) = scell(color:black, txt)
-
-#figure(
-  table(
-    columns: 4,
-    align: (left, left, left, left),
-    [Architecture], [PV], [HVM], [PVH],
-    [_x86-32_],  partiallysupported([$gt.eq$ P6]), notsupported([]), [],
-    [_x86-64_],  supported([]), supported([$+$ _Intel VT-X_]), [],
-    [_ARMv7_],   deprecated([]), notsupported([]), supported([$+$ _Virtualization Extensions_]),
-    [_ARMv8_],   deprecated([]), notsupported([]), supported([$+$ _Virtualization Extensions_]),
-    [_PowerPC_], partiallysupported[_Xen_ $gt.eq$ 4.20], [], [],
-    [_RISC-V_],  partiallysupported[_Xen_ $gt.eq$ 4.20], [], []
-  ),
-  caption: [Récapitulatif des architectures supportées par l'hyperviseur _Xen_]
-)
 
 == Support multi-processeur <xen_multiprocessor>
 
@@ -4027,7 +4005,7 @@ _Xen_ utilise le terme de _domaine_ pour qualifier les conteneurs des machines
 virtuelles en cours d'exécution. Il existe trois types de domaines:
 - #box[Le domaine 0 (abrégé _dom0_) désigne un domaine privilégié qui est automatiquement
 lancé au démarrage de l'hyperviseur. Le système d'exploitation hôte est généralement
-une distribution _Linux_ modifiée (voir la section @xen_os).]
+une distribution _Linux_ modifiée ou _Mini-OS_.]
 - #box[Les domaines utilisateurs (abrégé _domU_) sont les domaines qui contiennent les
 OS invités. Il existe deux types de tels domaines. Les domaines de paravirtualisation
 et les domaines _HVM_.]
@@ -4128,18 +4106,6 @@ temps _CPU_ minimal garanti. Cet ordonnanceur supporte les plateformes @smp.
 Il est donc possible d'exécuter dans une @vm un _RTOS_. Par exemple _RTEMS_
 peut être exécuté dans une telle configuration sur architecture _ARM_.
 
-=== OS invités supportés <xen_os>
-
-_Xen_ étant un paravirtualisateur, il nécessite un support
-spécifique des OS invités, que ce soit pour les _VM_ s'exécutant dans le
-domaine privilégié _dom0_ ou les _VM_ s'exécutant dans les domaines _domU_.
-Pour le domaine _dom0_, il offre un support pour
-de nombreuses distributions _GNU/Linux_
-ainsi que quelques autres noyaux de type _UNIX_.
-Plus d'informations sont disponibles. Pour le domaine _domU_,
-_Xen_ offre aussi un large support pour les OS invités.
-
-
 == Corruption mémoire <xen_memory_corruption>
 
 L'hyperviseur _Xen_ ne dispose pas d'un système de journalisation des erreurs
@@ -4189,6 +4155,11 @@ du système @xen_monitoring_tools @xenserver_monitor_performance:
   Network Management Protocol_), permettant l'utilisation de solutions de monitoring
   tierces.
 
+- #box[_Xen Orchestra_ est un solution de monitoring pour l'écosystème XenServer
+et _XCP-ng_.]
+- #box[_Zabbix_ est un système de monitoring open source qui peut surveiller
+les performances des domaines.]
+
 L'écosystème libre et gratuit pour monitorer _Xen_ semble assez limité. Il est possible
 que les grands acteurs du _cloud computing_ aient développé leurs propres outils en
 interne.
@@ -4205,10 +4176,6 @@ nécessaire d'utiliser des outils de profilage dédiés à l'hyperviseur. Dans c
 section, on présente trois outils de profilage pour _Xen_: _Xenprof_,
 _XenTune_ et _xentrace_.
 
-=== _Xenoprof_ <xen_xenoprof>
-
-=== _XenTune_ <xen_xentune>
-
 === Le traceur _xentrace_ <xentrace>
 
 Le logiciel _xentrace_ @xentrace_documentation est un outil distribué dans _Xen_.
@@ -4219,15 +4186,6 @@ clés du code de _Xen_. Ils sont activés via  _xentrace_ lorsqu'il est exécut�
 dans le domaine _dom0_. Ce dernier produit alors un fichier binaire qui peut
 ensuite être analysé par _xenanalyze_#footnote[Contrairement à _xentrace_,
 _xenanalyze_ n'est pas distribué avec _Xen_.].
-
-- #box[La commande _xl_ livrée avec _Xen_ offre des fonctionnalités basiques
-de monitoring via ses méta-options `top` et `list`.]
-- #box[_Xen Orchestra_ est un solution de monitoring pour l'écosystème XenServer
-et _XCP-ng_.]
-- #box[_Zabbix_ est un système de monitoring open source qui peut surveiller
-les performances des domaines.]
-- #box[_Netdata_ peut être utilisé avec _Xen_.]
-- #box[_Xenoprof_]
 
 == Programmation @baremetal <xen_baremetal>
 
@@ -4648,21 +4606,6 @@ dédiés.
 
 Le support commercial de _XtratuM_ est assuré par l'entreprise _fentISS_ qui
 développe et maintient la version _XNG_.
-
-== Draft
-
-_XtratuM_ virtualises la mémoire, les timers et les interruptions.
-
-_XtratuM_ fait parti du projet _SAFEST_ @safest_project. Il s'agit d'un projet
-visant à faire collaborer différents acteurs du secteur aérospatial européen
-afin d'améliorer les performances et de réduire les coûts.
-
-_IMA_ (_Integrated Modular Avionics_) est une tendance dans l'avionique à ramener
-au niveau de calculateurs modulaires identiques des fonctions logicielles
-auparavant prises en charge par des calculateurs dédiés.
-
-_XtratuM/NG_(abrégé _XNG_) est une version plus récente de l'hyperviseur qui offre un meilleur
-support multi-cœur.
 
 = Tableaux comparitifs <comparison_tables>
 

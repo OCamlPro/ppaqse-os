@@ -41,7 +41,9 @@
 
 #slide(title: "Introduction - système critique")[
   #framed(title: "Définition")[
-    Système dont la défaillance entraîne des dégâts indésirables:
+    Système dont la défaillance entraîne des dégâts indésirables.
+
+    Exemples:
     - Pertes de données dans une BDD,
     - Destructions matérielles,
     - Pertes humaines,
