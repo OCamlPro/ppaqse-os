@@ -1,8 +1,34 @@
+mpu:
+  short: MPU
+  long: Memory Protection Unit
+  description: >
+    Microcontrôleur chargé de vérifier les accès en mémoire.
+
+mmu:
+  short: MMU
+  long: Memory Management Unit
+  description: >
+    Microcontrôleur dédié à la traduction des adresses virtuelles en adresses
+    physiques.
+
+upcall:
+  short: upcall
+  description: >
+    Un upcall est l'opposé d'un appel système. Il permet à un noyau d'appeler
+    une fonction dans l'espace utilisateur.
+
 mce:
   short: MCE
   long: Machine Check Exception
   description: >
     Erreur émise par le matériel qui est généralement fatale.
+
+pic:
+  short: PIC
+  long: Programmable Interrupt Controller
+  description: >
+    Ensemble de microcontrôleurs dédiés à la programmation des interruptions
+    matérielles et en particulier à leur masquage.
 
 rte:
   short: RTE
@@ -43,6 +69,12 @@ isr:
     Gestionnaire d'interruption exécutée lorsqu'une interruption matérielle
     ou logicielle survient.
 
+irq:
+  short: IRQ
+  long: Interrupt ReQest
+  description: >
+    Requếte d'interruption envoyée à un PIC afin d'interrompre le processeur.
+
 bkl:
   short: BKL
   long: Big Kernel Lock
@@ -81,13 +113,21 @@ gpos:
   short: GPOS
   long: General-Purpose Operating System
   description: >
-    TODO
+    Système d'exploitation généraliste offrant un large éventaille de
+    services.
 
 rtos:
   short: RTOS
   long: Real-time Operating System
   description: >
-    TODO
+    Système d'exploitation dédié pour le temps réel. Il offre des garanties
+    fortes en matière de déterminisme.
+
+hypervisor:
+  short: hyperviseur
+  description: >
+    Plate-forme de virtualisation permettant l'exécution de plusieurs
+    systèmes d'exploitations simultanément sur une même machine physique.
 
 hypercall:
   short: hypercall
@@ -235,8 +275,12 @@ initsystem:
 
 userspace:
   short: espace utilisateur
-  article: l'
-  description: |
+  description: >
+    todo
+
+kernelspace:
+  short: espace noyau
+  description: >
     todo
 
 safety:

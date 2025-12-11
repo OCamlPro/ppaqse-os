@@ -10,9 +10,6 @@
 ## Recherche
 - Masquage des interruptions pour MirageOS.
 
-## Rédaction
-- Finir la section sur les domaines en OCaml 5?
-
 # PikeOS
 ## Recherche
 - Support watchdog pour PikeOS?
@@ -67,6 +64,9 @@ faire un pointeur sur la section appropriée dans MirageOS).
 # Autres
 - Faire les tableaux comparatifs.
 - Finir le glossaire.
+- Fixer les hyperliens du glossaire.
+- Fixer la date.
+- Mettre un script python pour vérifier les liens automatiquement.
 - Revoir la section sur les interruptions dans l'introduction qui contient trop
 de détails.
 - Relecture complète pour l'orthographe et la grammaire.

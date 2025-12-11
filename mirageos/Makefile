@@ -14,7 +14,7 @@ toolchain: setup-toolchain
 	$(DOCKER) run --user opam -it ppaqse-os/mirageos-toolchain /bin/bash
 
 memtrace-viewer: setup-memtrace-viewer
-	$(DOCKER) run
+	$(DOCKER) run --user opam -it ppaqse-os/mirageos-memtrace-viewer /bin/bash
 
 build-hello_world: setup-toolchain
 	$(DOCKER) run --user opam -v ./unikernels:/unikernels ppaqse-os/mirageos-toolchain ./examples/hello_world/build.sh

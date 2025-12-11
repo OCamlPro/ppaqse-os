@@ -22,17 +22,17 @@ all: $(OUTPUT)
 
 # Compile the document
 $(OUTPUT): $(SOURCE) $(REFS) $(GLOSSARY)
-	$(TYPST) compile $(SOURCE) $(OUTPUT)
+	SOURCE_DATE_EPOCH="$$(date +%s)" $(TYPST) compile $(SOURCE) $(OUTPUT)
 
 # Watch mode - recompile on changes
 .PHONY: watch
 watch:
-	$(TYPST) watch $(SOURCE) $(OUTPUT)
+	SOURCE_DATE_EPOCH="$$(date +%s)" $(TYPST) watch $(SOURCE) $(OUTPUT)
 
 # Open the PDF
 .PHONY: open
 open: $(OUTPUT)
-	$(PDF_VIEWER) $(OUTPUT)
+	$(PDF_VIEWER) $(OUTPUT) &
 
 # Build and open
 .PHONY: view
